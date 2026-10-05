@@ -9572,7 +9572,7 @@ updateStats();
       list = r.data || [];
       var act = active(), n = act ? (act.offers||[]).length : 0;
       if(silent === true && n > lastOffers){
-        showToast("📬 پیشنهاد جدید برای درخواست شما رسید!", "success");
+        showToast("📬 پیشنهاد جدید برای درخواست شما رسید!", "success"); if(window.nomaxBeep) window.nomaxBeep();
         try{ tryBrowserNotify("نومکس", "پیشنهاد جدید برای درخواست شما رسید"); }catch(e){}
       }
       lastOffers = n; renderMy();
@@ -9598,6 +9598,24 @@ updateStats();
 
   /* ---------- پنل مالک ---------- */
   var ownerReqs = [];
+  async function rpcSafe(name, params){
+    var r = await sb.rpc(name, params);
+    if(r.error){
+      console.error(name, r.error);
+      var c = r.error.code || "";
+      if(c === "PGRST202" || c === "42883"){
+        var p2 = {};
+        Object.keys(params).forEach(function(k){
+          var v = params[k];
+          p2[k] = ((k === "p_request" || k === "p_business") && /^\d+$/.test(v)) ? Number(v) : v;
+        });
+        var r2 = await sb.rpc(name, p2);
+        if(r2.error) console.error(name + " retry", r2.error);
+        return r2;
+      }
+    }
+    return r;
+  }
   window.loadOwnerRequests = async function(silent){
     var box = $("myRequests");
     var owner = window.currentOwner ? window.currentOwner() : null;
@@ -9613,6 +9631,8 @@ updateStats();
     ownerReqs = r.data || [];
     await loadDeclines(); reportTimeouts();
     var pending = ownerReqs.filter(function(x){ return x.status === "open" && !x.my_offer && !declinedOf(x); }).length;
+    if(silent && window.__nxPrev!==undefined && pending>window.__nxPrev){ showToast("📨 استعلام قیمت جدید رسید!","success"); if(window.nomaxBeep) window.nomaxBeep(); }
+    window.__nxPrev = pending;
     var badge = $("ownerRequestsBadge");
     if(badge){ badge.style.display = pending ? "inline" : "none"; badge.textContent = toFa(pending); }
     if(window.nomaxPanel) window.nomaxPanel.setBadge("biz", pending);
@@ -9646,9 +9666,10 @@ updateStats();
     var inp = 'style="width:100%;padding:9px;border:1px solid var(--border);border-radius:9px;margin-bottom:6px;background:var(--surface);color:var(--text);font-family:inherit"';
     var act = [], arch = [];
     ownerReqs.forEach(function(q,i){ var o = q.my_offer; (q.status === "open" && !o && !declinedOf(q) ? act : arch).push({q:q,i:i}); });
+    function who(q){ return q.requester_name||q.customer_name||q.user_name||q.full_name||""; }
     function head(q){
       return '<div style="display:flex;justify-content:space-between;gap:8px"><strong>🔎 '+esc(q.service)+'</strong><span style="font-size:11px;color:var(--text-3)">'+getTimeAgo(new Date(q.created_at).getTime())+'</span></div>'+
-        '<div class="request-meta"><span>🏪 '+esc(q.business_name||"")+'</span>'+(q.area?'<span>📍 '+esc(q.area)+'</span>':'')+'</div>'+
+        (who(q)?'<div style="font-weight:800;font-size:13px;margin-top:4px">👤 '+esc(who(q))+'</div>':'')+'<div class="request-meta"><span>🏪 '+esc(q.business_name||"")+'</span>'+(q.area?'<span>📍 '+esc(q.area)+'</span>':'')+'</div>'+
         (q.description?'<div style="font-size:12.5px;color:var(--text-2);margin-top:6px">'+esc(q.description)+'</div>':'');
     }
     var h = '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">⏳ در انتظار پاسخ شما ('+toFa(act.length)+')</div>';
@@ -9685,9 +9706,9 @@ updateStats();
         if(!val("price")){ showToast("قیمت را وارد کنید.", "error"); return; }
         if(!await nomaxConfirm("⚠️ بعد از ارسال، قیمت و توضیحات دیگر قابل تغییر نیست و درخواست به بایگانی می‌رود. ارسال شود؟")) return;
         btn.disabled = true;
-        var r = await sb.rpc("submit_offer", { p_request:q.id, p_business:q.business_id, p_price:val("price"), p_brand:val("brand"), p_note:val("note").slice(0,120) });
+        var r = await rpcSafe("submit_offer", { p_request:String(q.id), p_business:String(q.business_id), p_price:val("price"), p_brand:val("brand"), p_note:val("note").slice(0,120) });
         btn.disabled = false;
-        if(r.error){ showToast((r.error.message||"").indexOf("already_offered")>-1?"برای این درخواست قبلاً پیشنهاد داده‌اید.":((r.error.message||"").indexOf("not_allowed")>-1?"این درخواست دیگر در دسترس نیست.":"ثبت نشد؛ دوباره تلاش کنید."), "error"); loadOwnerRequests(); return; }
+        if(r.error){ showToast((r.error.message||"").indexOf("already_offered")>-1?"برای این درخواست قبلاً پیشنهاد داده‌اید.":((r.error.message||"").indexOf("not_allowed")>-1?"این درخواست دیگر در دسترس نیست.":"ثبت نشد ("+(r.error.code||r.error.message||"؟")+")"), "error"); loadOwnerRequests(); return; }
         if(window.nomaxNotify) window.nomaxNotify({ action:"new_offer", request_id:q.id, business_id:q.business_id });
         showToast("پیشنهاد ثبت شد و به بایگانی رفت ✓", "success"); loadOwnerRequests();
       };
@@ -9696,8 +9717,8 @@ updateStats();
       btn.onclick = async function(){
         var q = ownerReqs[+btn.getAttribute("data-decline")];
         if(!await nomaxConfirm("⚠️ این درخواست رد و بایگانی می‌شود و دیگر قابل پاسخ نیست. رد کردن، امتیاز منفی برای کسب‌وکار شما ثبت می‌کند و روی رتبه‌ی نمایش شما در جستجو اثر می‌گذارد. ادامه می‌دهید؟", { danger:true })) return;
-        var r = await sb.rpc("decline_request", { p_request:String(q.id), p_business:String(q.business_id) });
-        if(r.error){ showToast("ثبت نشد؛ دوباره تلاش کنید.", "error"); return; }
+        var r = await rpcSafe("decline_request", { p_request:String(q.id), p_business:String(q.business_id) });
+        if(r.error){ showToast("ثبت نشد ("+(r.error.code||r.error.message||"؟")+")", "error"); return; }
         showToast("درخواست به بایگانی رفت.", "success"); loadOwnerRequests();
         if(window.nomaxLoadPenalties) window.nomaxLoadPenalties();
       };
@@ -9813,17 +9834,17 @@ updateStats();
   el.innerHTML =
     '<div class="np-head"><button type="button" class="np-back" id="npClose" aria-label="بستن پنل">→</button><h2 id="npTitle" tabindex="-1">پنل من</h2></div>'+
     '<div class="np-body">'+
-      '<section class="np-pane" data-pane="needs" id="npNeeds"><div class="np-h">🛒 درخواست‌های من (مشتری)</div></section>'+
+      '<section class="np-pane" data-pane="needs" id="npNeeds"><div class="np-h">🛒 استعلام قیمت من</div></section>'+
       '<section class="np-pane" data-pane="biz" id="npBiz">'+
         '<div id="npPendingSlot"></div><div class="np-h">🏪 کسب‌وکار من</div><div id="npBizList"></div>'+
-        '</section><section class="np-pane" data-pane="inbox" id="npInbox"><div id="npBizReq"><div class="np-h">📨 درخواست‌های دریافتی</div><div id="npBizReqList"></div></div>'+
+        '</section><section class="np-pane" data-pane="inbox" id="npInbox"><div id="npBizReq"><div class="np-h">👥 مشتری‌ها (استعلام‌های دریافتی)</div><div id="npBizReqList"></div></div>'+
       '</section>'+
       '<section class="np-pane" data-pane="settings" id="npSettings"><div class="np-h">⚙️ تنظیمات</div><div id="npAccount"></div><div id="notifBoxSettings" style="display:none"></div><div id="npActions"></div></section>'+
     '</div>'+
     '<nav class="np-tabs" role="tablist" aria-label="بخش‌های پنل">'+
-      '<button type="button" role="tab" data-tab="needs"><span class="ic">🛒</span><span>مشتری</span><i class="np-badge" id="npBadgeNeeds" style="display:none"></i></button>'+
-      '<button type="button" role="tab" data-tab="biz" id="npTabBiz"><span class="ic">🏪</span><span>کسب‌وکار من</span></button>'+
-      '<button type="button" role="tab" data-tab="inbox" id="npTabInbox" style="display:none"><span class="ic">📨</span><span>درخواست‌ها</span></button>'+
+    '<button type="button" role="tab" data-tab="biz" id="npTabBiz"><span class="ic">🏪</span><span>کسب‌وکار من</span></button>'+
+      '<button type="button" role="tab" data-tab="needs"><span class="ic">🛒</span><span>استعلام قیمت</span><i class="np-badge" id="npBadgeNeeds" style="display:none"></i></button>'+
+      '<button type="button" role="tab" data-tab="inbox" id="npTabInbox" style="display:none"><span class="ic">👥</span><span>مشتری‌ها</span></button>'+
       '<button type="button" role="tab" data-tab="settings"><span class="ic">⚙️</span><span>تنظیمات</span></button>'+
     '</nav>';
   document.body.appendChild(el);
@@ -10171,6 +10192,25 @@ window.NOMAX_CFG = {
   setInterval(function(){ if(!document.hidden && window.nomaxPanel && window.nomaxPanel.isOpen()) window.nomaxReloadBiz(); }, 30000);
 })();
 
+</script>
+<script>
+/* ===== نومکس: صدای اعلان درون‌برنامه‌ای ===== */
+(function(){
+  var ctx=null;
+  function unlock(){ try{ ctx=ctx||new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==="suspended") ctx.resume(); }catch(e){} }
+  ["click","touchstart","keydown"].forEach(function(ev){ document.addEventListener(ev,unlock,{passive:true}); });
+  window.nomaxBeep=function(){
+    try{ unlock(); if(!ctx) return;
+      [880,1175].forEach(function(f,i){
+        var o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+i*0.18;
+        o.type="sine"; o.frequency.value=f;
+        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.25,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
+        o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.17);
+      });
+      if(navigator.vibrate) navigator.vibrate([120,60,120]);
+    }catch(e){}
+  };
+})();
 </script>
 </body>
   </html>
