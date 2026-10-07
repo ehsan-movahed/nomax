@@ -9726,7 +9726,7 @@ updateStats();
     var bizName=b?esc(b.name):"کسب‌وکار", bizLoc=b?esc(b.address||"مکان ثبت نشده"):"مکان ثبت نشده";
     return '<details class="nx-acc nx-offer-card'+(o.selected?' offer-chosen':'')+'" data-k="'+esc(k)+'"><summary class="nx-offer-summary" data-biz-detail="'+esc(String(o.business_id))+'">'+
       (rank?'<span class="nx-rank">'+toFa(rank)+'</span>':'')+'<span class="nx-offer-main"><strong>🏪 '+bizName+'</strong><small>📍 '+bizLoc+'</small></span>'+
-      (o.price?'<span class="tag-mini nx-offer-price">💰 '+toFa(toFa(toFa(toFa(esc(o.price)))))+'</span>':'')+
+      (o.price?'<span class="tag-mini nx-offer-price">💰 '+toFa(esc(o.price))+'</span>':'')+
       '<span class="nx-offer-actions">'+callA+mapA+'</span>'+
       (o.selected?'<span class="st-pill selected">✓ انتخاب شما</span>':'')+'<span class="nx-offer-open">›</span></summary><div class="nx-body">'+
       '<div style="font-size:12.5px;color:var(--text-2)">'+(b&&b.owner?'👤 مالک: '+esc(b.owner)+' ':'')+(rating.count?'· ⭐ '+toFa(rating.avg.toFixed(1)):'')+(b&&b.verified?' · ✓ تأیید شده':'')+'</div>'+
