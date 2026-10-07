@@ -1061,7 +1061,9 @@ body, button, input, select, textarea{
 /* ============ REQUEST / MARKET UX V5 ============ */
 .nx-owner-req{position:relative;border:1px solid var(--border);border-right:4px solid var(--primary-400);border-radius:16px;background:var(--surface);margin:0 0 10px;overflow:hidden;box-shadow:var(--shadow-sm)}
 .nx-owner-req.archived-ok{border-right-color:rgba(22,163,74,.65)} .nx-owner-req.archived-no{border-right-color:rgba(220,38,38,.55)}
-.nx-owner-req summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px}
+.nx-owner-req summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px}.nx-chev{color:var(--text-3);transition:transform .2s,color .2s,opacity .2s}
+.nx-owner-req[open] .nx-chev{transform:rotate(90deg);opacity:1;color:var(--primary-600)}
+.nx-owner-req:not([open]):hover .nx-chev{opacity:1;color:var(--primary-600)}
 .nx-summary-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:right}
 .nx-summary-service{font-size:14.5px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nx-summary-user{font-size:12.5px;color:var(--text-2);font-weight:600}
@@ -9894,7 +9896,7 @@ updateStats();
     var where = geo ? '<a class="nx-chip" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+geo.lat+','+geo.lng+'">📍 '+(dist!=null ? toFa(dist.toFixed(1))+' کیلومتر تا شما' : 'موقعیت روی نقشه')+'</a>'
               : (q.area ? '<span class="nx-chip">📍 '+esc(q.area)+'</span>' : '');
     return '<div class="nx-oc-top"><div class="nx-oc-title">'+esc(q.service)+'</div><span class="nx-oc-time">'+getTimeAgo(new Date(q.created_at).getTime())+'</span></div>'+
-      '<div class="nx-oc-meta"><span class="nx-chip">🏪 '+esc(q.business_name||"")+'</span>'+where+'</div>'+
+      '<div class="nx-oc-meta">'+where+'</div>'+
       (q.description ? '<div class="nx-oc-desc">'+esc(q.description)+'</div>' : '');
   }
   async function loadOwnerMarket(){
