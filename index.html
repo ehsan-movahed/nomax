@@ -6940,7 +6940,7 @@ function rowToBusiness(row){
   // ثبت‌های هنوز تأییدنشده payload خالی دارند؛ محتوایشان در pending_payload است
   var base = hasPublished ? row.payload : (row.pending_payload || {});
   var b = Object.assign({}, base);
-  b.id = String(row.id);
+  b.id = /^\d{1,15}$/.test(String(row.id)) ? Number(row.id) : String(row.id);
   b.status = row.status;
   b.ownerId = row.owner_id || null;
   b.reviewState = row.review_state || "none";
@@ -7104,7 +7104,7 @@ function getTimeAgo(ts){
   function confirmDelete(id){
     pendingDeleteId = id;
     var b = null;
-    for(var i=0;i<businesses.length;i++) if(businesses[i].id === id) b = businesses[i];
+    for(var i=0;i<businesses.length;i++) if(String(businesses[i].id) === String(id)) b = businesses[i];
     document.getElementById("confirmText").textContent =
       'آیا از حذف «' + (b ? b.name : "این کسب‌وکار") + '» مطمئن هستید؟ این عمل قابل بازگشت نیست.';
     document.getElementById("confirmModal").classList.add("show");
@@ -7173,7 +7173,7 @@ function getTimeAgo(ts){
   /* ============ SHARE + MAP ============ */
   function getBusinessById(id){
     for(var i=0;i<businesses.length;i++){
-      if(businesses[i].id === id) return businesses[i];
+      if(String(businesses[i].id) === String(id)) return businesses[i];
     }
     return null;
   }
@@ -8588,7 +8588,7 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
     if(!await nomaxConfirm('کسب‌وکار «'+b.name+'» حذف شود؟'))return;
     var r = await sb.rpc('delete_my_business');
     if(r.error){ console.error(r.error); showToast('حذف انجام نشد.','error'); return; }
-    businesses=businesses.filter(function(x){return x.id!==id;});
+    businesses=businesses.filter(function(x){return String(x.id)!==String(id);});
     saveToStorage();
     buildCategories(); updateStats(); renderOwnerBusinessesV2(); updateOwnerRequestsBadgeV2(); showToast('کسب‌وکار حذف شد.','success');
   }
