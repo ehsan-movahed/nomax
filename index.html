@@ -10569,9 +10569,10 @@ window.NOMAX_CFG = {
       var tel=card.querySelector('a[href^="tel:"]');
       var details=document.createElement("details");details.className="biz-accordion";
       var sum=document.createElement("summary");sum.className="biz-acc-summary";
-      var main=document.createElement("span");main.className="biz-acc-main";main.innerHTML=avatarHTML(b,'sm')+'<span class="biz-acc-text"><strong>'+esc(title)+'</strong><span>📍 '+esc(addr)+'</span></span>';
+      var main=document.createElement("span");main.className="biz-acc-main";main.innerHTML='<strong>'+esc(title)+'</strong><span>📍 '+esc(addr)+'</span>';
       sum.appendChild(main);
       if(tel){var c=document.createElement("a");c.className="biz-quick-call";c.href=tel.getAttribute("href");c.textContent="☎";c.title="تماس سریع";c.addEventListener("click",function(e){e.stopPropagation()});sum.appendChild(c);}
+      var q=document.createElement("button");q.type="button";q.className="biz-quick-quote";q.textContent="استعلام قیمت";q.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(window.openRequestModal)window.openRequestModal(title);});sum.appendChild(q);
       details.appendChild(sum);details.appendChild(inner);card.replaceWith(details);
     });
     root.querySelectorAll(".biz-accordion").forEach(function(details){
@@ -10611,11 +10612,7 @@ window.NOMAX_CFG = {
     ".field input[readonly],.field textarea[readonly]{background:var(--muted)!important;color:var(--text-2)!important;cursor:not-allowed!important}"+
     ".biz-accordion{border:1px solid var(--border);border-radius:18px;margin-bottom:10px;background:var(--surface);overflow:hidden;box-shadow:0 3px 14px rgba(15,23,42,.04)}"+
     ".biz-accordion>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:11px 12px}.biz-accordion>summary::-webkit-details-marker{display:none}"+
-    ".biz-acc-main{min-width:0;flex:1;display:flex;align-items:center;gap:10px}"+
-    ".biz-acc-main .avatar{width:44px!important;height:44px!important;border-radius:12px!important;font-size:20px!important;flex-shrink:0}"+
-    ".biz-acc-text{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}"+
-    ".biz-acc-text strong{font-size:14.5px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"+
-    ".biz-acc-text span{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"+
+    ".biz-acc-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}.biz-acc-main strong{font-size:13.5px}.biz-acc-main span{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"+
     ".biz-quick-call{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--primary-500);color:#fff;text-decoration:none;font-weight:900;flex:0 0 auto}"+
     ".biz-quick-quote{border:1px solid var(--primary-200);background:var(--primary-50);color:var(--primary-700);border-radius:10px;padding:7px 9px;font:inherit;font-size:11px;font-weight:800;cursor:pointer;flex:0 0 auto}"+
     ".biz-accordion>.business-inner{border-top:1px dashed var(--border)}"+
