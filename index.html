@@ -11,6 +11,7 @@
 (function(){ try{ if(window.top !== window.self){ document.documentElement.style.display="none"; window.top.location = window.self.location; } }catch(e){ document.documentElement.style.display="none"; } })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نومکس</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -18,7 +19,12 @@
 <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
     
 <style>
-:root{
+
+.theme-toggle:focus-visible,
+.header-menu-toggle:focus-visible{
+  outline:3px solid #fff;
+  outline-offset:2px;
+}:root{
   --primary-50:#f0fdfa; --primary-100:#ccfbf1; --primary-200:#99f6e4;
   --primary-400:#2dd4bf; --primary-500:#14b8a6; --primary-600:#0d9488;
   --primary-700:#0f766e; --primary-800:#115e59;
@@ -123,7 +129,7 @@ body, button, input, select, textarea{
 .header{
   position:relative;
   background:linear-gradient(135deg,#0f766e 0%,#14b8a6 50%,#0d9488 100%);
-  color:#fff; padding:28px 20px 56px;
+  color:#fff; padding:24px 20px 44px;
   text-align:center; overflow:visible;
   z-index:40;
 }
@@ -139,7 +145,7 @@ body, button, input, select, textarea{
   height:40px; width:100%; display:block;
 }
 .header .logo-mark{
-  width:56px; height:56px; margin:0 auto 12px;
+  width:56px; height:56px; margin:34px auto 12px;
   display:flex; align-items:center; justify-content:center;
   background:rgba(255,255,255,.15);
   backdrop-filter:blur(12px);
@@ -555,7 +561,13 @@ body, button, input, select, textarea{
   transform:translateY(-3px);
 }
 .business-inner{padding:16px 16px 14px 18px}
-.business-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:12px}
+.business-head{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:12px;
+  min-height:56px;
+}
 .avatar{
   width:56px; height:56px; border-radius:16px;
   display:flex; align-items:center; justify-content:center;
@@ -567,10 +579,32 @@ body, button, input, select, textarea{
   background-position:center;
   border:2px solid rgba(255,255,255,.7);
 }
-.avatar.avatar-photo{padding:0; font-size:0; border-color:var(--border)}
-.avatar.avatar-photo img{width:100%; height:100%; object-fit:cover; display:block}
+.avatar.avatar-photo{
+  padding:0 !important;
+  border-color:var(--border);
+  overflow:hidden;
+  flex-shrink:0;
+  line-height:0;
+  font-size:0;
+  aspect-ratio:1 / 1;
+  contain:layout;
+}
+.avatar.avatar-photo img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover;
+  display:block;
+  border-radius:inherit;
+}
 .avatar.avatar-cat{font-size:26px; font-weight:500; line-height:1}
-.business-head-text{flex:1; min-width:0; padding-top:2px}
+.business-head-text{
+  flex:1;
+  min-width:0;
+  padding-top:2px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+}
 .business h3{
   margin:0 0 8px; font-size:16.5px; font-weight:800;
   line-height:1.45; color:var(--text); word-break:break-word;
@@ -1061,14 +1095,7 @@ body, button, input, select, textarea{
 /* ============ REQUEST / MARKET UX V5 ============ */
 .nx-owner-req{position:relative;border:1px solid var(--border);border-right:4px solid var(--primary-400);border-radius:16px;background:var(--surface);margin:0 0 10px;overflow:hidden;box-shadow:var(--shadow-sm)}
 .nx-owner-req.archived-ok{border-right-color:rgba(22,163,74,.65)} .nx-owner-req.archived-no{border-right-color:rgba(220,38,38,.55)}
-.nx-owner-req summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px}.nx-chev{color:var(--text-3);transition:transform .2s,color .2s,opacity .2s}
-.nx-owner-req[open] .nx-chev{transform:rotate(90deg);opacity:1;color:var(--primary-600)}
-.nx-owner-req:not([open]):hover .nx-chev{opacity:1;color:var(--primary-600)}
-.nx-summary-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:right}
-.nx-summary-service{font-size:14.5px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nx-summary-user{font-size:12.5px;color:var(--text-2);font-weight:600}
-.nx-summary-contact{font-size:11.5px;color:var(--text-3)}
-.nx-summary-actions{display:flex;gap:6px;flex-shrink:0;margin-right:auto}.nx-owner-req summary::-webkit-details-marker{display:none}
+.nx-owner-req summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:10px;min-height:68px}.nx-owner-req summary::-webkit-details-marker{display:none}
 .nx-owner-req .nx-summary-main{flex:1;min-width:0}.nx-owner-req .nx-summary-service{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nx-owner-req .nx-summary-user,.nx-owner-req .nx-summary-contact{font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nx-owner-req .nx-summary-actions{display:flex;gap:6px;flex-shrink:0}
 .nx-mini-btn{border:0;border-radius:10px;padding:8px 9px;font:inherit;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}.nx-mini-btn.ok{background:#ecfdf5;color:#15803d;border:1px solid #bbf7d0}.nx-mini-btn.no{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 .nx-owner-body{padding:0 14px 14px;border-top:1px solid var(--border)}.nx-owner-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px}.nx-owner-detail{background:var(--muted);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:11.5px;color:var(--text-2)}.nx-owner-detail b{display:block;color:var(--text-3);font-size:10px;margin-bottom:2px}
@@ -1088,6 +1115,11 @@ body, button, input, select, textarea{
 }
 .owner-head{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
 .owner-head .avatar{width:40px; height:40px; font-size:16px; border-radius:11px;}
+.owner-head .avatar.avatar-photo,
+.owner-head .avatar.avatar-photo img{
+  width:40px !important;
+  height:40px !important;
+}
 .owner-head-text{flex:1; min-width:0}
 .owner-head-text h3{
   margin:0 0 4px; font-size:15px; font-weight:700;
@@ -1494,12 +1526,9 @@ body, button, input, select, textarea{
   font-size:13.5px; font-weight:500;
   box-shadow:0 20px 40px rgba(0,0,0,.25);
   transition:transform .5s var(--ease-spring);
-  z-index:2147483647 !important;
-  display:flex; align-items:center; gap:8px;
+  z-index:999; display:flex; align-items:center; gap:8px;
   max-width:90%;
-  pointer-events:none;
 }
-.toast.show{ pointer-events:auto; }
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.success{background:var(--success); color:#fff}
 .toast.error{background:var(--danger); color:#fff}
@@ -1797,6 +1826,8 @@ body, button, input, select, textarea{
 }
 .biz-manage-avatar{
   width:42px; height:42px;
+  aspect-ratio:1 / 1;
+  contain:layout;
   border-radius:11px;
   display:flex; align-items:center; justify-content:center;
   color:#fff; font-weight:800; font-size:16px;
@@ -2144,6 +2175,11 @@ body, button, input, select, textarea{
 .notif-prompt-later{
   background:var(--muted);color:var(--text-2);
 }
+[data-theme="dark"] #quickReqBtn{
+  color:#5eead4 !important;
+  background:rgba(20,184,166,.14) !important;
+  border-color:#2dd4bf !important;
+}
 @media (min-width:769px){
   .notif-prompt{align-items:center}
   .notif-prompt-card{border-radius:20px}
@@ -2420,7 +2456,7 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
 
     <div id="stickySearchWrap" style="position:sticky; top:0; z-index:30; background:var(--surface); padding:10px 0 6px; margin:0 -2px; box-shadow:0 2px 8px rgba(0,0,0,.04);">
       <div class="search-box" id="searchBox">
-        <input id="searchInput" type="text" placeholder="نام، خدمت، شماره تماس یا نام صاحب..." autocomplete="off">
+        <input id="searchInput" type="text" placeholder="نام، خدمت یا شماره تماس..." autocomplete="off">
         <div class="spinner"></div>
         <button type="button" id="searchButton">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -4467,7 +4503,9 @@ function migrateOldBusinesses(){
     if(b && b.profileImage){
       var _pi = String(b.profileImage);
       if(/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(_pi)){
-        return '<div class="avatar avatar-photo" style="'+dim+'padding:0"><img src="'+esc(_pi)+'" alt="'+esc(name)+'"></div>';
+        var _sz = isSm ? 36 : 56;
+        var _st = 'width:'+_sz+'px;height:'+_sz+'px;padding:0;flex:0 0 '+_sz+'px;overflow:hidden;border-radius:'+(isSm?'10px':'16px')+';';
+        return '<div class="avatar avatar-photo" style="'+_st+'"><img src="'+esc(_pi)+'" alt="'+esc(name)+'" style="width:'+_sz+'px;height:'+_sz+'px;object-fit:cover;display:block;border-radius:inherit;"></div>';
       }
     }
     /* 2) آواتار رنگی بر اساس رسته شغلی + ایموجی دسته */
@@ -5720,18 +5758,17 @@ function scoreBusiness(b, q){
     if(p.classList.contains('open')) closeCategoryMenu();
     else openCategoryMenu();
   }
+  var __categoryMenuInited = false;
   function initCategoryMenu(){
-    var hb=document.getElementById('headerMenuToggle');
-    var p=document.getElementById('categoryMenuPanel');
-    if(!hb||!p) return;
-    hb.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      toggleCategoryMenu();
-    };
+    if(__categoryMenuInited) return;
+    __categoryMenuInited = true;
     document.addEventListener('click',function(e){
-      var w=document.getElementById('categoryMenuWrap');
-      if(w && !w.contains(e.target)) closeCategoryMenu();
+      var p=document.getElementById('categoryMenuPanel');
+      var nx=document.getElementById('nxSiteMenu');
+      if(!p || !p.classList.contains('open')) return;
+      if(p.contains(e.target)) return;
+      if(nx && nx.contains(e.target)) return;
+      closeCategoryMenu();
     });
     document.addEventListener('keydown',function(e){
       if(e.key==='Escape') closeCategoryMenu();
@@ -5743,25 +5780,33 @@ function scoreBusiness(b, q){
     var topBtn = document.getElementById("filterTop");
     var newestBtn = document.getElementById("filterNewest");
     var emergencyBtn = document.getElementById("filterEmergency");
-  
+
+    function mark(btn, on){
+      btn.classList.toggle("active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+
     if(topBtn){
+      topBtn.setAttribute("aria-pressed","false");
       topBtn.onclick = function(){
         filterTopActive = !filterTopActive;
-        this.classList.toggle("active", filterTopActive);
+        mark(this, filterTopActive);
         searchBusinesses();
       };
     }
     if(newestBtn){
+      newestBtn.setAttribute("aria-pressed","false");
       newestBtn.onclick = function(){
         filterNewestActive = !filterNewestActive;
-        this.classList.toggle("active", filterNewestActive);
+        mark(this, filterNewestActive);
         searchBusinesses();
       };
     }
     if(emergencyBtn){
+      emergencyBtn.setAttribute("aria-pressed","false");
       emergencyBtn.onclick = function(){
         filterEmergencyActive = !filterEmergencyActive;
-        this.classList.toggle("active", filterEmergencyActive);
+        mark(this, filterEmergencyActive);
         searchBusinesses();
       };
     }
@@ -6950,7 +6995,7 @@ function rowToBusiness(row){
   // ثبت‌های هنوز تأییدنشده payload خالی دارند؛ محتوایشان در pending_payload است
   var base = hasPublished ? row.payload : (row.pending_payload || {});
   var b = Object.assign({}, base);
-  b.id = /^\d{1,15}$/.test(String(row.id)) ? Number(row.id) : String(row.id);
+  b.id = String(row.id);
   b.status = row.status;
   b.ownerId = row.owner_id || null;
   b.reviewState = row.review_state || "none";
@@ -7114,7 +7159,7 @@ function getTimeAgo(ts){
   function confirmDelete(id){
     pendingDeleteId = id;
     var b = null;
-    for(var i=0;i<businesses.length;i++) if(String(businesses[i].id) === String(id)) b = businesses[i];
+    for(var i=0;i<businesses.length;i++) if(businesses[i].id === id) b = businesses[i];
     document.getElementById("confirmText").textContent =
       'آیا از حذف «' + (b ? b.name : "این کسب‌وکار") + '» مطمئن هستید؟ این عمل قابل بازگشت نیست.';
     document.getElementById("confirmModal").classList.add("show");
@@ -8192,6 +8237,23 @@ function wrapAdmin(fnName){
     var card=document.getElementById("resultsCard");
     count.textContent=toFa(found.length)+" نتیجه";
 
+/* نمایش فیلترهای فعال */
+var activeF = [];
+if(filterTopActive) activeF.push("🏆 برترین‌ها");
+if(filterNewestActive) activeF.push("🆕 جدیدترین‌ها");
+if(filterEmergencyActive) activeF.push("⚡ اورژانسی");
+var hint = document.getElementById("activeFilterHint");
+if(!hint){
+  hint = document.createElement("div");
+  hint.id = "activeFilterHint";
+  hint.style.cssText = "font-size:11.5px;color:var(--text-3);margin:-6px 0 12px;font-weight:600";
+  var row = document.querySelector("#resultsCard .filter-row");
+  if(row) row.insertAdjacentElement("afterend", hint);
+}
+hint.textContent = activeF.length
+  ? ("فیلتر فعال: " + activeF.join("، ") + " — برای برداشتن، دوباره روی دکمه بزن")
+  : "";
+
     if(!found.length){
       var title=query ? "برای این نیاز هنوز کسب‌وکاری پیدا نشد" : "در این بخش هنوز کسب‌وکاری ثبت نشده";
       var safeQ=esc2(query||"");
@@ -8542,16 +8604,19 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
     if(window.nomaxPanel) window.nomaxPanel.open('biz');
   }
 
-  function ownerStatusText(b){
-    var why = b.rejectionReason ? (' — دلیل: ' + b.rejectionReason) : '';
+  function ownerStatusBadge(b){
+    var cls = 'pending', txt = 'در انتظار تأیید مدیر', ic = '⏳';
     if(b.status === 'approved'){
-      if(b.reviewState === 'pending') return 'منتشر شده · ویرایش جدید در انتظار تأیید (نسخه‌ی قبلی نمایش داده می‌شود)';
-      if(b.reviewState === 'rejected') return 'منتشر شده · ویرایش اخیر رد شد' + why;
-      return 'منتشر شده';
-    }
-    if(b.status === 'rejected') return 'رد شده' + why;
-    if(b.status === 'pending_category') return 'در انتظار دسته‌بندی';
-    return 'در انتظار تأیید مدیر';
+      if(b.reviewState === 'pending'){ cls = 'pending'; txt = 'منتشر شده · ویرایش در انتظار تأیید'; ic = '✏️'; }
+      else if(b.reviewState === 'rejected'){ cls = 'rejected'; txt = 'منتشر شده · ویرایش اخیر رد شد'; ic = '⚠️'; }
+      else { cls = 'approved'; txt = 'منتشر شده'; ic = '✅'; }
+    } else if(b.status === 'rejected'){ cls = 'rejected'; txt = 'رد شده'; ic = '✕'; }
+    else if(b.status === 'pending_category'){ cls = 'pending'; txt = 'در انتظار دسته‌بندی'; ic = '🗂'; }
+    var html = '<span class="owner-status ' + cls + '">' + ic + ' ' + esc(txt) + '</span>';
+    if(b.emergency) html += ' <span class="emergency-badge">⚡ اورژانسی</span>';
+    else if(b.open24h) html += ' <span class="emergency-badge" style="opacity:.75">⚡ ۲۴ساعته (منتظر تأیید مدیر)</span>';
+    if(b.rejectionReason) html += '<div style="font-size:11.5px;color:var(--danger);margin-top:5px">دلیل: ' + esc(b.rejectionReason) + '</div>';
+    return html;
   }
 
   function renderOwnerBusinessesV2(){
@@ -8562,7 +8627,7 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
     for(var i=0;i<list.length;i++){
       var b=list[i];
       var grp=(b.status==='approved')?'a':'p'; if(grp!==lastGrp){ html+='<div class="np-h">'+(grp==='a'?'✅ تأییدشده':'⏳ در انتظار تأیید / نیازمند اقدام')+'</div>'; lastGrp=grp; }
-      html+='<div class="owner-business"><div class="owner-head"><div class="avatar">'+avatarHTML(b)+'</div><div class="owner-head-text"><h3>'+esc(b.name)+'</h3><div class="meta">'+esc(b.type||'دسته‌بندی نشده')+' · '+esc(ownerStatusText(b))+(b.emergency?' · ⚡ اورژانسی':(b.open24h?' · ⚡ ۲۴ساعته (منتظر تأیید مدیر)':''))+'</div></div></div><div class="owner-info"><div class="row"><span>📞</span><span>'+toFa(esc(b.phone||''))+'</span></div><div class="row"><span>📍</span><span>'+esc(b.address||'بهبهان')+'</span></div></div><div class="owner-actions"><button class="edit-btn" data-own-edit="'+b.id+'">✏️ ویرایش</button><button class="delete-btn" data-own-delete="'+b.id+'">🗑 حذف</button></div></div>';
+      html+='<div class="owner-business"><div class="owner-head"><div class="avatar">'+avatarHTML(b)+'</div><div class="owner-head-text"><h3>'+esc(b.name)+'</h3><div class="meta">'+esc(b.type||'دسته‌بندی نشده')+'</div><div style="margin-top:6px">'+ownerStatusBadge(b)+'</div></div></div><div class="owner-info"><div class="row"><span>📞</span><span>'+toFa(esc(b.phone||''))+'</span></div><div class="row"><span>📍</span><span>'+esc(b.address||'بهبهان')+'</span></div></div><div class="owner-actions"><button class="edit-btn" data-own-edit="'+b.id+'">✏️ ویرایش</button><button class="delete-btn" data-own-delete="'+b.id+'">🗑 حذف</button></div></div>';
     }
     box.innerHTML=html;
     box.querySelectorAll('[data-own-edit]').forEach(function(btn){btn.onclick=function(){editBusinessV2(+btn.getAttribute('data-own-edit'));};});
@@ -8598,7 +8663,7 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
     if(!await nomaxConfirm('کسب‌وکار «'+b.name+'» حذف شود؟'))return;
     var r = await sb.rpc('delete_my_business');
     if(r.error){ console.error(r.error); showToast('حذف انجام نشد.','error'); return; }
-    businesses=businesses.filter(function(x){return String(x.id)!==String(id);});
+    businesses=businesses.filter(function(x){return x.id!==id;});
     saveToStorage();
     buildCategories(); updateStats(); renderOwnerBusinessesV2(); updateOwnerRequestsBadgeV2(); showToast('کسب‌وکار حذف شد.','success');
   }
@@ -8675,6 +8740,8 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
 .owner-status.pending{background:var(--accent-50);color:var(--accent-700);border:1px solid var(--accent-100)}
 .owner-status.approved{background:#ecfdf5;color:#047857;border:1px solid #d1fae5}
 .owner-status.rejected{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+.owner-status{font-size:11.5px;padding:4px 10px;line-height:1.5}
+.owner-head-text .meta{font-size:12px;color:var(--text-2);line-height:1.7}
 .admin-pending-summary{background:linear-gradient(135deg,var(--accent-50),var(--surface));border:1px solid var(--accent-100);border-radius:14px;padding:12px 14px;margin-bottom:12px}
 .admin-pending-summary b{color:var(--accent-700)}
 .biz-manage-row.is-pending{border-color:var(--accent-400);background:linear-gradient(135deg,var(--surface),var(--accent-50))}
@@ -8940,6 +9007,148 @@ updateStats();
 .adm-diff-title{font-weight:800;color:var(--accent-700);margin-bottom:2px}
 .adm-img{max-width:100%;max-height:220px;border-radius:10px;border:1px solid var(--border);object-fit:contain;background:#fff}
 .adm-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+
+/* ===== پولیش کارت نتیجه ===== */
+/* ۱) هایلایت ملایم‌تر */
+.business h3 mark,
+.biz-accordion mark,
+.biz-acc-main mark{
+  background:rgba(245,158,11,.22)!important;
+  color:inherit!important;
+  padding:0 3px;
+  border-radius:5px;
+}
+
+/* ۲) حذف تکرار نام/آواتار: داخل کارت بازشده فقط آواتار و نشان‌ها بمانند */
+.biz-accordion[open]>summary{background:var(--primary-50)}
+.biz-accordion .business-head-text h3{font-size:15px;margin-bottom:4px}
+
+/* ۳) دکمه‌ی ۱۲۴ فرعی‌تر و کوچک‌تر */
+.business-top-actions{grid-template-columns:2.2fr 1fr!important}
+.business-top-actions .emergency124{
+  font-size:12px;font-weight:700;opacity:.9;
+  background:transparent!important;border:1.5px solid #fecaca!important
+}
+
+/* ۴) آیکون‌ها: بزرگ‌تر، مرتب‌تر، با فاصله‌ی راحت‌تر */
+.business-actions{grid-template-columns:repeat(5,1fr)!important;gap:8px!important}
+.business-actions .action-btn{min-height:46px;border-radius:12px}
+
+/* ۵) نوار کناری رنگی قدیمی داخل آکاردئون لازم نیست */
+.biz-accordion .business::before{display:none}
+
+/* ۶) کارت اطلاعات: فاصله و خوانایی بهتر */
+.biz-accordion .business-info{padding:12px 14px;gap:10px;font-size:13.5px}
+.biz-accordion .business-info .row{align-items:center}
+
+/* ۷) دکمه‌ی استعلام قیمت در سرتیتر: بدون شکستن خط */
+.biz-quick-quote{white-space:nowrap}
+.biz-acc-summary{gap:6px}
+.biz-accordion>summary:active{background:var(--muted)}
+
+/* ۸) حالت شب: کنتراست نشان اورژانسی */
+[data-theme="dark"] .emergency124{color:#fca5a5!important;border-color:rgba(220,38,38,.4)!important}
+/* فاصله بین بخش‌های داخل کارت */
+.biz-accordion .business-about{margin-top:12px;padding:10px 14px;font-size:13px}
+.biz-accordion .business-cta{margin-top:14px}
+.biz-accordion .business-head{margin-bottom:14px}
+
+/* ردیف امتیاز: آرام‌تر */
+.biz-accordion .rating-row{
+  margin-top:12px;padding:10px 12px;
+  background:var(--muted);border-color:var(--border);
+}
+.biz-accordion .rating-row:hover{background:var(--accent-50)}
+.biz-accordion .rating-row .rating-cta{
+  background:var(--primary-500);font-size:11px;padding:4px 11px
+}
+
+/* آیکون آدرس/تلفن/مالک هم‌تراز */
+.biz-accordion .business-info .row{gap:10px;line-height:1.6}
+
+/* هم‌ترازی نام و نشان‌ها با آواتار */
+.biz-accordion .business-head{align-items:center}
+.biz-accordion .business-head-text{padding-top:0;display:flex;flex-direction:column;justify-content:center}
+.biz-accordion .business-head-text h3{margin:0 0 6px}
+.biz-accordion .business-badges{margin-bottom:0!important}
+/* نوار رنگی سمت راست هر آکاردئون */
+.biz-accordion{--c:var(--primary-500);--c-soft:rgba(20,184,166,.10);border-right:4px solid var(--c)}
+.biz-accordion:nth-of-type(3n+2){--c:#0284c7;--c-soft:rgba(2,132,199,.10)}
+.biz-accordion:nth-of-type(3n){--c:#d97706;--c-soft:rgba(217,119,6,.12)}
+.biz-accordion[open]{box-shadow:0 8px 24pFx rgba(15,23,42,.08)}
+
+/* دکمهٔ تلفن: پر با رنگ کارت */
+.biz-accordion .biz-quick-call{background:var(--c)}
+
+/* دکمهٔ استعلام قیمت: ملایم با رنگ کارت */
+.biz-accordion .biz-quick-quote{
+  background:var(--c-soft);
+  color:var(--c);
+  border-color:var(--c);
+}
+
+/* هدر باز شده هم با رنگ کارت هماهنگ شود */
+.biz-accordion[open]>summary{background:var(--c-soft)}
+
+/* فیلترها: جمع‌وجورتر */
+.filter-row{gap:6px;margin-bottom:12px}
+.filter-pill{padding:6px 11px;font-size:12px;border-width:1px}
+.result-header{margin-bottom:12px;padding-bottom:10px}
+
+/* علامت تیک روی فیلتر فعال */
+.filter-pill.active::before{
+  content:"✓";font-weight:900;font-size:11px;
+  width:16px;height:16px;border-radius:50%;
+  background:rgba(255,255,255,.3);
+  display:inline-flex;align-items:center;justify-content:center;
+}
+
+/* دکمه‌های غیرفعال: کمی کم‌رنگ‌تر تا تفاوت واضح شود */
+.filter-pill:not(.active){
+  background:transparent;
+  color:var(--text-3);
+  border-style:dashed;
+}
+.filter-pill:not(.active):hover{
+  background:var(--primary-50);
+  color:var(--primary-700);
+  border-style:solid;
+}
+
+/* دکمه فعال: کمی بزرگ‌تر و پررنگ‌تر */
+.filter-pill.active{
+  font-weight:800;
+  transform:translateY(-1px);
+}
+
+/* حالت فوکوس کیبورد */
+.filter-pill:focus-visible{
+  outline:3px solid var(--primary-400);
+  outline-offset:2px;
+}
+/* امتیاز عددی کنار عنوان آکاردئون */
+.biz-acc-title{
+  display:flex;align-items:center;gap:8px;min-width:0;
+}
+.biz-acc-title strong{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
+}
+.biz-acc-rating{
+  display:inline-flex;align-items:center;gap:3px;flex-shrink:0;
+  font-size:11px;font-weight:800;
+  color:var(--accent-700);
+  background:var(--accent-50);
+  border:1px solid var(--accent-100);
+  border-radius:100px;padding:2px 8px;
+  white-space:nowrap;
+}
+.biz-acc-rating small{
+  font-size:10px;font-weight:600;color:var(--text-3);
+}
+.biz-acc-rating.no-rate{
+  color:var(--text-3);background:var(--muted);
+  border-color:var(--border);font-weight:600;
+}
 </style>
 <script>
 /* ===== بازنویسی نهایی: پنل ادمین آکاردئونی + بررسی از طریق سرور + بارگذاری مجدد بعد از ورود/خروج ===== */
@@ -9393,6 +9602,22 @@ updateStats();
 
   /* ---------- مودال ورود/ثبت‌نام ---------- */
   var mode = "login";
+  var ACAP = { id:null, token:null };
+  function acapOn(){ return !!window.NOMAX_TURNSTILE_KEY && window.NOMAX_TURNSTILE_KEY.indexOf("SITE_KEY")!==0 && !!window.turnstile; }
+  function acapRender(){
+    if(!acapOn()) return;
+    var box = $("authCaptcha"); if(!box) return;
+    if(ACAP.id !== null){ try{ window.turnstile.reset(ACAP.id); }catch(e){} ACAP.token = null; return; }
+    try{
+      ACAP.id = window.turnstile.render(box, {
+        sitekey: window.NOMAX_TURNSTILE_KEY, theme:"auto", language:"fa",
+        callback:function(t){ ACAP.token = t; },
+        "expired-callback":function(){ ACAP.token = null; },
+        "error-callback":function(){ ACAP.token = null; }
+      });
+    }catch(e){ console.warn("turnstile", e); }
+  }
+  function acapReset(){ ACAP.token = null; if(ACAP.id !== null){ try{ window.turnstile.reset(ACAP.id); }catch(e){} } }
   function buildModal(){
     if($("authModal")) return;
     var el = document.createElement("div");
@@ -9420,6 +9645,7 @@ updateStats();
         '<button type="button" class="btn-submit" id="authSubmit" style="width:100%">ورود</button>' +
         '<button type="button" id="authForgot" style="display:block;width:100%;margin-top:10px;background:none;border:0;color:var(--primary-700);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:underline">رمز عبور را فراموش کرده‌اید؟</button>' +
       '</div>' +
+      '<div id="authCaptcha" style="display:flex;justify-content:center;margin-top:10px"></div>' +
       '<div id="authMsg" style="margin-top:10px;font-size:12.5px;line-height:1.9;color:var(--danger)"></div>' +
     '</div>';
     document.body.appendChild(el);
@@ -9472,6 +9698,7 @@ updateStats();
     var gg = $("authGoogle"); if(gg) gg.style.display = "none";
     $("authModal").classList.add("show");
     document.body.style.overflow = "hidden";
+    (function waitCap(n){ if(window.turnstile || n>40){ acapRender(); } else setTimeout(function(){ waitCap(n+1); },250); })(0);
     setTimeout(function(){ var e = $("authEmail"); if(e && !(state.user && admin)) e.focus(); }, 120);
   }
 
@@ -9499,7 +9726,9 @@ updateStats();
         if(name.length < 2){ msg.textContent = "نام و نام خانوادگی را وارد کنید."; return; }
         if(/[A-Za-z]/.test(name)){ msg.textContent = "نام را فارسی بنویسید؛ صفحه کلید خود را تغییر دهید."; return; }
         if(!$("authTerms").checked){ msg.textContent = "برای ثبت‌نام، پذیرش قوانین الزامی است."; return; }
-        var res = await sb.auth.signUp({ email: email, password: pass, options:{ data:{ full_name: name }, emailRedirectTo: redirectUrl() } });
+        if(acapOn() && !ACAP.token){ msg.textContent = "لطفاً چند ثانیه صبر کنید تا تأیید «ربات نبودن» کامل شود."; return; }
+        var res = await sb.auth.signUp({ email: email, password: pass, options:{ data:{ full_name: name }, emailRedirectTo: redirectUrl(), captchaToken: ACAP.token || undefined } });
+        acapReset();
         if(res.error) throw res.error;
         if(res.data && res.data.user && Array.isArray(res.data.user.identities) && res.data.user.identities.length===0){
           msg.style.color = "var(--danger)"; msg.textContent = "کاربر دیگری با این ایمیل ثبت‌نام کرده است. وارد شوید یا از «فراموشی رمز» استفاده کنید."; return;
@@ -9728,7 +9957,7 @@ updateStats();
     var bizName=b?esc(b.name):"کسب‌وکار", bizLoc=b?esc(b.address||"مکان ثبت نشده"):"مکان ثبت نشده";
     return '<details class="nx-acc nx-offer-card'+(o.selected?' offer-chosen':'')+'" data-k="'+esc(k)+'"><summary class="nx-offer-summary" data-biz-detail="'+esc(String(o.business_id))+'">'+
       (rank?'<span class="nx-rank">'+toFa(rank)+'</span>':'')+'<span class="nx-offer-main"><strong>🏪 '+bizName+'</strong><small>📍 '+bizLoc+'</small></span>'+
-      (o.price?'<span class="tag-mini nx-offer-price">💰 '+toFa(esc(o.price))+'</span>':'')+
+      (o.price?'<span class="tag-mini nx-offer-price">💰 '+esc(o.price)+'</span>':'')+
       '<span class="nx-offer-actions">'+callA+mapA+'</span>'+
       (o.selected?'<span class="st-pill selected">✓ انتخاب شما</span>':'')+'<span class="nx-offer-open">›</span></summary><div class="nx-body">'+
       '<div style="font-size:12.5px;color:var(--text-2)">'+(b&&b.owner?'👤 مالک: '+esc(b.owner)+' ':'')+(rating.count?'· ⭐ '+toFa(rating.avg.toFixed(1)):'')+(b&&b.verified?' · ✓ تأیید شده':'')+'</div>'+
@@ -9896,7 +10125,7 @@ updateStats();
     var where = geo ? '<a class="nx-chip" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+geo.lat+','+geo.lng+'">📍 '+(dist!=null ? toFa(dist.toFixed(1))+' کیلومتر تا شما' : 'موقعیت روی نقشه')+'</a>'
               : (q.area ? '<span class="nx-chip">📍 '+esc(q.area)+'</span>' : '');
     return '<div class="nx-oc-top"><div class="nx-oc-title">'+esc(q.service)+'</div><span class="nx-oc-time">'+getTimeAgo(new Date(q.created_at).getTime())+'</span></div>'+
-      '<div class="nx-oc-meta">'+where+'</div>'+
+      '<div class="nx-oc-meta"><span class="nx-chip">🏪 '+esc(q.business_name||"")+'</span>'+where+'</div>'+
       (q.description ? '<div class="nx-oc-desc">'+esc(q.description)+'</div>' : '');
   }
   async function loadOwnerMarket(){
@@ -9915,15 +10144,12 @@ updateStats();
     var box=$("myRequests"); if(!box)return;
     if(!ownerReqs.length){box.innerHTML='<div class="empty" style="padding:24px"><div style="font-size:28px">📭</div><div class="title">درخواست مرتبطی نیست</div><div class="desc">وقتی مشتری چیزی مرتبط با دسته کسب‌وکار شما بخواهد، اینجا می‌بینید.</div></div>';return;}
     var act=[],arch=[],WEEK=7*86400000; ownerReqs.forEach(function(q,i){var o=q.my_offer;if(q.status==="open"&&!o&&!declinedOf(q))act.push({q:q,i:i});else if(Date.now()-new Date(q.created_at).getTime()<WEEK)arch.push({q:q,i:i});}); arch.sort(function(a,b){return new Date(b.q.created_at)-new Date(a.q.created_at)});arch=arch.slice(0,15);
-    var chev='<svg class="nx-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-left:6px;transition:transform .2s;opacity:.5"><path d="m9 6 6 6-6 6"/></svg>';
     var h='<div class="nx-sec">⏳ استعلام‌های جدید <b>'+toFa(act.length)+'</b></div>'; if(!act.length)h+='<div class="nx-empty-s">استعلام جدیدی برای پاسخ وجود ندارد.</div>';
-    act.forEach(function(x){var q=x.q,i=x.i,phone=String(q.phone||q.user_phone||""),masked=phone?phone.replace(/(\d{3})(\d{3,})(\d{2})$/,'$1•••$3'):'شماره مخفی';h+='<details class="nx-owner-req" data-owner-req="'+esc(q.id)+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+chev+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">استعلام‌کننده: '+esc(q.requester_name||q.user_name||q.customer_name||"کاربر نومکس")+'</div><div class="nx-summary-contact">'+esc(q.area?("مکان: "+q.area):"مکان ثبت نشده")+' · '+(phone?("تماس: "+esc(masked)):"تماس: بعد از تأیید")+'</div></div><div class="nx-summary-actions"><button type="button" class="nx-mini-btn ok" data-send="'+i+'">✓ تأیید</button><button type="button" class="nx-mini-btn no" data-decline="'+i+'">رد</button></div></summary><div class="nx-owner-body"><div class="nx-owner-detail-grid"><div class="nx-owner-detail"><b>کالا / خدمت</b>'+esc(q.service||"—")+'</div><div class="nx-owner-detail"><b>مکان</b>'+esc(q.area||"—")+'</div><div class="nx-owner-detail"><b>توضیحات</b>'+esc(q.description||"—")+'</div><div class="nx-owner-detail"><b>زمان ثبت</b>'+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div>'+(isLate(q)?'<div class="nx-warn" style="margin-top:9px;display:inline-block">⚠️ بیش از ۲۴ ساعت بی‌پاسخ مانده؛ امتیاز منفی ثبت می‌شود.</div>':'')+'<div class="nx-oc-form" style="margin-top:10px"><div class="nx-row2"><input data-f="price" data-i="'+i+'" maxlength="40" placeholder="💰 قیمت"><input data-f="brand" data-i="'+i+'" maxlength="40" placeholder="🏷 برند"></div><div class="nx-notebox"><textarea data-f="note" data-i="'+i+'" rows="2" maxlength="120" placeholder="توضیح کوتاه (گارانتی، موجودی، تحویل…)"></textarea><span class="nx-cnt">۰ / ۱۲۰</span></div></div></div></details>';});
+    act.forEach(function(x){var q=x.q,i=x.i,phone=String(q.phone||q.user_phone||""),masked=phone?phone.replace(/(\d{3})(\d{3,})(\d{2})$/,'$1•••$3'):'شماره مخفی';h+='<details class="nx-owner-req" data-owner-req="'+esc(q.id)+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">'+esc(q.user_name||q.customer_name||"کاربر نومکس")+'</div><div class="nx-summary-contact">'+esc(q.area||"مکان ثبت نشده")+' · '+esc(masked)+'</div></div><div class="nx-summary-actions"><button type="button" class="nx-mini-btn ok" data-send="'+i+'">✓ تأیید</button><button type="button" class="nx-mini-btn no" data-decline="'+i+'">رد</button></div></summary><div class="nx-owner-body"><div class="nx-owner-detail-grid"><div class="nx-owner-detail"><b>کالا / خدمت</b>'+esc(q.service||"—")+'</div><div class="nx-owner-detail"><b>مکان</b>'+esc(q.area||"—")+'</div><div class="nx-owner-detail"><b>توضیحات</b>'+esc(q.description||"—")+'</div><div class="nx-owner-detail"><b>زمان ثبت</b>'+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div>'+(isLate(q)?'<div class="nx-warn" style="margin-top:9px;display:inline-block">⚠️ بیش از ۲۴ ساعت بی‌پاسخ مانده؛ امتیاز منفی ثبت می‌شود.</div>':'')+'<div class="nx-oc-form" style="margin-top:10px"><div class="nx-row2"><input data-f="price" data-i="'+i+'" maxlength="40" placeholder="💰 قیمت"><input data-f="brand" data-i="'+i+'" maxlength="40" placeholder="🏷 برند"></div><div class="nx-notebox"><textarea data-f="note" data-i="'+i+'" rows="2" maxlength="120" placeholder="توضیح کوتاه (گارانتی، موجودی، تحویل…)"></textarea><span class="nx-cnt">۰ / ۱۲۰</span></div></div></div></details>';});
     h+='<button type="button" class="np-linkbtn" id="archToggle">🗄 '+(archOpen?'پنهان کردن بایگانی':'بایگانی ('+toFa(arch.length)+')')+'</button>';
-    if(archOpen){arch.forEach(function(x){var q=x.q,o=q.my_offer,d=declinedOf(q),ok=!!(o&&q.status==="selected"&&q.selected_mine),no=!!d,st=o?(q.status==="selected"?(q.selected_mine?'🎉 پیشنهاد شما انتخاب شد':'مشتری پیشنهاد دیگری را انتخاب کرد'):'پیشنهاد ارسال شد'):(d?(d==='timeout'?'بدون پاسخ (۲۴ ساعت)':'رد شد'):'بسته شده');h+='<details class="nx-owner-req '+(ok?'archived-ok ':'')+(no?'archived-no':'')+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+chev+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">استعلام‌کننده: '+esc(q.requester_name||q.user_name||q.customer_name||"کاربر نومکس")+'</div><div class="nx-summary-contact">'+esc(q.area?("مکان: "+q.area):"مکان ثبت نشده")+'</div></div><span class="st-pill '+(ok?'selected':'')+'">'+esc(st)+'</span></summary><div class="nx-owner-body">'+ocHead(q)+(o?'<div class="nx-reply"><div class="nx-reply-h">پاسخ شما</div><div class="nx-reply-r"><span>💰 '+toFa(esc(o.price))+'</span>'+(o.brand?'<span>🏷 '+esc(o.brand)+'</span>':'')+'</div>'+(o.note?'<div class="nx-note">'+esc(o.note)+'</div>':'')+'</div>':'')+'<div class="nx-oc-state">🔒 این مورد در بایگانی است و قابل ویرایش نیست.</div></div></details>';});}
-    box.innerHTML=h; box.querySelectorAll('input[data-f="price"],input[data-f="brand"]').forEach(function(inp){inp.addEventListener('input',function(){this.value=this.value.replace(/[0-9]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'[d];});});});
-    box.querySelectorAll('textarea[data-f="note"]').forEach(limitLines); var at=$("archToggle");if(at)at.onclick=function(){archOpen=!archOpen;renderOwner()};
-    box.querySelectorAll('[data-send]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();
-        var i=+btn.getAttribute('data-send'),q=ownerReqs[i],price=box.querySelector('[data-f="price"][data-i="'+i+'"]').value.trim().replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);}),brand=box.querySelector('[data-f="brand"][data-i="'+i+'"]').value.trim(),note=box.querySelector('[data-f="note"][data-i="'+i+'"]').value.trim();if(!price){showToast('قیمت را وارد کنید.','error');return}if(!await nomaxConfirm('⚠️ با تأیید، پیشنهاد برای مشتری ارسال و استعلام بایگانی می‌شود؛ قیمت بعداً قابل ویرایش نیست. ادامه می‌دهید؟'))return;btn.disabled=true;var r=await sb.rpc('submit_offer',{p_request:q.id,p_business:q.business_id,p_price:price,p_brand:brand,p_note:note.slice(0,120)});btn.disabled=false;if(r.error){showToast('ثبت پیشنهاد انجام نشد؛ دوباره تلاش کنید.','error');return}if(window.nomaxNotify)window.nomaxNotify({action:'new_offer',request_id:q.id,business_id:q.business_id});showToast('✓ پیشنهاد ثبت و بایگانی شد.','success');loadOwnerRequests()};});
+    if(archOpen){arch.forEach(function(x){var q=x.q,o=q.my_offer,d=declinedOf(q),ok=!!(o&&q.status==="selected"&&q.selected_mine),no=!!d,st=o?(q.status==="selected"?(q.selected_mine?'🎉 پیشنهاد شما انتخاب شد':'مشتری پیشنهاد دیگری را انتخاب کرد'):'پیشنهاد ارسال شد'):(d?(d==='timeout'?'بدون پاسخ (۲۴ ساعت)':'رد شد'):'بسته شده');h+='<details class="nx-owner-req '+(ok?'archived-ok ':'')+(no?'archived-no':'')+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">'+esc(q.user_name||q.customer_name||"کاربر نومکس")+'</div><div class="nx-summary-contact">'+esc(q.area||"مکان ثبت نشده")+'</div></div><span class="st-pill '+(ok?'selected':'')+'">'+esc(st)+'</span></summary><div class="nx-owner-body">'+ocHead(q)+(o?'<div class="nx-reply"><div class="nx-reply-h">پاسخ شما</div><div class="nx-reply-r"><span>💰 '+esc(o.price)+'</span>'+(o.brand?'<span>🏷 '+esc(o.brand)+'</span>':'')+'</div>'+(o.note?'<div class="nx-note">'+esc(o.note)+'</div>':'')+'</div>':'')+'<div class="nx-oc-state">🔒 این مورد در بایگانی است و قابل ویرایش نیست.</div></div></details>';});}
+    box.innerHTML=h; box.querySelectorAll('textarea[data-f="note"]').forEach(limitLines); var at=$("archToggle");if(at)at.onclick=function(){archOpen=!archOpen;renderOwner()};
+    box.querySelectorAll('[data-send]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var i=+btn.getAttribute('data-send'),q=ownerReqs[i],price=box.querySelector('[data-f="price"][data-i="'+i+'"]').value.trim(),brand=box.querySelector('[data-f="brand"][data-i="'+i+'"]').value.trim(),note=box.querySelector('[data-f="note"][data-i="'+i+'"]').value.trim();if(!price){showToast('قیمت را وارد کنید.','error');return}if(!await nomaxConfirm('⚠️ با تأیید، پیشنهاد برای مشتری ارسال و استعلام بایگانی می‌شود؛ قیمت بعداً قابل ویرایش نیست. ادامه می‌دهید؟'))return;btn.disabled=true;var r=await sb.rpc('submit_offer',{p_request:q.id,p_business:q.business_id,p_price:price,p_brand:brand,p_note:note.slice(0,120)});btn.disabled=false;if(r.error){showToast('ثبت پیشنهاد انجام نشد؛ دوباره تلاش کنید.','error');return}if(window.nomaxNotify)window.nomaxNotify({action:'new_offer',request_id:q.id,business_id:q.business_id});showToast('✓ پیشنهاد ثبت و بایگانی شد.','success');loadOwnerRequests()};});
     box.querySelectorAll('[data-decline]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var q=ownerReqs[+btn.getAttribute('data-decline')];if(!await nomaxConfirm('⚠️ این استعلام رد و بایگانی می‌شود و دیگر قابل پاسخ نیست. ادامه می‌دهید؟',{danger:true}))return;var r=await sb.rpc('decline_request',{p_request:String(q.id),p_business:String(q.business_id)});if(r.error){showToast('رد استعلام انجام نشد؛ RPC مربوطه در بک‌اند موجود نیست.','error');return}showToast('استعلام رد و بایگانی شد.','success');loadOwnerRequests();if(window.nomaxLoadPenalties)window.nomaxLoadPenalties()};});
   }
 
@@ -10211,8 +10437,9 @@ updateStats();
 <script id="nomax-config">
 /* ===== تنظیمات اعلان — این دو مقدار را پر کن ===== */
 window.NOMAX_CFG = {
-  baleBot: "YOUR_BALE_BOT_USERNAME",        // نام کاربری بات بله، بدون @
-  vapidPublic: "YOUR_VAPID_PUBLIC_KEY"      // کلید عمومی VAPID
+  baleBot: "YOUR_BALE_BOT_USERNAME",
+  vapidPublic: "YOUR_VAPID_PUBLIC_KEY",
+  turnstileSiteKey: "0x4AAAAAAFRJ7OsLX_7NE_Pg"
 };
 </script>
 <script>
@@ -10569,7 +10796,26 @@ window.NOMAX_CFG = {
       var tel=card.querySelector('a[href^="tel:"]');
       var details=document.createElement("details");details.className="biz-accordion";
       var sum=document.createElement("summary");sum.className="biz-acc-summary";
-      var main=document.createElement("span");main.className="biz-acc-main";main.innerHTML='<strong>'+esc(title)+'</strong><span>📍 '+esc(addr)+'</span>';
+      var main=document.createElement("span");main.className="biz-acc-main";
+var bizId = null;
+var shareBtn = card.querySelector('button[onclick^="shareBusiness("]');
+if(shareBtn){
+  var mId = /shareBusiness\(([^,]+),/.exec(shareBtn.getAttribute("onclick")||"");
+  if(mId) bizId = mId[1].replace(/['"\s]/g,"");
+}
+var ratingHtml = '';
+if(bizId && typeof getBusinessRating === "function"){
+  var rt = getBusinessRating(bizId);
+  if(!rt.count && !isNaN(Number(bizId))) rt = getBusinessRating(Number(bizId));
+  if(rt.count > 0){
+    ratingHtml = '<span class="biz-acc-rating">⭐ ' + toFa(rt.avg.toFixed(1)) +
+      ' <small>از ۵</small></span>';
+  } else {
+    ratingHtml = '<span class="biz-acc-rating no-rate">بدون امتیاز</span>';
+  }
+}
+main.innerHTML = '<span class="biz-acc-title"><strong>'+esc(title)+'</strong>'+ratingHtml+'</span>' +
+  '<span>📍 '+esc(addr)+'</span>';
       sum.appendChild(main);
       if(tel){var c=document.createElement("a");c.className="biz-quick-call";c.href=tel.getAttribute("href");c.textContent="☎";c.title="تماس سریع";c.addEventListener("click",function(e){e.stopPropagation()});sum.appendChild(c);}
       var q=document.createElement("button");q.type="button";q.className="biz-quick-quote";q.textContent="استعلام قیمت";q.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(window.openRequestModal)window.openRequestModal(title);});sum.appendChild(q);
@@ -10709,35 +10955,85 @@ window.NOMAX_CFG = {
       }
     };
   })();
-/* ---- منوی همبرگری ---- */
+/* ---- منوی اصلی نومکس: UI/UX only ---- */
   var hb=$("headerMenuToggle");
   if(hb){
-    var m=document.createElement("div"); m.id="nxSiteMenu"; m.setAttribute("role","menu");
-    m.innerHTML='<button data-a="cats">📂 دسته‌بندی‌ها</button><button data-a="request">💰 استعلام قیمت</button><button data-a="register">🏪 ثبت کسب‌وکار</button><hr><button data-a="about">ℹ️ درباره نومکس</button><button data-a="help">❓ راهنمای ثبت کسب‌وکار</button><button data-a="terms">📜 قوانین و حریم خصوصی</button><button data-a="theme">🌓 حالت شب / روز</button>';
+    var m=document.createElement("div");
+    m.id="nxSiteMenu"; m.setAttribute("role","menu");
+    m.innerHTML=''
+      +'<div class="nx-menu-head"><div><strong>منوی نومکس</strong><span>دسترسی سریع به بخش‌های پلتفرم</span></div><button type="button" class="nx-menu-close" aria-label="بستن">×</button></div>'
+      +'<div class="nx-menu-section">'
+      +'<button data-a="businesses"><span class="nx-mi">🏪</span><span><b>کسب‌وکارها</b><small>مشاهده و جستجوی کسب‌وکارهای شهر</small></span><i>‹</i></button>'
+      +'<button data-a="request"><span class="nx-mi">💰</span><span><b>استعلام قیمت</b><small>برای کالا یا خدمت موردنیازتان پیشنهاد بگیرید</small></span><i>‹</i></button>'
+      +'<button data-a="register"><span class="nx-mi">➕</span><span><b>ثبت کسب‌وکار</b><small>کسب‌وکار خود را در نومکس معرفی کنید</small></span><i>‹</i></button>'
+      +'<button data-a="panel"><span class="nx-mi">👤</span><span><b>پنل من</b><small>درخواست‌ها، پیشنهادها و کسب‌وکارهای من</small></span><i>‹</i></button>'
+      +'</div>'
+      +'<div class="nx-menu-divider"></div>'
+      +'<div class="nx-menu-section nx-menu-secondary">'
+      +'<button data-a="about"><span class="nx-mi">ℹ️</span><span><b>درباره نومکس</b><small>نومکس چیست و چگونه کار می‌کند؟</small></span><i>‹</i></button>'
+      +'<button data-a="help"><span class="nx-mi">❓</span><span><b>راهنما و سوالات متداول</b><small>راهنمای استفاده از خدمات نومکس</small></span><i>‹</i></button>'
+      +'<button data-a="terms"><span class="nx-mi">📜</span><span><b>قوانین و حریم خصوصی</b><small>شرایط استفاده و حفاظت از اطلاعات</small></span><i>‹</i></button>'
+      +'<button data-a="contact"><span class="nx-mi">☎️</span><span><b>تماس با ما</b><small>پشتیبانی و ارتباط با نومکس</small></span><i>‹</i></button>'
+      +'<button class="nx-menu-disabled" data-a="special" aria-disabled="true"><span class="nx-mi">⭐</span><span><b>کاربران ویژه</b><small>این بخش به‌زودی فعال می‌شود</small></span><em>به‌زودی</em></button>'
+      +'<button data-a="cats"><span class="nx-mi">📂</span><span><b>دسته‌بندی‌ها</b><small>مرور دسته‌ها و زیر‌دسته‌های خدمات</small></span><i>‹</i></button>'
+      +'</div>'
+      +'<div class="nx-menu-foot">نومکس · کسب‌وکارها و خدمات شهر، یک‌جا</div>';
     document.body.appendChild(m);
+
     var ab2=document.createElement("div"); ab2.id="nxAbout";
-    ab2.innerHTML='<div class="nx-sheet"><h3>ℹ️ درباره نومکس</h3><p>نومکس راهنمای ساده‌ی پیدا کردن کسب‌وکارها و خدمات شهر بهبهان است؛ جستجو کنید، با مالک مستقیم تماس بگیرید و برای کالا یا خدمت موردنیازتان استعلام قیمت بگیرید.</p><h4>استعلام قیمت چطور کار می‌کند؟</h4><p>درخواست شما به کسب‌وکارهای مرتبط نمایش داده می‌شود. آن‌ها قیمت و توضیحات را ثبت می‌کنند و شما بهترین پیشنهاد را انتخاب می‌کنید. شماره‌ی شما نمایش داده نمی‌شود.</p><h4>صاحب کسب‌وکار هستید؟</h4><p>کسب‌وکارتان را ثبت کنید تا پس از تأیید مدیر، در نتایج دیده شود و درخواست‌های مشتریان را دریافت کنید.</p><h4>ارتباط با ما</h4><p>راه‌های ارتباطی به‌زودی اضافه می‌شود.</p><button type="button" class="nx-btn-p" style="width:100%;margin-top:16px" id="nxAboutClose">بستن</button></div>';
+    ab2.innerHTML='<div class="nx-sheet"><button type="button" class="nx-sheet-close" aria-label="بستن">×</button><div class="nx-sheet-icon">ℹ️</div><h3>درباره نومکس</h3><p>نومکس یک پلتفرم محلی برای پیدا کردن کسب‌وکارها و خدمات، ارتباط مستقیم با ارائه‌دهندگان و دریافت استعلام قیمت است.</p><div class="nx-info-box"><b>چطور کار می‌کند؟</b><p>جستجو کنید، کسب‌وکار موردنظر را ببینید و در صورت نیاز برای کالا یا خدمت خود استعلام قیمت ثبت کنید.</p></div><div class="nx-info-box"><b>صاحب کسب‌وکار هستید؟</b><p>کسب‌وکارتان را ثبت کنید تا پس از تأیید، در نتایج نومکس دیده شود.</p></div><button type="button" class="nx-btn-p" style="width:100%;margin-top:12px" id="nxAboutClose">بستن</button></div>';
     document.body.appendChild(ab2);
-    ab2.addEventListener("click",function(e){ if(e.target===ab2||e.target.id==="nxAboutClose") ab2.classList.remove("show"); });
-    function closeM(){ m.classList.remove("open"); hb.setAttribute("aria-expanded","false"); }
+
+    var contact=document.createElement("div"); contact.id="nxContact";
+    contact.innerHTML='<div class="nx-sheet"><button type="button" class="nx-sheet-close" aria-label="بستن">×</button><div class="nx-sheet-icon">☎️</div><h3>تماس با ما</h3><p>برای پشتیبانی، گزارش مشکل یا پیشنهاد درباره نومکس از مسیرهای ارتباطی اعلام‌شده در همین سامانه استفاده کنید.</p><div class="nx-info-box"><b>پشتیبانی نومکس</b><p>اطلاعات تماس رسمی در این بخش قرار می‌گیرد.</p></div><div class="nx-info-box nx-muted-box">راه‌های ارتباطی مستقیم در حال تکمیل است.</div><button type="button" class="nx-btn-p" style="width:100%;margin-top:12px" id="nxContactClose">بستن</button></div>';
+    document.body.appendChild(contact);
+
+    var st=document.createElement("style");
+    st.textContent=''
+        +'#categoryMenuPanel:not(.open){display:none!important}'
+      +'#nxSiteMenu{position:fixed;z-index:10050;width:min(390px,calc(100vw - 20px));max-height:min(78vh,680px);overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:20px;box-shadow:0 18px 55px rgba(15,23,42,.18);padding:0;opacity:0;visibility:hidden;transform:translateY(-7px) scale(.985);transform-origin:top right;transition:opacity .18s ease,transform .18s ease,visibility .18s ease;direction:rtl}'
+      +'#nxSiteMenu.open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}'
+      +'.nx-menu-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 16px 13px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--primary-50),var(--surface))}'
+      +'.nx-menu-head strong{display:block;font-size:16px;font-weight:900}.nx-menu-head span{display:block;margin-top:3px;font-size:10.5px;color:var(--text-3)}'
+      +'.nx-menu-close,.nx-sheet-close{width:34px;height:34px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text-2);font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}'
+      +'.nx-menu-section{padding:7px}.nx-menu-section button{width:100%;border:0;background:transparent;color:var(--text);padding:11px 10px;border-radius:13px;display:flex;align-items:center;gap:10px;text-align:right;font:inherit;cursor:pointer;transition:background .15s ease,transform .15s ease}.nx-menu-section button:hover{background:var(--primary-50)}.nx-menu-section button:active{transform:scale(.99)}'
+      +'.nx-mi{width:36px;height:36px;flex:0 0 36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--muted);font-size:18px}.nx-menu-section button>span:nth-child(2){min-width:0;flex:1}.nx-menu-section b{display:block;font-size:13px;font-weight:850}.nx-menu-section small{display:block;margin-top:3px;color:var(--text-3);font-size:10.5px;line-height:1.5}.nx-menu-section i{font-style:normal;color:var(--text-3);font-size:22px;line-height:1}.nx-menu-secondary button{padding-block:9px}'
+      +'.nx-menu-divider{height:1px;background:var(--border);margin:1px 14px}.nx-menu-disabled{cursor:not-allowed!important;opacity:.48!important;filter:grayscale(1)}.nx-menu-disabled:hover{background:transparent!important}.nx-menu-disabled em{font-style:normal;font-size:9.5px;font-weight:800;color:var(--text-3);background:var(--muted);border:1px solid var(--border);padding:4px 7px;border-radius:999px;white-space:nowrap}.nx-menu-foot{text-align:center;padding:8px 12px 13px;color:var(--text-3);font-size:9.5px}'
+      +'#nxAbout,#nxContact{position:fixed;inset:0;z-index:10060;background:rgba(15,23,42,.42);display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s ease;padding:12px}#nxAbout.show,#nxContact.show{opacity:1;visibility:visible}'
+      +'.nx-sheet{position:relative;width:min(560px,100%);max-height:82vh;overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:22px 22px 16px 16px;padding:22px;box-shadow:0 -12px 50px rgba(15,23,42,.2);direction:rtl}.nx-sheet-close{position:absolute;left:14px;top:14px}.nx-sheet-icon{width:46px;height:46px;border-radius:15px;background:var(--primary-50);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px}.nx-sheet h3{margin:0 0 10px;font-size:19px}.nx-sheet p{font-size:13px;line-height:2;color:var(--text-2);margin:7px 0}.nx-info-box{margin-top:11px;padding:12px 13px;border:1px solid var(--border);border-radius:14px;background:var(--muted)}.nx-info-box b{font-size:12.5px}.nx-muted-box{color:var(--text-3);text-align:center}'
+      +'@media(max-width:520px){#nxSiteMenu{width:calc(100vw - 14px);right:7px!important;max-height:82vh}.nx-menu-head{padding:14px}.nx-menu-section button{padding:10px 8px}.nx-sheet{padding:20px 16px 16px;border-radius:20px 20px 12px 12px}}';
+    document.head.appendChild(st);
+
+    function closeM(){m.classList.remove("open");hb.setAttribute("aria-expanded","false");}
+    function closeSheet(x){if(x)x.classList.remove("show");}
     hb.onclick=function(e){
       e.preventDefault(); e.stopPropagation();
-      var cp=$("categoryMenuPanel"); if(cp) cp.classList.remove("open");
-      if(m.classList.contains("open")){ closeM(); return; }
-      var r=hb.getBoundingClientRect(); m.style.top=(r.bottom+10)+"px"; m.style.right=Math.max(10,window.innerWidth-r.right)+"px"; m.style.left="auto";
+      if(m.classList.contains("open")){closeM();return;}
+      var r=hb.getBoundingClientRect();
+      m.style.top=(r.bottom+9)+"px";
+      m.style.right=Math.max(7,window.innerWidth-r.right)+"px";
+      m.style.left="auto";
       m.classList.add("open"); hb.setAttribute("aria-expanded","true");
     };
-    document.addEventListener("click",function(e){ if(!m.contains(e.target)&&e.target!==hb&&!hb.contains(e.target)) closeM(); });
+    window.addEventListener("resize",function(){if(m.classList.contains("open")){var r=hb.getBoundingClientRect();m.style.top=(r.bottom+9)+"px";m.style.right=Math.max(7,window.innerWidth-r.right)+"px";}});
+    document.addEventListener("click",function(e){if(m.classList.contains("open")&&!m.contains(e.target)&&e.target!==hb&&!hb.contains(e.target))closeM();});
     m.addEventListener("click",function(e){
-      var b=e.target.closest("button"); if(!b) return; var a=b.getAttribute("data-a"); closeM();
-      if(a==="cats"){ if(typeof openCategoryMenu==="function") openCategoryMenu(); }
-      else if(a==="request"){ if(window.openRequestModal) window.openRequestModal(""); }
-      else if(a==="register"){ var r=$("registerButton"); if(r) r.click(); }
-      else if(a==="about") ab2.classList.add("show");
-      else if(a==="help"){ var h=$("registerHelpBtn"); if(h) h.click(); }
-      else if(a==="terms"){ if(window.openTermsModal) window.openTermsModal({buttonText:"بستن"}); }
-      else if(a==="theme"){ var t=$("themeToggle"); if(t) t.click(); }
+      var close=e.target.closest&&e.target.closest(".nx-menu-close"); if(close){closeM();return;}
+      var b=e.target.closest&&e.target.closest("button[data-a]"); if(!b)return;
+      var a=b.getAttribute("data-a"); if(a==="special")return; closeM();
+      if(a==="businesses"){
+        var rc=$("resultsCard"); if(rc){rc.classList.remove("hidden");rc.scrollIntoView({behavior:"smooth",block:"start"});} else showToast("برای مشاهده کسب‌وکارها از جستجوی صفحه اصلی استفاده کنید.","info");
+      }else if(a==="request"){if(window.openRequestModal)window.openRequestModal("");}
+      else if(a==="register"){var r=$("registerButton");if(r)r.click();}
+      else if(a==="panel"){if(window.nomaxPanel)window.nomaxPanel.open("needs");else{var x=$("accountBtn");if(x)x.click();}}
+      else if(a==="about"){ab2.classList.add("show");}
+      else if(a==="help"){var h=$("registerHelpBtn");if(h)h.click();else showToast("راهنمای نومکس در دسترس است.","info");}
+      else if(a==="terms"){if(window.openTermsModal)window.openTermsModal({buttonText:"بستن"});}
+      else if(a==="contact"){contact.classList.add("show");}
+      else if(a==="cats"){if(typeof openCategoryMenu==="function"){openCategoryMenu();}}
     });
+    ab2.addEventListener("click",function(e){if(e.target===ab2||e.target.id==="nxAboutClose"||(e.target.closest&&e.target.closest(".nx-sheet-close")))closeSheet(ab2);});
+    contact.addEventListener("click",function(e){if(e.target===contact||e.target.id==="nxContactClose"||(e.target.closest&&e.target.closest(".nx-sheet-close")))closeSheet(contact);});
   }
 })();
 
@@ -10790,6 +11086,7 @@ window.NOMAX_CFG = {
       /* دریافت شماره */
       '<div id="nxaScPhone" style="display:none">'+
         '<div class="nxa-f"><label>شماره موبایل</label><input id="nxaPhone" type="tel" class="ltr" inputmode="numeric" autocomplete="tel" placeholder="09123456789" maxlength="14"><div class="nxa-hint">یک کد ۶ رقمی برای این شماره پیامک می‌شود.</div></div>'+
+        '<div id="nxaTurnstile" style="margin:8px 0 12px;display:flex;justify-content:center"></div>'+
         '<label class="nxa-chk" id="nxaTermsRow"><input type="checkbox" id="nxaTerms"><span>قوانین و حریم خصوصی نومکس را می‌پذیرم. <a href="#" id="nxaTermsLink" style="color:var(--primary-700);font-weight:700">مطالعه</a></span></label>'+
         '<button type="button" class="nxa-btn" id="nxaSend">دریافت کد تأیید</button>'+
         '<button type="button" class="nxa-link" id="nxaBackLogin">قبلاً ثبت‌نام کرده‌ام؛ ورود با رمز</button>'+
@@ -10894,6 +11191,25 @@ window.NOMAX_CFG = {
       }).catch(function(){});
     }catch(e){}
   }
+  function getTurnstileToken(){
+  return new Promise(function(resolve){
+    try{
+      if(!window.turnstile || !window.NOMAX_CFG || !window.NOMAX_CFG.turnstileSiteKey){
+        resolve(null); return;
+      }
+      var el = document.getElementById("nxaTurnstile");
+      if(!el){ resolve(null); return; }
+      el.innerHTML = "";
+      window.turnstile.render(el, {
+        sitekey: window.NOMAX_CFG.turnstileSiteKey,
+        callback: function(token){ resolve(token); },
+        "error-callback": function(){ resolve(null); },
+        "timeout-callback": function(){ resolve(null); },
+        theme: "light"
+      });
+    }catch(e){ resolve(null); }
+  });
+}
   async function sendOtp(){
     if(S.busy) return;
     var fromOtp=(S.screen==="otp");
@@ -10902,7 +11218,10 @@ window.NOMAX_CFG = {
     if(S.flow==="signup" && !fromOtp && !$("nxaTerms").checked){ msg("برای ثبت‌نام، پذیرش قوانین الزامی است."); return; }
     var b=fromOtp?$("nxaResend"):$("nxaSend"); setBusy(b,true,"در حال ارسال…");
     try{
-      var r = S.flow==="link" ? await sb.auth.updateUser({phone:"+98"+p}) : await sb.auth.signInWithOtp({phone:"+98"+p,options:{shouldCreateUser:S.flow==="signup"}});
+      var captchaToken = await getTurnstileToken();
+var r = S.flow==="link" 
+  ? await sb.auth.updateUser({phone:"+98"+p, options:{captchaToken:captchaToken}}) 
+  : await sb.auth.signInWithOtp({phone:"+98"+p, options:{shouldCreateUser:S.flow==="signup", captchaToken:captchaToken}});
       if(r.error) throw r.error;
       S.phone=p; $("nxaCode").value="";
       $("nxaOtpInfo").textContent="کد ۶ رقمی به شماره‌ی "+faDigits("0"+p)+" پیامک شد.";
