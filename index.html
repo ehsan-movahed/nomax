@@ -4918,6 +4918,7 @@ document.getElementById("adminLoginBtn").onclick = async function(){
     document.getElementById("adminCard").classList.remove("hidden");
     document.getElementById("ownerCard").classList.add("hidden");
     document.getElementById("registerCard").classList.add("hidden");
+document.getElementById("registerCard").classList.remove("np-edit-mode");
     try{ renderAdminBizManage(); }catch(e){}
     try{ document.getElementById("adminCard").scrollIntoView({ behavior: "smooth", block: "start" }); }catch(e){}
     showToast("خوش آمدید مدیر ✓", "success");
@@ -5835,6 +5836,7 @@ function scoreBusiness(b, q){
   /* ============ REGISTER ============ */
 /* ============ REGISTER ============ */
 function openRegister(){
+  if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel();
   if(window.nomaxPanel) window.nomaxPanel.close();
   document.getElementById("registerCard").classList.remove("hidden");
   document.getElementById("ownerCard").classList.add("hidden");
@@ -5881,6 +5883,13 @@ function goToStep(n){
     updateAddButtonState();
   }
   if(n === 3) renderPreview();
+  var host = document.getElementById("npEditHost");
+  if(host && host.style.display === "block"){
+    host.scrollTop = 0;
+  } else {
+    var rc = document.getElementById("registerCard");
+    if(rc && !rc.classList.contains("hidden")) rc.scrollIntoView({behavior:"smooth", block:"start"});
+  }
 }
 
 function showError(fieldId, show, msg){
@@ -6229,7 +6238,7 @@ for(var s=0;s<sugTypeRadios.length;s++){
       this.value === "subcategory" ? "block" : "none";
   });
 }
-
+var categorySuggestions = [];
 function submitCategorySuggestion(){
   var type = document.querySelector('input[name="sugType"]:checked').value;
   var name = document.getElementById("sugName").value.trim();
@@ -6726,6 +6735,7 @@ if(saveBizBtn){
     
     resetForm();
     document.getElementById("registerCard").classList.add("hidden");
+    if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel();
     try{
       if(ownerUser && typeof showOwnerWorkspace === "function") showOwnerWorkspace();
       if(typeof showOwnerPendingNotice === "function") showOwnerPendingNotice(name);
@@ -7078,7 +7088,8 @@ async function loadFromSupabase(){
   /* ============ OWNER PANEL ============ */
   document.getElementById("ownerButton").onclick = function(){
   document.getElementById("ownerCard").classList.remove("hidden");
-  document.getElementById("registerCard").classList.add("hidden");
+      document.getElementById("registerCard").classList.add("hidden");
+    if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel();
   renderMyBusinesses();
   if(window.loadOwnerRequests) window.loadOwnerRequests(true);
   document.getElementById("ownerCard").scrollIntoView({behavior:"smooth",block:"start"});
@@ -7370,8 +7381,11 @@ function getTimeAgo(ts){
   /* ============ CLOSE ============ */
   document.getElementById("cancelButton").onclick = function(){
     document.getElementById("registerCard").classList.add("hidden");
+    document.getElementById("registerCard").classList.remove("np-edit-mode");
+    window.editingOwnerBusinessId = null;
     resetForm();
-  };
+    if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel();
+};
   document.getElementById("closeOwnerButton").onclick = function(){
     document.getElementById("ownerCard").classList.add("hidden");
   };
@@ -8638,10 +8652,9 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
     var b=getBusinessById(id), u=currentOwner(); if(!b||!u||String(b.ownerId)!==String(u.id))return;
     var s = b.pending || b; // اگر ویرایش در صف دارد، از آخرین نسخه‌ی ارسالی ادامه بده
     editingOwnerBusinessId=id; window.editingOwnerBusinessId=id;
-    if(window.nomaxPanel) window.nomaxPanel.close();
     document.getElementById('ownerCard').classList.add('hidden');
-    document.getElementById('registerCard').classList.remove('hidden');
     resetForm();
+    if(window.nomaxOpenEditInPanel) window.nomaxOpenEditInPanel();
     document.getElementById('businessName').value=s.name||'';
     document.getElementById('businessOwner').value=u.name||s.owner||'';
     document.getElementById('businessDescription').value=s.description||'';
@@ -8654,9 +8667,25 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
     if(typeof renderBusinessLocation==='function') renderBusinessLocation(s.location||null);
     manualMode=true; document.getElementById('manualCategoryBox').style.display='block';
     var cat=document.getElementById('businessCategory'); cat.value=s.categoryId||''; cat.dispatchEvent(new Event('change'));
-    setTimeout(function(){document.getElementById('businessSubcategory').value=s.subcategoryId||''; renderItemsBox(); goToStep(1);},30);
+    setTimeout(function(){
+  document.getElementById('businessSubcategory').value=s.subcategoryId||'';
+
+  /* بازگرداندن برچسب‌های قبلی (بند ۴) */
+  var sub = getSubcategoryById(s.categoryId, s.subcategoryId);
+  var std = sub && sub.standardTags ? sub.standardTags : [];
+  var all = s.tags || [];
+  tagState = {
+    key: (s.categoryId||'')+'/'+(s.subcategoryId||''),
+    checked: all.filter(function(t){ return std.indexOf(t) !== -1; })
+  };
+  customItems = all.filter(function(t){ return std.indexOf(t) === -1; }).slice(0, MAX_CUSTOM_TAGS);
+  renderCustomItems();
+
+  renderItemsBox();
+  goToStep(1);
+},30);
     showToast('در حال ویرایش کسب‌وکار شما هستید. تغییرات پس از تأیید مدیر منتشر می‌شود.','info');
-  }
+     }
 
   async function deleteBusinessV2(id){
     var b=getBusinessById(id),u=currentOwner(); if(!b||!u||String(b.ownerId)!==String(u.id))return;
@@ -9075,7 +9104,7 @@ updateStats();
 .biz-accordion{--c:var(--primary-500);--c-soft:rgba(20,184,166,.10);border-right:4px solid var(--c)}
 .biz-accordion:nth-of-type(3n+2){--c:#0284c7;--c-soft:rgba(2,132,199,.10)}
 .biz-accordion:nth-of-type(3n){--c:#d97706;--c-soft:rgba(217,119,6,.12)}
-.biz-accordion[open]{box-shadow:0 8px 24pFx rgba(15,23,42,.08)}
+.biz-accordion[open]{box-shadow:0 8px 24px rgba(15,23,42,.08)}
 
 /* دکمهٔ تلفن: پر با رنگ کارت */
 .biz-accordion .biz-quick-call{background:var(--c)}
@@ -9126,29 +9155,28 @@ updateStats();
   outline:3px solid var(--primary-400);
   outline-offset:2px;
 }
-/* امتیاز عددی کنار عنوان آکاردئون */
-.biz-acc-title{
+/* چیدمان هدر آکاردئون: عنوان کامل، خط دوم: ★ امتیاز + آدرس */
+.biz-acc-name{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;white-space:normal;line-height:1.5;
+  font-size:13.5px;
+}
+.biz-acc-meta{
   display:flex;align-items:center;gap:8px;min-width:0;
 }
-.biz-acc-title strong{
+.biz-acc-meta .biz-acc-addr{
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
+  font-size:11.5px;color:var(--text-3);
 }
 .biz-acc-rating{
   display:inline-flex;align-items:center;gap:3px;flex-shrink:0;
-  font-size:11px;font-weight:800;
-  color:var(--accent-700);
+  font-size:11.5px;font-weight:800;line-height:1;
+  color:var(--text);
   background:var(--accent-50);
   border:1px solid var(--accent-100);
-  border-radius:100px;padding:2px 8px;
-  white-space:nowrap;
+  border-radius:100px;padding:3px 7px;
 }
-.biz-acc-rating small{
-  font-size:10px;font-weight:600;color:var(--text-3);
-}
-.biz-acc-rating.no-rate{
-  color:var(--text-3);background:var(--muted);
-  border-color:var(--border);font-weight:600;
-}
+.biz-acc-rating .star{color:var(--accent-500);font-size:12px}
 </style>
 <script>
 /* ===== بازنویسی نهایی: پنل ادمین آکاردئونی + بررسی از طریق سرور + بارگذاری مجدد بعد از ورود/خروج ===== */
@@ -10230,7 +10258,9 @@ updateStats();
   "#ownerCard,#myRequestCard{display:none!important}"+
   ".acct-btn[data-n]:not([data-n=\"\"])::before{content:attr(data-n);position:absolute;top:-4px;left:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:#dc2626;color:#fff;font-size:10.5px;line-height:18px;text-align:center;font-weight:800}"+
   ".np{position:fixed;inset:0;z-index:90;background:var(--bg);display:none;flex-direction:column}"+
-  ".np.open{display:flex;animation:fadeIn .18s ease both}"+
+  ".np.open{display:flex}.np-pane.active{animation:fadeIn .12s ease both}"+
+  "#registerCard.np-edit-mode{position:fixed;inset:0;z-index:95;margin:0;border-radius:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 40px;max-width:none;background:var(--bg)}"+
+  "#registerCard.np-edit-mode > *{max-width:720px;margin-left:auto;margin-right:auto}"+
   ".np-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--border)}"+
   ".np-head h2{margin:0;font-size:16px;font-weight:800;flex:1}"+
   ".np-back{width:38px;height:38px;border:0;border-radius:12px;background:var(--muted);color:var(--text);font-size:20px;cursor:pointer}"+
@@ -10295,8 +10325,21 @@ updateStats();
       b.classList.toggle("active", on); b.setAttribute("aria-selected", on ? "true" : "false");
     });
     if(t === "settings") renderSettings();
-    if(t === "inbox" && window.loadOwnerRequests && bizCount()) window.loadOwnerRequests(true);
-    if(t === "biz" && window.nomaxReloadBiz) window.nomaxReloadBiz(); if(t === "biz" && window.loadOwnerMarket) window.loadOwnerMarket();
+    var __now = Date.now();
+    window.__tabFetch = window.__tabFetch || {};
+    if(t === "inbox" && window.loadOwnerRequests && bizCount()){
+      if(__now - (window.__tabFetch.inbox || 0) > 30000){
+        window.__tabFetch.inbox = __now;
+        window.loadOwnerRequests(true);
+      }
+    }
+    if(t === "biz"){
+      if(__now - (window.__tabFetch.biz || 0) > 30000){
+        window.__tabFetch.biz = __now;
+        if(window.nomaxReloadBiz) window.nomaxReloadBiz();
+        if(window.loadOwnerMarket) window.loadOwnerMarket();
+      }
+    }
     var b = el.querySelector(".np-body"); if(b) b.scrollTop = 0;
   }
   function open(t){
@@ -10307,13 +10350,14 @@ updateStats();
       try{ history.pushState({ np:1 }, ""); pushed = true; }catch(e){ pushed = false; }
       isOpen = true; el.classList.add("open"); document.body.style.overflow = "hidden";
     }
-    sync(); setTab(t);
+        sync(); setTab(t);
     if(window.nomaxRefresh) window.nomaxRefresh();
-    if(window.nomaxNotifRender) window.nomaxNotifRender();
+    if(window.nomaxNotifRender) setTimeout(window.nomaxNotifRender, 400);
     setTimeout(function(){ var h = $("npTitle"); if(h) h.focus(); }, 30);
   }
   function close(fromPop){
     if(!isOpen) return;
+    if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel();
     isOpen = false; el.classList.remove("open"); document.body.style.overflow = "";
     if(!fromPop && pushed){ pushed = false; try{ history.back(); }catch(e){} }
     pushed = false;
@@ -10369,6 +10413,34 @@ updateStats();
   function setNeeds(active, offers){ needs.active = !!active; needs.offers = offers || 0; badges.needs = offers || 0; sync(); }
 
   window.nomaxPanel = { open:open, close:close, sync:sync, setBadge:setBadge, setNeeds:setNeeds, isOpen:function(){ return isOpen; } };
+    /* ---------- فرم ویرایش داخل پنل ---------- */
+    var editHost = document.createElement("section");
+  editHost.id = "npEditHost";
+  editHost.style.cssText = "display:none;position:fixed;inset:0;z-index:2500;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain";
+  editHost.innerHTML = '<div class="np-head" style="position:sticky;top:0;z-index:10;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.06)"><button type="button" class="np-back" id="npEditBack" aria-label="بازگشت">→</button><h2 style="margin:0;font-size:16px;font-weight:800;flex:1">ویرایش کسب‌وکار</h2></div><div id="npEditSlot" style="max-width:720px;margin:0 auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom))"></div>';
+  el.appendChild(editHost);
+  var regCard = $("registerCard"), regHome = regCard ? regCard.parentNode : null, regNext = regCard ? regCard.nextSibling : null;
+
+  window.nomaxOpenEditInPanel = function(){
+    if(!regCard) return;
+    $("npEditSlot").appendChild(regCard);
+    regCard.classList.remove("hidden");
+    editHost.style.display = "block";
+    editHost.scrollTop = 0;
+    if(!isOpen) open("biz");
+  };
+  window.nomaxCloseEditInPanel = function(){
+    editHost.style.display = "none";
+    if(regCard && regHome && regCard.parentNode !== regHome){
+      regHome.insertBefore(regCard, regNext);
+      regCard.classList.add("hidden");
+    }
+  };
+  $("npEditBack").onclick = function(){
+    window.editingOwnerBusinessId = null;
+    if(typeof resetForm === "function") resetForm();
+    window.nomaxCloseEditInPanel();
+  };
   window.addEventListener("nomax-auth", function(){ if(!user()){ badges.needs = 0; badges.biz = 0; needs = {active:false, offers:0}; if(isOpen) close(); } sync(); });
   if(typeof updateStats === "function"){
     var _us = updateStats;
@@ -10808,14 +10880,11 @@ if(bizId && typeof getBusinessRating === "function"){
   var rt = getBusinessRating(bizId);
   if(!rt.count && !isNaN(Number(bizId))) rt = getBusinessRating(Number(bizId));
   if(rt.count > 0){
-    ratingHtml = '<span class="biz-acc-rating">⭐ ' + toFa(rt.avg.toFixed(1)) +
-      ' <small>از ۵</small></span>';
-  } else {
-    ratingHtml = '<span class="biz-acc-rating no-rate">بدون امتیاز</span>';
+    ratingHtml = '<span class="biz-acc-rating"><span class="star">★</span>' + toFa(rt.avg.toFixed(1)) + '</span>';
   }
 }
-main.innerHTML = '<span class="biz-acc-title"><strong>'+esc(title)+'</strong>'+ratingHtml+'</span>' +
-  '<span>📍 '+esc(addr)+'</span>';
+main.innerHTML = '<strong class="biz-acc-name">'+esc(title)+'</strong>' +
+  '<span class="biz-acc-meta">'+ratingHtml+'<span class="biz-acc-addr">📍 '+esc(addr)+'</span></span>';
       sum.appendChild(main);
       if(tel){var c=document.createElement("a");c.className="biz-quick-call";c.href=tel.getAttribute("href");c.textContent="☎";c.title="تماس سریع";c.addEventListener("click",function(e){e.stopPropagation()});sum.appendChild(c);}
       var q=document.createElement("button");q.type="button";q.className="biz-quick-quote";q.textContent="استعلام قیمت";q.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(window.openRequestModal)window.openRequestModal(title);});sum.appendChild(q);
