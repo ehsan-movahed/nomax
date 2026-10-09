@@ -1542,7 +1542,8 @@ body, button, input, select, textarea{
   padding:20px; z-index:1000;
   opacity:0; pointer-events:none; transition:opacity .25s;
 }
-.modal-overlay.show{opacity:1; pointer-events:auto}
+.modal-overlay.show{opacity:1; pointer-events:auto; overflow-y:auto; -webkit-overflow-scrolling:touch}
+.modal-overlay .quick-modal{margin:auto; max-height:none}
 .modal{
   background:var(--surface); border-radius:var(--radius);
   padding:24px; max-width:400px; width:100%;
@@ -9907,6 +9908,7 @@ updateStats();
     $("reqService").value = prefill || ""; $("reqArea").value = ""; $("reqDesc").value = ""; renderReqLocation(null);
     $("reqCategory").value = ""; fillReqSubs(""); $("reqCatHint").textContent = "";
     $("requestModal").classList.add("show"); document.body.style.overflow = "hidden";
+    $("requestModal").scrollTop = 0;
     if(prefill && prefill.length >= 3) guessReqCategory(prefill);
   };
   window.closeRequestModal = function(){
