@@ -2330,6 +2330,79 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
 .nxa-note button{display:block;margin-top:6px;border:0;border-radius:9px;background:var(--primary-500);color:#fff;font:inherit;font-weight:700;font-size:12px;padding:7px 12px;cursor:pointer}
 
 </style>
+<style id="nx-snapp-style">
+  /* ===== استعلام قیمت من (سبک اسنپ) ===== */
+  .snp-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px;box-shadow:0 8px 28px rgba(15,23,42,.07);margin-bottom:14px}
+  .snp-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .snp-title{font-size:16px;font-weight:900;line-height:1.6}
+  .snp-timer{font-size:11.5px;font-weight:800;color:var(--accent-700);background:var(--accent-50);border:1px solid var(--accent-100);border-radius:100px;padding:4px 10px;white-space:nowrap}
+  
+  /* مسیر مبدأ ← مقصد */
+  .snp-route{position:relative;margin:14px 0 6px;padding-right:24px}
+  .snp-route::before{content:"";position:absolute;right:7px;top:10px;bottom:14px;width:2px;background:repeating-linear-gradient(to bottom,#5eead4 0 4px,transparent 4px 8px)}
+  .snp-dot{position:relative;font-size:13px;color:var(--text-2);margin-bottom:10px;line-height:1.8}
+  .snp-dot::before{content:"";position:absolute;right:-23px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--primary-500);box-shadow:0 0 0 4px rgba(20,184,166,.18)}
+  .snp-dot.end::before{background:var(--accent-500);box-shadow:0 0 0 4px rgba(245,158,11,.2);border-radius:3px}
+  
+  /* حالت «در حال جستجو» با رادار */
+  .snp-radar{display:flex;align-items:center;gap:14px;margin-top:12px;padding:16px;border-radius:18px;background:linear-gradient(120deg,var(--primary-50),var(--muted))}
+  .snp-radar-ic{position:relative;width:46px;height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .snp-radar-ic i{position:absolute;inset:0;border-radius:50%;border:2px solid var(--primary-500);opacity:0;animation:nxRadar 2.4s ease-out infinite}
+  .snp-radar-ic i:nth-child(2){animation-delay:.8s}
+  .snp-radar-ic i:nth-child(3){animation-delay:1.6s}
+  .snp-radar b{font-size:14px;font-weight:900;display:block}
+  .snp-radar small{font-size:11.5px;color:var(--text-3);line-height:1.8;display:block;margin-top:2px}
+  @media (prefers-reduced-motion:reduce){.snp-radar-ic i{animation:none;opacity:.25}}
+  
+  /* لیست پیشنهادها */
+  .snp-offers-h{display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px;font-weight:900;font-size:14px}
+  .snp-offers-h small{font-weight:600;color:var(--text-3);font-size:11px}
+  .snp-offer{border:1.5px solid var(--border);border-radius:18px;background:var(--surface);margin-bottom:10px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+  .snp-offer.best{border-color:var(--primary-400);box-shadow:0 6px 20px rgba(20,184,166,.15)}
+  .snp-offer>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:13px;min-height:68px}
+  .snp-offer>summary::-webkit-details-marker{display:none}
+  .snp-ava{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--primary-500),var(--primary-600));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;flex-shrink:0}
+  .snp-info{flex:1;min-width:0}
+  .snp-name{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .snp-sub{font-size:11.5px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .snp-price{text-align:left;flex-shrink:0}
+  .snp-price b{display:block;font-size:15px;font-weight:900;color:var(--primary-700)}
+  .snp-price span{font-size:10px;color:var(--text-3)}
+  .snp-tag{display:inline-block;font-size:10px;font-weight:800;border-radius:100px;padding:2px 8px;margin-top:3px}
+  .snp-tag.best{background:var(--primary-500);color:#fff}
+  .snp-body{padding:0 13px 13px;border-top:1px dashed var(--border)}
+  .snp-note{margin:10px 0;padding:9px 11px;background:var(--muted);border-radius:12px;font-size:12.5px;line-height:1.9;white-space:pre-wrap;word-break:break-word}
+  .snp-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .snp-btns a,.snp-btns button{border:0;border-radius:13px;padding:12px;min-height:46px;font:inherit;font-weight:800;font-size:13px;text-align:center;text-decoration:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .snp-call,.snp-map{background:var(--muted);color:var(--text)}
+  .snp-pick{grid-column:1/-1;background:linear-gradient(135deg,var(--primary-500),var(--primary-600));color:#fff;box-shadow:var(--shadow-primary);font-size:14px!important;min-height:50px!important}
+  .snp-pick:active{transform:scale(.98)}
+  .snp-cancel{width:100%;margin-top:12px;border:0;background:transparent;color:#b91c1c;font:inherit;font-weight:800;font-size:12.5px;padding:12px;cursor:pointer}
+  [data-theme="dark"] .snp-cancel{color:#fca5a5}
+  
+  /* بایگانی آکاردئونی */
+  .snp-arch{border:1px solid var(--border);border-radius:16px;background:var(--surface);margin-bottom:9px;overflow:hidden}
+  .snp-arch>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:13px;min-height:60px}
+  .snp-arch>summary::-webkit-details-marker{display:none}
+  .snp-arch>summary::after{content:"▾";color:var(--text-3);transition:transform .2s}
+  .snp-arch[open]>summary::after{transform:rotate(180deg)}
+  .snp-arch[open]{border-color:var(--primary-200)}
+  .snp-arch-main{flex:1;min-width:0}
+  .snp-arch-t{font-weight:800;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .snp-arch-d{font-size:11px;color:var(--text-3);margin-top:2px}
+  .snp-st{font-size:10.5px;font-weight:800;border-radius:100px;padding:3px 9px;background:var(--muted);color:var(--text-2);white-space:nowrap}
+  .snp-st.selected{background:#ecfdf5;color:#047857}
+  .snp-st.cancelled,.snp-st.expired{background:#fef2f2;color:#b91c1c}
+  [data-theme="dark"] .snp-st.selected{background:rgba(22,163,74,.18);color:#86efac}
+  [data-theme="dark"] .snp-st.cancelled,[data-theme="dark"] .snp-st.expired{background:rgba(220,38,38,.18);color:#fca5a5}
+  .snp-arch-body{padding:2px 13px 13px;border-top:1px dashed var(--border)}
+  .snp-kv{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;font-size:12.5px;margin-top:10px}
+  .snp-kv dt{color:var(--text-3);font-weight:700}
+  .snp-kv dd{margin:0;word-break:break-word}
+  .snp-sum{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--primary-50);border:1px solid var(--primary-100);font-size:12.5px;line-height:2}
+  .snp-others-h{margin-top:12px;font-size:12px;font-weight:800}
+  .snp-others-r{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:7px 0;border-bottom:1px dashed var(--border)}
+  </style>
 </head>
 <body>
 
@@ -10013,20 +10086,69 @@ updateStats();
     var geo = window.nxParseGeo ? window.nxParseGeo(r.area) : null;
     var offers = sortOffers2(r.offers||[], geo), k = "r"+r.id;
     var chosen = offers.filter(function(o){return o.selected;})[0];
-    var where = geo ? '<a class="nx-chip" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+geo.lat+','+geo.lng+'">📍 موقعیت ثبت‌شده</a>' : (r.area ? '<span class="nx-chip">📍 '+esc(r.area)+'</span>' : '');
-    var top = '<div class="nx-oc-top"><div class="nx-oc-title">'+esc(r.service)+'</div>'+
-      (isAct ? '<span class="nx-oc-time">⏱ '+timeLeft(r.expires_at)+'</span>' : '<span class="st-pill '+esc(r.status)+'">'+esc(ST[r.status]||r.status)+'</span>')+'</div>'+
-      (where ? '<div class="nx-oc-meta">'+where+'</div>' : '')+
-      (r.description ? '<div class="nx-oc-desc">'+esc(r.description)+'</div>' : '');
+    var whereTxt = geo ? "موقعیت ثبت‌شده روی نقشه" : (r.area || "محدوده مشخص نشده");
+
+    /* ---------- بایگانی: آکاردئونی و کامل ---------- */
     if(!isAct){
-      var isOpen = openKeys[k] === true;
-      return '<details class="nx-acc" data-k="'+esc(k)+'"'+(isOpen?' open':'')+'><summary><span>🔎 '+esc(r.service)+'</span><span class="st-pill '+esc(r.status)+'">'+esc(ST[r.status]||r.status)+'</span></summary><div class="nx-body">'+
-        (r.description?'<div class="nx-oc-desc">'+esc(r.description)+'</div>':'')+(where?'<div class="nx-oc-meta">'+where+'</div>':'')+(chosen?offerHTML(chosen,false,r.id,0):'')+'</div></details>';
+      var isOpenA = openKeys[k] === true;
+      var cb = chosen ? getBusinessById(Number(chosen.business_id)) : null;
+      var created = r.created_at ? formatDate(new Date(r.created_at).getTime()) : "—";
+      var kv = '<dl class="snp-kv">'+
+        '<dt>کالا / خدمت</dt><dd>'+esc(r.service)+'</dd>'+
+        '<dt>محدوده</dt><dd>'+esc(whereTxt)+'</dd>'+
+        (r.description?'<dt>توضیحات</dt><dd>'+esc(r.description)+'</dd>':'')+
+        '<dt>تاریخ ثبت</dt><dd>'+esc(created)+'</dd>'+
+        '<dt>پیشنهادها</dt><dd>'+toFa(offers.length)+' پیشنهاد دریافت شد</dd>'+
+      '</dl>';
+      var win = chosen ? '<div class="snp-sum">🏆 <b>پیشنهاد انتخاب‌شده</b><br>🏪 '+esc(cb?cb.name:"کسب‌وکار")+(chosen.price?'<br>💰 '+esc(chosen.price):'')+(chosen.brand?'<br>🏷 '+esc(chosen.brand):'')+(chosen.note?'<br>📝 '+esc(chosen.note):'')+(cb&&cb.phone?'<br>☎ <a href="tel:'+esc(cleanPhone(cb.phone))+'" style="color:var(--primary-700);font-weight:800">'+toFa(esc(cb.phone))+'</a>':'')+'</div>' : '';
+      var others = offers.filter(function(o){return !o.selected;});
+      var oth = others.length ? '<div class="snp-others-h">سایر پیشنهادها</div>'+others.map(function(o){
+        var ob=getBusinessById(Number(o.business_id));
+        return '<div class="snp-others-r"><span>🏪 '+esc(ob?ob.name:"کسب‌وکار")+'</span><b>'+esc(o.price||"—")+'</b></div>';
+      }).join("") : '';
+      return '<details class="snp-arch" data-k="'+esc(k)+'"'+(isOpenA?' open':'')+'><summary>'+
+        '<span class="snp-arch-main"><div class="snp-arch-t">🔎 '+esc(r.service)+'</div><div class="snp-arch-d">'+esc(created)+' · '+toFa(offers.length)+' پیشنهاد</div></span>'+
+        '<span class="snp-st '+esc(r.status)+'">'+esc(ST[r.status]||r.status)+'</span></summary>'+
+        '<div class="snp-arch-body">'+kv+win+oth+'</div></details>';
     }
-    var body = offers.length
-      ? '<div class="nx-sec" style="margin-top:12px">📬 پیشنهادها <b>'+toFa(offers.length)+'</b><small>نزدیک‌تر و سریع‌تر، بالاتر</small></div>'+offers.map(function(o,i){return offerHTML(o,true,r.id,i+1);}).join("")
-      : '<div class="nx-wait"><span class="nx-radar"><i></i><i></i><i></i></span><div><div class="nx-wait-t">منتظر پاسخ کسب‌وکارها<span class="nx-dots"><b>.</b><b>.</b><b>.</b></span></div><div class="nx-wait-s">به‌محض رسیدن پیشنهاد، اینجا نشان داده می‌شود</div></div></div>';
-    return '<div class="nx-oc nx-mine">'+top+body+'<div class="nx-oc-actions"><button class="nx-btn-d" data-cancel="'+esc(r.id)+'">✕ لغو درخواست</button></div></div>';
+
+    /* ---------- درخواست فعال: سبک اسنپ ---------- */
+    var h = '<div class="snp-card">'+
+      '<div class="snp-head"><div class="snp-title">'+esc(r.service)+'</div><span class="snp-timer">⏱ '+timeLeft(r.expires_at)+'</span></div>'+
+      '<div class="snp-route"><div class="snp-dot">'+(geo?'<a target="_blank" rel="noopener" style="color:inherit" href="https://www.google.com/maps?q='+geo.lat+','+geo.lng+'">📍 موقعیت شما (نمایش روی نقشه)</a>':'📍 '+esc(whereTxt))+'</div>'+
+      '<div class="snp-dot end">🛒 '+esc(r.description||"بدون توضیح تکمیلی")+'</div></div>';
+
+    if(!offers.length){
+      h += '<div class="snp-radar"><div class="snp-radar-ic"><i></i><i></i><i></i>🔍</div><div><b>در حال پیدا کردن بهترین قیمت<span class="nx-dots"><b>.</b><b>.</b><b>.</b></span></b><small>درخواستت برای کسب‌وکارهای مرتبط ارسال شد؛ به‌محض رسیدن پیشنهاد اینجا نمایش داده می‌شود.</small></div></div>';
+    } else {
+      h += '<div class="snp-offers-h"><span>📬 '+toFa(offers.length)+' پیشنهاد</span><small>نزدیک‌تر و سریع‌تر، بالاتر</small></div>';
+      h += offers.map(function(o,i){
+        var b = getBusinessById(Number(o.business_id));
+        var rt = b ? getBusinessRating(b.id) : {count:0,avg:0};
+        var dist = (geo && b && b.location && window.nxKm) ? window.nxKm(geo,b.location) : null;
+        var sub = [];
+        if(dist!=null) sub.push(toFa(dist.toFixed(1))+' کیلومتر');
+        if(rt.count) sub.push('⭐ '+toFa(rt.avg.toFixed(1)));
+        if(b && b.verified) sub.push('✓ تأیید شده');
+        var kk = "o"+o.id;
+        var open = openKeys[kk] === true;
+        return '<details class="snp-offer'+(i===0?' best':'')+'" data-k="'+esc(kk)+'"'+(open?' open':'')+'><summary>'+
+          '<div class="snp-ava">'+esc(((b&&b.name)||"؟").trim().charAt(0))+'</div>'+
+          '<div class="snp-info"><div class="snp-name">'+esc(b?b.name:"کسب‌وکار")+'</div><div class="snp-sub">'+esc(sub.join(" · ")||(b&&b.address)||"")+'</div>'+(i===0?'<span class="snp-tag best">پیشنهاد برتر</span>':'')+'</div>'+
+          '<div class="snp-price"><b>'+esc(o.price||"—")+'</b><span>قیمت اعلامی</span></div></summary>'+
+          '<div class="snp-body">'+
+            (o.brand?'<div style="margin-top:10px"><span class="tag-mini">🏷 '+esc(o.brand)+'</span></div>':'')+
+            (o.note?'<div class="snp-note">'+esc(o.note)+'</div>':'')+
+            (penOf(o.business_id)>0?'<div class="nx-warn" style="display:inline-block">⚠️ سابقه‌ی عدم پاسخ‌گویی</div>':'')+
+            '<div class="snp-btns">'+
+              (b&&b.phone?'<a class="snp-call" href="tel:'+esc(cleanPhone(b.phone))+'">☎ تماس</a>':'')+
+              (b&&b.address?'<a class="snp-map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((b.address||"")+"، بهبهان")+'">🧭 مسیر</a>':'')+
+              '<button type="button" class="snp-pick" data-pick="'+esc(o.id)+'">✓ انتخاب این پیشنهاد</button>'+
+            '</div></div></details>';
+      }).join("");
+    }
+    h += '<button type="button" class="snp-cancel" data-cancel="'+esc(r.id)+'">✕ لغو درخواست</button></div>';
+    return h;
   }
 
   function renderMy(){
@@ -10165,7 +10287,7 @@ updateStats();
     var where = geo ? '<a class="nx-chip" target="_blank" rel="noopener" href="https://www.google.com/maps?q='+geo.lat+','+geo.lng+'">📍 '+(dist!=null ? toFa(dist.toFixed(1))+' کیلومتر تا شما' : 'موقعیت روی نقشه')+'</a>'
               : (q.area ? '<span class="nx-chip">📍 '+esc(q.area)+'</span>' : '');
     return '<div class="nx-oc-top"><div class="nx-oc-title">'+esc(q.service)+'</div><span class="nx-oc-time">'+getTimeAgo(new Date(q.created_at).getTime())+'</span></div>'+
-      '<div class="nx-oc-meta"><span class="nx-chip">🏪 '+esc(q.business_name||"")+'</span>'+where+'</div>'+
+      '<div class="nx-oc-meta"><span class="nx-chip">👤 '+esc(q.requester_name||"مشتری")+'</span><span class="nx-chip">🏪 '+esc(q.business_name||"")+'</span>'+where+'</div>'+
       (q.description ? '<div class="nx-oc-desc">'+esc(q.description)+'</div>' : '');
   }
   async function loadOwnerMarket(){
@@ -10187,7 +10309,7 @@ updateStats();
     var h='<div class="nx-sec">⏳ استعلام‌های جدید <b>'+toFa(act.length)+'</b></div>'; if(!act.length)h+='<div class="nx-empty-s">استعلام جدیدی برای پاسخ وجود ندارد.</div>';
     act.forEach(function(x){var q=x.q,i=x.i,phone=String(q.phone||q.user_phone||""),masked=phone?phone.replace(/(\d{3})(\d{3,})(\d{2})$/,'$1•••$3'):'شماره مخفی';h+='<details class="nx-owner-req" data-owner-req="'+esc(q.id)+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+'</div></div><div class="nx-summary-actions"><button type="button" class="nx-mini-btn ok" data-send="'+i+'">✓ تأیید</button><button type="button" class="nx-mini-btn no" data-decline="'+i+'">رد</button></div></summary><div class="nx-owner-body"><div class="nx-owner-detail-grid"><div class="nx-owner-detail"><b>نام مشتری</b>'+esc(q.requester_name||"مشتری")+'</div><div class="nx-owner-detail"><b>کالا / خدمت</b>'+esc(q.service||"—")+'</div><div class="nx-owner-detail"><b>مکان</b>'+esc(q.area||"—")+'</div><div class="nx-owner-detail"><b>توضیحات</b>'+esc(q.description||"—")+'</div><div class="nx-owner-detail"><b>زمان ثبت</b>'+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div>'+(isLate(q)?'<div class="nx-warn" style="margin-top:9px;display:inline-block">⚠️ بیش از ۲۴ ساعت بی‌پاسخ مانده؛ امتیاز منفی ثبت می‌شود.</div>':'')+'<div class="nx-oc-form" style="margin-top:10px"><div class="nx-row2"><input data-f="price" data-i="'+i+'" maxlength="40" placeholder="💰 قیمت"><input data-f="brand" data-i="'+i+'" maxlength="40" placeholder="🏷 برند"></div><div class="nx-notebox"><textarea data-f="note" data-i="'+i+'" rows="2" maxlength="120" placeholder="توضیح کوتاه (گارانتی، موجودی، تحویل…)"></textarea><span class="nx-cnt">۰ / ۱۲۰</span></div></div></div></details>';});
     h+='<button type="button" class="np-linkbtn" id="archToggle">🗄 '+(archOpen?'پنهان کردن بایگانی':'بایگانی ('+toFa(arch.length)+')')+'</button>';
-    if(archOpen){arch.forEach(function(x){var q=x.q,o=q.my_offer,d=declinedOf(q),ok=!!(o&&q.status==="selected"&&q.selected_mine),no=!!d,st=o?(q.status==="selected"?(q.selected_mine?'🎉 پیشنهاد شما انتخاب شد':'مشتری پیشنهاد دیگری را انتخاب کرد'):'پیشنهاد ارسال شد'):(d?(d==='timeout'?'بدون پاسخ (۲۴ ساعت)':'رد شد'):'بسته شده');h+='<details class="nx-owner-req '+(ok?'archived-ok ':'')+(no?'archived-no':'')+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">'+esc(q.user_name||q.customer_name||"کاربر نومکس")+'</div><div class="nx-summary-contact">'+esc(q.area||"مکان ثبت نشده")+'</div></div><span class="st-pill '+(ok?'selected':'')+'">'+esc(st)+'</span></summary><div class="nx-owner-body">'+ocHead(q)+(o?'<div class="nx-reply"><div class="nx-reply-h">پاسخ شما</div><div class="nx-reply-r"><span>💰 '+esc(o.price)+'</span>'+(o.brand?'<span>🏷 '+esc(o.brand)+'</span>':'')+'</div>'+(o.note?'<div class="nx-note">'+esc(o.note)+'</div>':'')+'</div>':'')+'<div class="nx-oc-state">🔒 این مورد در بایگانی است و قابل ویرایش نیست.</div></div></details>';});}
+    if(archOpen){arch.forEach(function(x){var q=x.q,o=q.my_offer,d=declinedOf(q),ok=!!(o&&q.status==="selected"&&q.selected_mine),no=!!d,st=o?(q.status==="selected"?(q.selected_mine?'🎉 پیشنهاد شما انتخاب شد':'مشتری پیشنهاد دیگری را انتخاب کرد'):'پیشنهاد ارسال شد'):(d?(d==='timeout'?'بدون پاسخ (۲۴ ساعت)':'رد شد'):'بسته شده');h+='<details class="nx-owner-req '+(ok?'archived-ok ':'')+(no?'archived-no':'')+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+' · '+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div><span class="st-pill '+(ok?'selected':'')+'">'+esc(st)+'</span></summary><div class="nx-owner-body">'+ocHead(q)+(o?'<div class="nx-reply"><div class="nx-reply-h">پاسخ شما</div><div class="nx-reply-r"><span>💰 '+esc(o.price)+'</span>'+(o.brand?'<span>🏷 '+esc(o.brand)+'</span>':'')+'</div>'+(o.note?'<div class="nx-note">'+esc(o.note)+'</div>':'')+'</div>':'')+'<div class="nx-oc-state">🔒 این مورد در بایگانی است و قابل ویرایش نیست.</div></div></details>';});}
     box.innerHTML=h; box.querySelectorAll('textarea[data-f="note"]').forEach(limitLines); var at=$("archToggle");if(at)at.onclick=function(){archOpen=!archOpen;renderOwner()};
     box.querySelectorAll('[data-send]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var i=+btn.getAttribute('data-send'),q=ownerReqs[i],price=box.querySelector('[data-f="price"][data-i="'+i+'"]').value.trim(),brand=box.querySelector('[data-f="brand"][data-i="'+i+'"]').value.trim(),note=box.querySelector('[data-f="note"][data-i="'+i+'"]').value.trim();if(!price){showToast('قیمت را وارد کنید.','error');return}if(!await nomaxConfirm('⚠️ با تأیید، پیشنهاد برای مشتری ارسال و استعلام بایگانی می‌شود؛ قیمت بعداً قابل ویرایش نیست. ادامه می‌دهید؟'))return;btn.disabled=true;var r=await sb.rpc('submit_offer',{p_request:q.id,p_business:q.business_id,p_price:price,p_brand:brand,p_note:note.slice(0,120)});btn.disabled=false;if(r.error){showToast('ثبت پیشنهاد انجام نشد؛ دوباره تلاش کنید.','error');return}if(window.nomaxNotify)window.nomaxNotify({action:'new_offer',request_id:q.id,business_id:q.business_id});showToast('✓ پیشنهاد ثبت و بایگانی شد.','success');loadOwnerRequests()};});
     box.querySelectorAll('[data-decline]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var q=ownerReqs[+btn.getAttribute('data-decline')];if(!await nomaxConfirm('⚠️ این استعلام رد و بایگانی می‌شود و دیگر قابل پاسخ نیست. ادامه می‌دهید؟',{danger:true}))return;var r=await sb.rpc('decline_request',{p_request:String(q.id),p_business:String(q.business_id)});if(r.error){showToast('رد استعلام انجام نشد؛ RPC مربوطه در بک‌اند موجود نیست.','error');return}showToast('استعلام رد و بایگانی شد.','success');loadOwnerRequests();if(window.nomaxLoadPenalties)window.nomaxLoadPenalties()};});
