@@ -10889,7 +10889,31 @@ main.innerHTML = '<strong class="biz-acc-name">'+esc(title)+'</strong>' +
   '<span class="biz-acc-meta">'+ratingHtml+'<span class="biz-acc-addr">📍 '+esc(addr)+'</span></span>';
       sum.appendChild(main);
       if(tel){var c=document.createElement("a");c.className="biz-quick-call";c.href=tel.getAttribute("href");c.textContent="☎";c.title="تماس سریع";c.addEventListener("click",function(e){e.stopPropagation()});sum.appendChild(c);}
-      var q=document.createElement("button");q.type="button";q.className="biz-quick-quote";q.textContent="استعلام قیمت";q.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(window.openRequestModal)window.openRequestModal(title);});sum.appendChild(q);
+      var isOwnBiz=false;
+try{
+  var myBiz=(window.nomaxMyBusinesses&&window.nomaxMyBusinesses())||[];
+  var thisId=null;
+  var shareBtn=card.querySelector('button[onclick^="shareBusiness("]');
+  if(shareBtn){
+    var mId=/shareBusiness\(([^,]+),/.exec(shareBtn.getAttribute("onclick")||"");
+    if(mId) thisId=String(mId[1]).replace(/['"\s]/g,"");
+  }
+  if(thisId&&myBiz.length){
+    isOwnBiz=myBiz.some(function(b){return String(b.id)===thisId||String(b.id)===String(Number(thisId));});
+  }
+}catch(e){}
+if(!isOwnBiz){
+  var q=document.createElement("button");
+  q.type="button";
+  q.className="biz-quick-quote";
+  q.textContent="استعلام قیمت";
+  q.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(window.openRequestModal) window.openRequestModal(title);
+  });
+  sum.appendChild(q);
+}
       details.appendChild(sum);details.appendChild(inner);card.replaceWith(details);
     });
     root.querySelectorAll(".biz-accordion").forEach(function(details){
@@ -10926,13 +10950,21 @@ main.innerHTML = '<strong class="biz-acc-name">'+esc(title)+'</strong>' +
 
   /* ---------- UI بخش مشتری/مالک ---------- */
   var st=document.createElement("style");st.textContent=
-    ".field input[readonly],.field textarea[readonly]{background:var(--muted)!important;color:var(--text-2)!important;cursor:not-allowed!important}"+
-    ".biz-accordion{border:1px solid var(--border);border-radius:18px;margin-bottom:10px;background:var(--surface);overflow:hidden;box-shadow:0 3px 14px rgba(15,23,42,.04)}"+
-    ".biz-accordion>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:11px 12px}.biz-accordion>summary::-webkit-details-marker{display:none}"+
-    ".biz-acc-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}.biz-acc-main strong{font-size:13.5px}.biz-acc-main span{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"+
-    ".biz-quick-call{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--primary-500);color:#fff;text-decoration:none;font-weight:900;flex:0 0 auto}"+
-    ".biz-quick-quote{border:1px solid var(--primary-200);background:var(--primary-50);color:var(--primary-700);border-radius:10px;padding:7px 9px;font:inherit;font-size:11px;font-weight:800;cursor:pointer;flex:0 0 auto}"+
-    ".biz-accordion>.business-inner{border-top:1px dashed var(--border)}"+
+  ".field input[readonly],.field textarea[readonly]{background:var(--muted)!important;color:var(--text-2)!important;cursor:not-allowed!important}"+
+    ".biz-accordion{border:1px solid var(--border);border-radius:18px;margin-bottom:10px;background:var(--surface);overflow:hidden;box-shadow:0 3px 14px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s}"+
+    ".biz-accordion[open]{box-shadow:0 8px 28px rgba(15,23,42,.08)}"+
+    ".biz-accordion>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 14px;min-height:64px}.biz-accordion>summary::-webkit-details-marker{display:none}"+
+    ".biz-acc-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}"+
+    ".biz-acc-name{font-size:14.5px;font-weight:800;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}"+
+    ".biz-acc-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-3);flex-wrap:wrap}"+
+    ".biz-acc-rating{display:inline-flex;align-items:center;gap:3px;background:var(--accent-50);color:var(--accent-700);padding:2px 8px;border-radius:100px;font-weight:700;font-size:11.5px}"+
+    ".biz-acc-rating .star{color:var(--accent-500)}"+
+    ".biz-acc-addr{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}"+
+    ".biz-quick-call{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--primary-500);color:#fff;text-decoration:none;font-weight:900;font-size:16px;flex:0 0 auto;box-shadow:0 4px 12px rgba(20,184,166,.3)}"+
+    ".biz-quick-quote{border:1.5px solid var(--primary-200);background:var(--primary-50);color:var(--primary-700);border-radius:12px;padding:9px 12px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;flex:0 0 auto;white-space:nowrap;transition:all .18s}"+
+    ".biz-quick-quote:hover{background:var(--primary-500);color:#fff;border-color:var(--primary-500)}"+
+    ".biz-accordion>.business-inner{border-top:1px dashed var(--border);padding:12px 14px 14px}"+
+    ".biz-accordion .business-top-actions .call-btn,.biz-accordion .business-top-actions .emergency124{display:none}"+
     ".emergency124{background:#fef2f2!important;color:#b91c1c!important;border-color:#fecaca!important}"+
     "#myRequests .owner-business{padding:12px;border-radius:16px;background:var(--surface);box-shadow:0 3px 14px rgba(15,23,42,.04)}"+
     "#myRequests .owner-business>div:first-child{display:grid!important;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}"+
