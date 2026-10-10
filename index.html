@@ -2412,6 +2412,13 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
 [data-theme="dark"] .nx-won{background:rgba(22,163,74,.15);border-color:rgba(52,211,153,.5)}
 [data-theme="dark"] .nx-won-t,[data-theme="dark"] .nx-won-n,[data-theme="dark"] .nx-won-h{color:#86efac}
 </style>
+<style id="nx-tag-near">
+.snp-tag.near{background:#0284c7;color:#fff;margin-right:4px}
+</style>
+<style id="nx-unit-style">
+.nx-oc-form select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+.snp-price b{font-size:13px;line-height:1.6}
+</style>
 </head>
 <body>
 
@@ -3324,7 +3331,7 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
       <div>
         <strong>چطور کار می‌کنه؟</strong>
         <div style="font-size:12px;margin-top:4px;line-height:1.8">
-          درخواستت به کسب‌وکارهای مرتبط نمایش داده می‌شه. اونایی که کالا رو دارن <b>قیمت، برند و توضیحات</b> رو برات ثبت می‌کنن و تو پیشنهادها رو توی بخش «درخواست من» می‌بینی. <b>شماره‌ی تو هیچ‌جا نمایش داده نمی‌شه.</b> هر نفر هم‌زمان فقط یک درخواست فعال داره.
+          درخواستت به کسب‌وکارهای مرتبط نمایش داده می‌شه. اونایی که کالا رو دارن <b>قیمت، برند و توضیحات</b> رو برات ثبت می‌کنن و تو پیشنهادها رو توی بخش «درخواست من» می‌بینی. <b>شماره‌ی تو تا وقتی پیشنهادی را انتخاب نکرده‌ای برای هیچ‌کس نمایش داده نمی‌شه.</b> بعد از انتخاب، شماره‌ات فقط به همان کسب‌وکارِ انتخاب‌شده نشان داده می‌شود تا با تو تماس بگیرد. هر نفر هم‌زمان فقط یک درخواست فعال داره.
         </div>
       </div>
     </div>
@@ -8372,9 +8379,9 @@ hint.textContent = activeF.length
             '<div class="rc-head">'+
               '<div class="rc-icon">📨</div>'+
               '<div><div class="rc-title">می‌خواهید درخواست شما برای فروشگاه‌های مرتبط بهبهان ارسال کنم؟</div>'+
-              '<div class="rc-desc">کسب‌وکارهای مرتبط درخواست را می‌بینند. و قیمت، برند و توضیحاتشان را برایت ثبت می‌کنند. <b>شماره‌ی تو نمایش داده نمی‌شود.</b></div></div>'+
+              '<div class="rc-desc">کسب‌وکارهای مرتبط درخواست را می‌بینند. و قیمت، برند و توضیحاتشان را برایت ثبت می‌کنند. <b>شماره‌ات تا قبل از انتخاب پیشنهاد نمایش داده نمی‌شود.</b></div></div>'+
             '</div>'+
-            (query ? '<div class="request-meta"><span>🔎 نیاز: '+safeQ+'</span><span>📍 بهبهان</span><span>🔒 شماره‌ات نمایش داده نمی‌شود</span></div>' : '')+
+            (query ? '<div class="request-meta"><span>🔎 نیاز: '+safeQ+'</span><span>📍 بهبهان</span><span>🔒 شماره‌ات فقط بعد از انتخاب تو، به همان کسب‌وکار نشان داده می‌شود</span></div>' : '')+
             '<div class="rc-actions">'+
               '<button class="rc-yes" id="emptyRequestCTA">✓ بله، ارسال کن</button>'+
               '<button class="rc-no" id="emptyNoRequestCTA">فعلاً نه</button>'+
@@ -10140,7 +10147,26 @@ updateStats();
       h += '<div class="snp-radar"><div class="snp-radar-ic"><i></i><i></i><i></i>🔍</div><div><b>در حال پیدا کردن بهترین قیمت<span class="nx-dots"><b>.</b><b>.</b><b>.</b></span></b><small>درخواستت برای کسب‌وکارهای مرتبط ارسال شد؛ به‌محض رسیدن پیشنهاد اینجا نمایش داده می‌شود.</small></div></div>';
     } else {
       h += '<div class="snp-offers-h"><span>📬 '+toFa(offers.length)+' پیشنهاد</span><small>نزدیک‌تر و سریع‌تر، بالاتر</small></div>';
-      h += offers.map(function(o,i){
+      var __pv = function(s){
+  var t = String(s||"").replace(/[۰-۹]/g,function(d){return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);}).replace(/[٠-٩]/g,function(d){return "٠١٢٣٤٥٦٧٨٩".indexOf(d);});
+  var mul = /میلیون/.test(t) ? 1000000 : (/هزار/.test(t) ? 1000 : 1);
+  t = t.replace(/[,٬،\s]/g,"");
+  var m = t.match(/\d+(\.\d+)?/);
+  return m ? parseFloat(m[0]) * mul : null;
+};
+var __cheap=null, __near=null, __np=0, __nd=0, __bp=Infinity, __bd=Infinity;
+offers.forEach(function(o){
+  var p = __pv(o.price);
+  Object.keys(__grp).forEach(function(u){ var g=__grp[u]; if(g.length>=2){ g.sort(function(a,b){return a.p-b.p}); if(g[0].p<g[1].p && g.length>__cheapN){ __cheap=g[0].id; __cheapN=g.length; } } });
+  var bb = getBusinessById(Number(o.business_id));
+  if(geo && bb && bb.location && window.nxKm){
+    var d = window.nxKm(geo, bb.location); __nd++;
+    if(d < __bd){ __bd = d; __near = o.id; }
+  }
+});
+if(__np < 2) __cheap = null;
+if(__nd < 2) __near = null;
+h += offers.map(function(o,i){
         var b = getBusinessById(Number(o.business_id));
         var rt = b ? getBusinessRating(b.id) : {count:0,avg:0};
         var dist = (geo && b && b.location && window.nxKm) ? window.nxKm(geo,b.location) : null;
@@ -10150,9 +10176,9 @@ updateStats();
         if(b && b.verified) sub.push('✓ تأیید شده');
         var kk = "o"+o.id;
         var open = openKeys[kk] === true;
-        return '<details class="snp-offer'+(i===0?' best':'')+'" data-k="'+esc(kk)+'"'+(open?' open':'')+'><summary>'+
+        return '<details class="snp-offer'+(o.id===__cheap?' best':'')+'" data-k="'+esc(kk)+'"'+(open?' open':'')+'><summary>'+
           '<div class="snp-ava">'+esc(((b&&b.name)||"؟").trim().charAt(0))+'</div>'+
-          '<div class="snp-info"><div class="snp-name">'+esc(b?b.name:"کسب‌وکار")+'</div><div class="snp-sub">'+esc(sub.join(" · ")||(b&&b.address)||"")+'</div>'+(i===0?'<span class="snp-tag best">پیشنهاد برتر</span>':'')+'</div>'+
+          '<div class="snp-info"><div class="snp-name">'+esc(b?b.name:"کسب‌وکار")+'</div><div class="snp-sub">'+esc(sub.join(" · ")||(b&&b.address)||"")+'</div>'+(o.id===__cheap?'<span class="snp-tag best">💰 ارزان‌ترین</span>':'')+(o.id===__near?'<span class="snp-tag near">📍 نزدیک‌ترین</span>':'')+'</div>'+
           '<div class="snp-price"><b>'+esc(o.price||"—")+'</b><span>قیمت اعلامی</span></div></summary>'+
           '<div class="snp-body">'+
             (o.brand?'<div style="margin-top:10px"><span class="tag-mini">🏷 '+esc(o.brand)+'</span></div>':'')+
@@ -10219,9 +10245,9 @@ updateStats();
     lastOffers = 0; showToast("درخواست لغو شد.", "success"); await loadMy();
   }
   async function pickOffer(id){
-    if(!await nomaxConfirm("این پیشنهاد انتخاب شود؟ بعد از انتخاب، درخواست بسته می‌شود و کسب‌وکار مطلع می‌شود.")) return;
+    if(!await nomaxConfirm("این پیشنهاد انتخاب شود؟ شماره‌ی تو فقط برای همین کسب‌وکار نمایش داده می‌شود.")) return;
     var r = await sb.rpc("select_offer", { p_offer: id });
-    if(r.error){ showToast("انتخاب انجام نشد؛ شاید درخواست منقضی شده است.", "error"); await loadMy(); return; }
+    if(r.error){ console.error(r.error); showToast(((r.error.message||"").indexOf("invalid_offer")>-1) ? "این درخواست دیگر فعال نیست (منقضی یا قبلاً بسته شده)." : "انتخاب انجام نشد؛ دوباره تلاش کنید.", "error"); await loadMy(); return; }
     if(window.nomaxNotify) window.nomaxNotify({ action:"selected", offer_id:id });
     showToast("✓ پیشنهاد انتخاب شد. می‌توانی با کسب‌وکار تماس بگیری یا مسیر را ببینی.", "success");
     await loadMy();
@@ -10325,11 +10351,11 @@ updateStats();
     if(!ownerReqs.length){box.innerHTML='<div class="empty" style="padding:24px"><div style="font-size:28px">📭</div><div class="title">درخواست مرتبطی نیست</div><div class="desc">وقتی مشتری چیزی مرتبط با دسته کسب‌وکار شما بخواهد، اینجا می‌بینید.</div></div>';return;}
     var act=[],arch=[],WEEK=7*86400000; ownerReqs.forEach(function(q,i){var o=q.my_offer;if(q.status==="open"&&!o&&!declinedOf(q))act.push({q:q,i:i});else if(Date.now()-new Date(q.created_at).getTime()<WEEK)arch.push({q:q,i:i});}); arch.sort(function(a,b){return new Date(b.q.created_at)-new Date(a.q.created_at)});arch=arch.slice(0,15);
     var h='<div class="nx-sec">⏳ استعلام‌های جدید <b>'+toFa(act.length)+'</b></div>'; if(!act.length)h+='<div class="nx-empty-s">استعلام جدیدی برای پاسخ وجود ندارد.</div>';
-    act.forEach(function(x){var q=x.q,i=x.i,phone=String(q.phone||q.user_phone||""),masked=phone?phone.replace(/(\d{3})(\d{3,})(\d{2})$/,'$1•••$3'):'شماره مخفی';h+='<details class="nx-owner-req" data-owner-req="'+esc(q.id)+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+'</div></div><div class="nx-summary-actions"><button type="button" class="nx-mini-btn ok" data-send="'+i+'">✓ تأیید</button><button type="button" class="nx-mini-btn no" data-decline="'+i+'">رد</button></div></summary><div class="nx-owner-body"><div class="nx-owner-detail-grid"><div class="nx-owner-detail"><b>نام مشتری</b>'+esc(q.requester_name||"مشتری")+'</div><div class="nx-owner-detail"><b>کالا / خدمت</b>'+esc(q.service||"—")+'</div><div class="nx-owner-detail"><b>مکان</b>'+esc(q.area||"—")+'</div><div class="nx-owner-detail"><b>توضیحات</b>'+esc(q.description||"—")+'</div><div class="nx-owner-detail"><b>زمان ثبت</b>'+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div>'+(isLate(q)?'<div class="nx-warn" style="margin-top:9px;display:inline-block">⚠️ بیش از ۲۴ ساعت بی‌پاسخ مانده؛ امتیاز منفی ثبت می‌شود.</div>':'')+'<div class="nx-oc-form" style="margin-top:10px"><div class="nx-row2"><input data-f="price" data-i="'+i+'" maxlength="40" placeholder="💰 قیمت"><input data-f="brand" data-i="'+i+'" maxlength="40" placeholder="🏷 برند"></div><div class="nx-notebox"><textarea data-f="note" data-i="'+i+'" rows="2" maxlength="120" placeholder="توضیح کوتاه (گارانتی، موجودی، تحویل…)"></textarea><span class="nx-cnt">۰ / ۱۲۰</span></div></div></div></details>';});
+    act.forEach(function(x){var q=x.q,i=x.i,phone=String(q.phone||q.user_phone||""),masked=phone?phone.replace(/(\d{3})(\d{3,})(\d{2})$/,'$1•••$3'):'شماره مخفی';h+='<details class="nx-owner-req" data-owner-req="'+esc(q.id)+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+'</div></div><div class="nx-summary-actions"><button type="button" class="nx-mini-btn ok" data-send="'+i+'">✓ تأیید</button><button type="button" class="nx-mini-btn no" data-decline="'+i+'">رد</button></div></summary><div class="nx-owner-body"><div class="nx-owner-detail-grid"><div class="nx-owner-detail"><b>نام مشتری</b>'+esc(q.requester_name||"مشتری")+'</div><div class="nx-owner-detail"><b>کالا / خدمت</b>'+esc(q.service||"—")+'</div><div class="nx-owner-detail"><b>مکان</b>'+esc(q.area||"—")+'</div><div class="nx-owner-detail"><b>توضیحات</b>'+esc(q.description||"—")+'</div><div class="nx-owner-detail"><b>زمان ثبت</b>'+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div>'+(isLate(q)?'<div class="nx-warn" style="margin-top:9px;display:inline-block">⚠️ بیش از ۲۴ ساعت بی‌پاسخ مانده؛ امتیاز منفی ثبت می‌شود.</div>':'')+'<div class="nx-oc-form" style="margin-top:10px"><div class="nx-row2"><input data-f="price" data-i="'+i+'" maxlength="15" inputmode="numeric" placeholder="💰 مبلغ (تومان)"><select data-f="unit" data-i="'+i+'"><option value="">واحد…</option><option>کیلو</option><option>عدد</option><option>متر</option><option>ساعت</option><option>بسته</option><option>کل کار</option><option>بعد از بررسی</option></select></div><div class="nx-row2" style="grid-template-columns:1fr"><input data-f="brand" data-i="'+i+'" maxlength="40" placeholder="🏷 برند (اختیاری)"></div><div class="nx-notebox"><textarea data-f="note" data-i="'+i+'" rows="2" maxlength="120" placeholder="توضیح کوتاه (گارانتی، موجودی، تحویل…)"></textarea><span class="nx-cnt">۰ / ۱۲۰</span></div></div></div></details>';});
     h+='<button type="button" class="np-linkbtn" id="archToggle">🗄 '+(archOpen?'پنهان کردن بایگانی':'بایگانی ('+toFa(arch.length)+')')+'</button>';
     if(archOpen){arch.forEach(function(x){var q=x.q,o=q.my_offer,d=declinedOf(q),ok=!!(o&&q.status==="selected"&&q.selected_mine),no=!!d,st=o?(q.status==="selected"?(q.selected_mine?'🎉 پیشنهاد شما انتخاب شد':'مشتری پیشنهاد دیگری را انتخاب کرد'):'پیشنهاد ارسال شد'):(d?(d==='timeout'?'بدون پاسخ (۲۴ ساعت)':'رد شد'):'بسته شده');h+='<details class="nx-owner-req '+(ok?'archived-ok ':'')+(no?'archived-no':'')+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+' · '+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div><span class="st-pill '+(ok?'selected':'')+'">'+esc(st)+'</span></summary><div class="nx-owner-body">'+ocHead(q)+(o?'<div class="nx-reply"><div class="nx-reply-h">پاسخ شما</div><div class="nx-reply-r"><span>💰 '+esc(o.price)+'</span>'+(o.brand?'<span>🏷 '+esc(o.brand)+'</span>':'')+'</div>'+(o.note?'<div class="nx-note">'+esc(o.note)+'</div>':'')+'</div>':'')+(ok?'<div class="nx-won"><div class="nx-won-t">🎉 مشتری پیشنهاد شما را انتخاب کرد</div><div class="nx-won-n">👤 '+esc(q.requester_name||"مشتری")+'</div>'+(q.requester_phone?'<a class="nx-won-call" href="tel:'+esc(cleanPhone(q.requester_phone))+'">☎ تماس با مشتری · <span dir="ltr">'+toFa(esc(q.requester_phone))+'</span></a><div class="nx-won-h">این شماره فقط به‌دلیل انتخاب شما برای شما نمایش داده می‌شود.</div>':'<div class="nx-won-h">مشتری شماره‌ی موبایل ثبت نکرده است؛ منتظر تماس او بمانید.</div>')+'</div>':'')+'<div class="nx-oc-state">🔒 این مورد در بایگانی است و قابل ویرایش نیست.</div></div></details>';});}
     box.innerHTML=h; box.querySelectorAll('textarea[data-f="note"]').forEach(limitLines); var at=$("archToggle");if(at)at.onclick=function(){archOpen=!archOpen;renderOwner()};
-    box.querySelectorAll('[data-send]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var i=+btn.getAttribute('data-send'),q=ownerReqs[i],price=box.querySelector('[data-f="price"][data-i="'+i+'"]').value.trim(),brand=box.querySelector('[data-f="brand"][data-i="'+i+'"]').value.trim(),note=box.querySelector('[data-f="note"][data-i="'+i+'"]').value.trim();if(!price){showToast('قیمت را وارد کنید.','error');return}if(!await nomaxConfirm('⚠️ با تأیید، پیشنهاد برای مشتری ارسال و استعلام بایگانی می‌شود؛ قیمت بعداً قابل ویرایش نیست. ادامه می‌دهید؟'))return;btn.disabled=true;var r=await sb.rpc('submit_offer',{p_request:q.id,p_business:q.business_id,p_price:price,p_brand:brand,p_note:note.slice(0,120)});btn.disabled=false;if(r.error){showToast('ثبت پیشنهاد انجام نشد؛ دوباره تلاش کنید.','error');return}if(window.nomaxNotify)window.nomaxNotify({action:'new_offer',request_id:q.id,business_id:q.business_id});showToast('✓ پیشنهاد ثبت و بایگانی شد.','success');loadOwnerRequests()};});
+    box.querySelectorAll('[data-send]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var i=+btn.getAttribute('data-send'),q=ownerReqs[i],price=(function(){var u=box.querySelector('[data-f="unit"][data-i="'+i+'"]').value;if(u==='بعد از بررسی')return u;var raw=box.querySelector('[data-f="price"][data-i="'+i+'"]').value.replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}).replace(/\D/g,'');var n=parseInt(raw,10);if(!u||!n||n>1e10)return '';return n.toLocaleString('fa-IR')+' تومان / '+u})(),brand=box.querySelector('[data-f="brand"][data-i="'+i+'"]').value.trim(),note=box.querySelector('[data-f="note"][data-i="'+i+'"]').value.trim();if(!price){var __grp={}, __cheapN=0, __cheap=null, __near=null, __np=0,;return}if(!await nomaxConfirm('⚠️ با تأیید، پیشنهاد برای مشتری ارسال و استعلام بایگانی می‌شود؛ قیمت بعداً قابل ویرایش نیست. ادامه می‌دهید؟'))return;btn.disabled=true;var r=await sb.rpc('submit_offer',{p_request:q.id,p_business:q.business_id,p_price:price,p_brand:brand,p_note:note.slice(0,120)});btn.disabled=false;if(r.error){showToast('ثبت پیشنهاد انجام نشد؛ دوباره تلاش کنید.','error');return}if(window.nomaxNotify)window.nomaxNotify({action:'new_offer',request_id:q.id,business_id:q.business_id});showToast('✓ پیشنهاد ثبت و بایگانی شد.','success');loadOwnerRequests()};});
     box.querySelectorAll('[data-decline]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var q=ownerReqs[+btn.getAttribute('data-decline')];if(!await nomaxConfirm('⚠️ این استعلام رد و بایگانی می‌شود و دیگر قابل پاسخ نیست. ادامه می‌دهید؟',{danger:true}))return;var r=await sb.rpc('decline_request',{p_request:String(q.id),p_business:String(q.business_id)});if(r.error){showToast('رد استعلام انجام نشد؛ RPC مربوطه در بک‌اند موجود نیست.','error');return}showToast('استعلام رد و بایگانی شد.','success');loadOwnerRequests();if(window.nomaxLoadPenalties)window.nomaxLoadPenalties()};});
   }
 
