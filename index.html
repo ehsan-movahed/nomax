@@ -4607,6 +4607,15 @@ function migrateOldBusinesses(){
     return '<div class="avatar" style="'+style+fs2+'">'+esc(letter)+'</div>';
   }
   function showToast(msg, type){
+    try{
+      if(type === "success" || type === "info" || type === "error"){
+        var __now = Date.now();
+        if(!window.__lastToastBeep || __now - window.__lastToastBeep > 700){
+          window.__lastToastBeep = __now;
+          if(window.nomaxBeep) window.nomaxBeep();
+        }
+      }
+    }catch(_e){}
     var t = document.getElementById("toast");
     t.textContent = msg;
     t.className = "toast show" + (type ? " " + type : "");
