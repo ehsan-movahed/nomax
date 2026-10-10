@@ -10148,24 +10148,31 @@ updateStats();
     } else {
       h += '<div class="snp-offers-h"><span>📬 '+toFa(offers.length)+' پیشنهاد</span><small>نزدیک‌تر و سریع‌تر، بالاتر</small></div>';
       var __pv = function(s){
-  var t = String(s||"").replace(/[۰-۹]/g,function(d){return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);}).replace(/[٠-٩]/g,function(d){return "٠١٢٣٤٥٦٧٨٩".indexOf(d);});
-  var mul = /میلیون/.test(t) ? 1000000 : (/هزار/.test(t) ? 1000 : 1);
-  t = t.replace(/[,٬،\s]/g,"");
-  var m = t.match(/\d+(\.\d+)?/);
-  return m ? parseFloat(m[0]) * mul : null;
-};
-var __cheap=null, __near=null, __np=0, __nd=0, __bp=Infinity, __bd=Infinity;
-offers.forEach(function(o){
-  var p = __pv(o.price);
-  Object.keys(__grp).forEach(function(u){ var g=__grp[u]; if(g.length>=2){ g.sort(function(a,b){return a.p-b.p}); if(g[0].p<g[1].p && g.length>__cheapN){ __cheap=g[0].id; __cheapN=g.length; } } });
-  var bb = getBusinessById(Number(o.business_id));
-  if(geo && bb && bb.location && window.nxKm){
-    var d = window.nxKm(geo, bb.location); __nd++;
-    if(d < __bd){ __bd = d; __near = o.id; }
-  }
-});
-if(__np < 2) __cheap = null;
-if(__nd < 2) __near = null;
+        var t = String(s||"").replace(/[۰-۹]/g,function(d){return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);}).replace(/[٠-٩]/g,function(d){return "٠١٢٣٤٥٦٧٨٩".indexOf(d);});
+        var mul = /میلیون/.test(t) ? 1000000 : (/هزار/.test(t) ? 1000 : 1);
+        t = t.replace(/[,٬،\s]/g,"");
+        var m = t.match(/\d+(\.\d+)?/);
+        return m ? parseFloat(m[0]) * mul : null;
+      };
+      var __grp={}, __cheapN=0, __cheap=null, __near=null, __nd=0, __bd=Infinity;
+      offers.forEach(function(o){
+        var p = __pv(o.price);
+        var __u = (String(o.price||"").split("/")[1]||"").trim();
+        if(p !== null && __u && __u !== "بعد از بررسی"){ (__grp[__u]=__grp[__u]||[]).push({id:o.id,p:p}); }
+        var bb = getBusinessById(Number(o.business_id));
+        if(geo && bb && bb.location && window.nxKm){
+          var d = window.nxKm(geo, bb.location); __nd++;
+          if(d < __bd){ __bd = d; __near = o.id; }
+        }
+      });
+      Object.keys(__grp).forEach(function(u){
+        var g = __grp[u];
+        if(g.length >= 2){
+          g.sort(function(a,b){return a.p-b.p});
+          if(g[0].p < g[1].p && g.length > __cheapN){ __cheap = g[0].id; __cheapN = g.length; }
+        }
+      });
+      if(__nd < 2) __near = null;
 h += offers.map(function(o,i){
         var b = getBusinessById(Number(o.business_id));
         var rt = b ? getBusinessRating(b.id) : {count:0,avg:0};
@@ -10355,7 +10362,7 @@ h += offers.map(function(o,i){
     h+='<button type="button" class="np-linkbtn" id="archToggle">🗄 '+(archOpen?'پنهان کردن بایگانی':'بایگانی ('+toFa(arch.length)+')')+'</button>';
     if(archOpen){arch.forEach(function(x){var q=x.q,o=q.my_offer,d=declinedOf(q),ok=!!(o&&q.status==="selected"&&q.selected_mine),no=!!d,st=o?(q.status==="selected"?(q.selected_mine?'🎉 پیشنهاد شما انتخاب شد':'مشتری پیشنهاد دیگری را انتخاب کرد'):'پیشنهاد ارسال شد'):(d?(d==='timeout'?'بدون پاسخ (۲۴ ساعت)':'رد شد'):'بسته شده');h+='<details class="nx-owner-req '+(ok?'archived-ok ':'')+(no?'archived-no':'')+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+' · '+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div><span class="st-pill '+(ok?'selected':'')+'">'+esc(st)+'</span></summary><div class="nx-owner-body">'+ocHead(q)+(o?'<div class="nx-reply"><div class="nx-reply-h">پاسخ شما</div><div class="nx-reply-r"><span>💰 '+esc(o.price)+'</span>'+(o.brand?'<span>🏷 '+esc(o.brand)+'</span>':'')+'</div>'+(o.note?'<div class="nx-note">'+esc(o.note)+'</div>':'')+'</div>':'')+(ok?'<div class="nx-won"><div class="nx-won-t">🎉 مشتری پیشنهاد شما را انتخاب کرد</div><div class="nx-won-n">👤 '+esc(q.requester_name||"مشتری")+'</div>'+(q.requester_phone?'<a class="nx-won-call" href="tel:'+esc(cleanPhone(q.requester_phone))+'">☎ تماس با مشتری · <span dir="ltr">'+toFa(esc(q.requester_phone))+'</span></a><div class="nx-won-h">این شماره فقط به‌دلیل انتخاب شما برای شما نمایش داده می‌شود.</div>':'<div class="nx-won-h">مشتری شماره‌ی موبایل ثبت نکرده است؛ منتظر تماس او بمانید.</div>')+'</div>':'')+'<div class="nx-oc-state">🔒 این مورد در بایگانی است و قابل ویرایش نیست.</div></div></details>';});}
     box.innerHTML=h; box.querySelectorAll('textarea[data-f="note"]').forEach(limitLines); var at=$("archToggle");if(at)at.onclick=function(){archOpen=!archOpen;renderOwner()};
-    box.querySelectorAll('[data-send]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var i=+btn.getAttribute('data-send'),q=ownerReqs[i],price=(function(){var u=box.querySelector('[data-f="unit"][data-i="'+i+'"]').value;if(u==='بعد از بررسی')return u;var raw=box.querySelector('[data-f="price"][data-i="'+i+'"]').value.replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}).replace(/\D/g,'');var n=parseInt(raw,10);if(!u||!n||n>1e10)return '';return n.toLocaleString('fa-IR')+' تومان / '+u})(),brand=box.querySelector('[data-f="brand"][data-i="'+i+'"]').value.trim(),note=box.querySelector('[data-f="note"][data-i="'+i+'"]').value.trim();if(!price){var __grp={}, __cheapN=0, __cheap=null, __near=null, __np=0,;return}if(!await nomaxConfirm('⚠️ با تأیید، پیشنهاد برای مشتری ارسال و استعلام بایگانی می‌شود؛ قیمت بعداً قابل ویرایش نیست. ادامه می‌دهید؟'))return;btn.disabled=true;var r=await sb.rpc('submit_offer',{p_request:q.id,p_business:q.business_id,p_price:price,p_brand:brand,p_note:note.slice(0,120)});btn.disabled=false;if(r.error){showToast('ثبت پیشنهاد انجام نشد؛ دوباره تلاش کنید.','error');return}if(window.nomaxNotify)window.nomaxNotify({action:'new_offer',request_id:q.id,business_id:q.business_id});showToast('✓ پیشنهاد ثبت و بایگانی شد.','success');loadOwnerRequests()};});
+    box.querySelectorAll('[data-send]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var i=+btn.getAttribute('data-send'),q=ownerReqs[i],price=(function(){var u=box.querySelector('[data-f="unit"][data-i="'+i+'"]').value;if(u==='بعد از بررسی')return u;var raw=box.querySelector('[data-f="price"][data-i="'+i+'"]').value.replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}).replace(/\D/g,'');var n=parseInt(raw,10);if(!u||!n||n>1e10)return '';return n.toLocaleString('fa-IR')+' تومان / '+u})(),brand=box.querySelector('[data-f="brand"][data-i="'+i+'"]').value.trim(),note=box.querySelector('[data-f="note"][data-i="'+i+'"]').value.trim();if(!price){showToast('مبلغ را به عدد وارد کنید و واحد را انتخاب کنید.','error');return}if(!await nomaxConfirm('⚠️ با تأیید، پیشنهاد برای مشتری ارسال و استعلام بایگانی می‌شود؛ قیمت بعداً قابل ویرایش نیست. ادامه می‌دهید؟'))return;btn.disabled=true;var r=await sb.rpc('submit_offer',{p_request:q.id,p_business:q.business_id,p_price:price,p_brand:brand,p_note:note.slice(0,120)});btn.disabled=false;if(r.error){showToast('ثبت پیشنهاد انجام نشد؛ دوباره تلاش کنید.','error');return}if(window.nomaxNotify)window.nomaxNotify({action:'new_offer',request_id:q.id,business_id:q.business_id});showToast('✓ پیشنهاد ثبت و بایگانی شد.','success');loadOwnerRequests()};});
     box.querySelectorAll('[data-decline]').forEach(function(btn){btn.onclick=async function(e){e.preventDefault();e.stopPropagation();var q=ownerReqs[+btn.getAttribute('data-decline')];if(!await nomaxConfirm('⚠️ این استعلام رد و بایگانی می‌شود و دیگر قابل پاسخ نیست. ادامه می‌دهید؟',{danger:true}))return;var r=await sb.rpc('decline_request',{p_request:String(q.id),p_business:String(q.business_id)});if(r.error){showToast('رد استعلام انجام نشد؛ RPC مربوطه در بک‌اند موجود نیست.','error');return}showToast('استعلام رد و بایگانی شد.','success');loadOwnerRequests();if(window.nomaxLoadPenalties)window.nomaxLoadPenalties()};});
   }
 
