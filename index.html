@@ -395,7 +395,7 @@ body, button, input, select, textarea{
   width:13px; height:13px; color:var(--text-3); flex-shrink:0;
   transition:transform .22s var(--ease-spring);
 }
-.category-group.open .cat-arrow{transform:rotate(180deg); color:var(--primary-600)}
+.category-group .cat-arrow{transform:rotate(90deg);transition:transform .18s ease}.category-group.open .cat-arrow{transform:rotate(0deg); color:var(--primary-600)}
 .category-sublist{
   display:none;
   padding:2px 6px 8px;
@@ -3482,6 +3482,7 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
         const SUPABASE_URL = "https://pqydooffsqhvrmswzpfa.supabase.co";
         const SUPABASE_KEY = "sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF";
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.__nomaxSupabaseClient = sb;
       
         // اتصال آماده است؛ از select('*') عمومی برای تست استفاده نمی‌کنیم (افشای داده).
   /* ============ DATA ============ */
@@ -5804,19 +5805,27 @@ function scoreBusiness(b, q){
   /* ============ RENDER RESULTS ============ */
     
   function searchBusinesses(){
-  var q = normalize(document.getElementById("searchInput").value);
+  var input = document.getElementById("searchInput");
+  var q = normalize(input ? input.value : "");
   var card = document.getElementById("resultsCard");
-  var found = getFiltered();
-  if(!q && !activeCategory && !activeCategoryId && !activeSubcategoryId){
+  if(!card) return;
+  /* Empty search must remove stale results from the layout, not merely leave old markup behind. */
+  if(!q && !activeCategory && !activeCategoryId && !activeSubcategoryId && !filterTopActive && !filterNewestActive && !filterEmergencyActive){
     card.classList.add("hidden");
+    card.innerHTML = "";
+    card.setAttribute("aria-hidden","true");
     return;
   }
+  var found = getFiltered();
   if(q && found.length === 0){
   sb.from("search_logs").insert({ query: String(q).slice(0, 100), result_count: 0 }).then(function(res){
     if(res && res.error){ /* silent: log is best-effort */ }
   });
 }
   renderResults(found, q);
+  card.classList.remove("hidden");
+  card.removeAttribute("aria-hidden");
+  window.setTimeout(function(){card.scrollIntoView({behavior:"smooth",block:"start"});},30);
 }
   
   /* ============ CATEGORY MENU ============ */
@@ -5985,6 +5994,14 @@ function scoreBusiness(b, q){
   var searchBox = document.getElementById("searchBox");
   document.getElementById("searchInput").addEventListener("input", function(){
     clearTimeout(debounceTid);
+    var current = normalize(this.value);
+    /* Clear results immediately when the query is erased; no 350ms stale-results window. */
+    if(!current && !activeCategory && !activeCategoryId && !activeSubcategoryId && !filterTopActive && !filterNewestActive && !filterEmergencyActive){
+      searchBox.classList.remove("loading");
+      var results = document.getElementById("resultsCard");
+      if(results){ results.classList.add("hidden"); results.innerHTML = ""; results.setAttribute("aria-hidden","true"); }
+      return;
+    }
     searchBox.classList.add("loading");
     debounceTid = setTimeout(function(){
       searchBox.classList.remove("loading");
@@ -8443,42 +8460,22 @@ hint.textContent = activeF.length
   ? ("فیلتر فعال: " + activeF.join("، ") + " — برای برداشتن، دوباره روی دکمه بزن")
   : "";
 
+    var ownerCtaCard=document.getElementById("ownerCtaCard");
+    if(ownerCtaCard) ownerCtaCard.classList.toggle("hidden", !!query && !found.length);
     if(!found.length){
       var title=query ? "برای این نیاز هنوز کسب‌وکاری پیدا نشد" : "در این بخش هنوز کسب‌وکاری ثبت نشده";
       var safeQ=esc2(query||"");
       results.innerHTML =
-        '<div class="empty">'+
-          '<div class="icon-big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>'+
+        '<div class="empty nx-no-results">'+
+          '<div class="icon-big">🔎</div>'+
           '<div class="title">'+title+'</div>'+
-          '<div class="desc">'+(query ? 'لازم نیست دنبال دسته‌بندی درست بگردی؛ می‌توانی همین نیاز را برای کسب‌وکارهای مرتبط ارسال کنی.' : 'اگر کسب‌وکار موردنظرت در فهرست نیست، می‌توانی درخواست عمومی ثبت کنی.')+'</div>'+
-          '<div class="request-confirm">'+
-            '<div class="rc-head">'+
-              '<div class="rc-icon">📨</div>'+
-              '<div><div class="rc-title">می‌خواهید درخواست شما برای فروشگاه‌های مرتبط بهبهان ارسال کنم؟</div>'+
-              '<div class="rc-desc">کسب‌وکارهای مرتبط درخواست را می‌بینند. و قیمت، برند و توضیحاتشان را برایت ثبت می‌کنند. <b>شماره‌ات تا قبل از انتخاب پیشنهاد نمایش داده نمی‌شود.</b></div></div>'+
-            '</div>'+
-            (query ? '<div class="request-meta"><span>🔎 نیاز: '+safeQ+'</span><span>📍 بهبهان</span><span>🔒 شماره‌ات فقط بعد از انتخاب تو، به همان کسب‌وکار نشان داده می‌شود</span></div>' : '')+
-            '<div class="rc-actions">'+
-              '<button class="rc-yes" id="emptyRequestCTA">✓ بله، ارسال کن</button>'+
-              '<button class="rc-no" id="emptyNoRequestCTA">فعلاً نه</button>'+
-            '</div>'+
-          '</div>'+
-          '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">'+
-            '<div style="font-size:12px;color:var(--text-3);margin-bottom:8px">صاحب کسب‌وکاری؟</div>'+
-            '<button class="cta" id="emptyCTA" style="background:var(--muted);color:var(--text);box-shadow:none;font-size:12.5px;padding:9px 16px">➕ ثبت کسب‌وکار جدید</button>'+
-          '</div>'+
+          '<div class="desc">'+(query ? 'برای «'+safeQ+'» نتیجه‌ای پیدا نشد. می‌توانی یک استعلام قیمت ثبت کنی تا کسب‌وکارهای مرتبط پیشنهاد بدهند.' : 'عبارت دیگری جست‌وجو کن یا استعلام قیمت ثبت کن.')+'</div>'+
+          '<button class="rc-yes" id="emptyRequestCTA">💰 ثبت استعلام قیمت</button>'+
         '</div>';
       card.classList.remove("hidden");
 
       var yes=document.getElementById("emptyRequestCTA");
       if(yes) yes.onclick=function(){ openRequestModal(query||""); };
-      var no=document.getElementById("emptyNoRequestCTA");
-      if(no) no.onclick=function(){ showToast("باشه؛ هر وقت خواستی می‌تونی درخواست ثبت کنی.","info"); };
-      var cta=document.getElementById("emptyCTA");
-      if(cta) cta.onclick=function(){
-        document.getElementById("registerCard").classList.remove("hidden");
-        document.getElementById("registerCard").scrollIntoView({behavior:"smooth",block:"start"});
-      };
       return;
     }
 
@@ -10470,16 +10467,6 @@ h += offers.map(function(o,i){
     if(!document.hidden && user()){ loadMy(true); if(hasBiz()) loadOwnerRequests(true); }
   });
 
-  /* دکمه‌ی ثبت درخواست زیر جستجو */
-  var sw = $("stickySearchWrap");
-  if(sw && !$("quickReqBtn")){
-    var b = document.createElement("button");
-    b.id = "quickReqBtn"; b.type = "button";
-    b.style.cssText = "width:100%;margin-top:8px;border:1.5px dashed var(--primary-400);border-radius:12px;padding:10px;background:var(--primary-50);color:var(--primary-700);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer";
-    b.textContent = "📨 پیدا نکردی؟ درخواست ثبت کن تا کسب‌وکارها قیمت بدهند";
-    b.onclick = function(){ openRequestModal($("searchInput").value.trim()); };
-    sw.parentNode.appendChild(b);
-  }
 })();
 </script>
 
@@ -11283,6 +11270,7 @@ if(!isOwnBiz){
       inner.insertBefore(top,actions);
     });
   }
+  window.decorateNomaxResults=decorateResults;
   if(window.renderResults){var rr=window.renderResults;window.renderResults=function(found,q){rr.apply(this,arguments);decorateResults();};}
 
   /* ---------- تاریخچه استعلام: حداکثر ۱۵ مورد و فقط ۷ روز ---------- */
@@ -11888,5 +11876,1105 @@ var r = S.flow==="link"
   addBtn();
 })();
 </script>
+
+<style id="nomax-home-redesign">
+/* ===== NOMAX HOME REDESIGN v1 ===== */
+:root{--nx-brand:#0f9f91;--nx-brand-dark:#087f74;--nx-brand-soft:#e8f8f5;--nx-line:#e7eceb;--nx-shadow:0 8px 28px rgba(15,23,42,.055)}
+body{background:var(--bg,#f7f9f8)}
+.header{min-height:76px!important;padding:12px 64px 12px!important;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--surface,#fff)!important;color:var(--text,#17211f)!important;border-bottom:1px solid var(--nx-line);box-shadow:0 3px 18px rgba(15,23,42,.035);text-align:center;overflow:visible}
+.header::before,.header .wave{display:none!important}
+.header .logo-mark{width:38px;height:38px;min-width:38px;margin:0!important;border-radius:12px;background:var(--nx-brand-soft)!important;color:var(--nx-brand-dark)!important;border:1px solid #c8eee7;box-shadow:none;backdrop-filter:none}
+.header .logo-mark svg{width:21px;height:21px}
+.header h1{font-size:21px!important;line-height:1.25;color:var(--text,#17211f)!important;margin:0!important}
+.header .tagline{font-size:11px!important;margin:2px 0 0!important;color:var(--text-2,#64716f)!important;opacity:1}
+.header .stats{display:none!important}
+.header-menu-anchor{top:50%!important;right:14px!important;transform:translateY(-50%)}
+.header-menu-toggle,.theme-toggle{color:var(--text,#17211f)!important;background:var(--surface-2,#f2f6f5)!important;border:1px solid var(--nx-line)!important;box-shadow:none!important}
+.theme-toggle{top:50%!important;left:14px!important;transform:translateY(-50%)}
+.header .acct-btn{left:58px!important;top:50%!important;transform:translateY(-50%)}
+.container{max-width:820px!important;margin-top:0!important;padding:12px 16px calc(92px + env(safe-area-inset-bottom))!important}
+.container>.card:first-of-type{margin-top:0!important}
+.card{border-radius:20px!important;border-color:var(--nx-line)!important;box-shadow:var(--nx-shadow)!important}
+.search-title{font-size:22px!important;line-height:1.5;margin:2px 0 12px!important;justify-content:center}
+.search-title .icon{color:var(--nx-brand)!important}
+#stickySearchWrap{position:relative!important;top:auto!important;background:transparent!important;box-shadow:none!important;padding:0!important;margin:0!important}
+.search-box{min-height:56px!important;border:1px solid #dbe8e5!important;border-radius:17px!important;box-shadow:0 5px 18px rgba(15,159,145,.07)!important;overflow:hidden}
+.search-box input{font-size:14px!important;min-height:54px!important}
+.search-box button{border-radius:13px!important;background:var(--nx-brand)!important;margin:5px!important;min-height:44px!important}
+#nxHomeDiscover{padding:14px 0 2px;direction:rtl}
+.nx-home-section{margin:12px 0 18px;min-width:0}
+.nx-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 12px}
+.nx-section-title{font-size:16px;font-weight:850;color:var(--text,#17211f);margin:0;display:flex;align-items:center;gap:8px}
+.nx-section-sub{font-size:11px;color:var(--text-3,#899491);margin:4px 0 0}
+.nx-section-link,.nx-location-btn{border:0;background:transparent;color:var(--nx-brand-dark);font:inherit;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer;padding:8px 0}
+.nx-location-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--nx-brand-soft);border:1px solid #ccefe8;border-radius:14px;padding:10px 12px;margin:0 0 12px}
+.nx-location-copy{font-size:11px;line-height:1.7;color:#28665f}
+.nx-business-strip{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;padding:2px 1px 12px;scrollbar-width:thin;scrollbar-color:#c9d8d4 transparent}
+.nx-business-strip::-webkit-scrollbar{height:4px}.nx-business-strip::-webkit-scrollbar-thumb{background:#c9d8d4;border-radius:9px}
+.nx-mini-biz{flex:0 0 174px;max-width:174px;scroll-snap-align:start;border:1px solid var(--nx-line);border-radius:17px;overflow:hidden;background:var(--surface,#fff);box-shadow:0 4px 15px rgba(15,23,42,.04);cursor:pointer;transition:transform .18s,border-color .18s}
+.nx-mini-biz:active{transform:scale(.98)}
+.nx-mini-image{height:92px;background:linear-gradient(135deg,#eaf8f5,#f6f8f7);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--nx-brand-dark);font-size:29px;position:relative}
+.nx-mini-image img{width:100%;height:100%;object-fit:cover;display:block}
+.nx-mini-verified{position:absolute;top:7px;right:7px;background:rgba(255,255,255,.94);color:#087f74;border-radius:20px;padding:4px 7px;font-size:9px;font-weight:800}
+.nx-mini-body{padding:10px}
+.nx-mini-name{font-size:12px;font-weight:850;color:var(--text,#17211f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+.nx-mini-category{font-size:10px;color:var(--text-3,#899491);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nx-mini-meta{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:9px;font-size:10px;color:var(--text-2,#64716f)}
+.nx-mini-rating{color:#b77908;font-weight:800}
+.nx-mini-action{display:block;margin-top:9px;text-align:center;padding:8px 6px;border-radius:10px;background:var(--nx-brand-soft);color:var(--nx-brand-dark);font-size:11px;font-weight:850}
+.nx-empty{padding:17px;border:1px dashed var(--nx-line);border-radius:15px;color:var(--text-3,#899491);font-size:12px;text-align:center;line-height:1.9}
+.nx-category-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 1px 10px;scrollbar-width:none}.nx-category-strip::-webkit-scrollbar{display:none}
+.nx-category-chip{flex:0 0 auto;min-width:92px;border:1px solid var(--nx-line);border-radius:15px;background:var(--surface,#fff);padding:12px 10px;text-align:center;cursor:pointer;color:var(--text,#17211f);box-shadow:0 3px 12px rgba(15,23,42,.025)}
+.nx-category-chip span{display:block;font-size:22px;margin-bottom:6px}.nx-category-chip b{font-size:11px;font-weight:800;white-space:nowrap}
+#ownerCtaCard{margin-top:20px!important;border:1px solid var(--nx-line)!important;background:var(--surface)!important}
+#ownerCtaCard .menu-btn.green{background:var(--nx-brand)!important;color:#fff!important}
+@media(min-width:700px){.container{padding-top:22px!important}.nx-mini-biz{flex-basis:190px;max-width:190px}.nx-mini-image{height:105px}.header{padding-top:14px!important;padding-bottom:14px!important}}
+@media(max-width:480px){.header{min-height:66px!important;padding:10px 62px!important}.header h1{font-size:19px!important}.header .logo-mark{width:34px;height:34px;min-width:34px}.container{padding-left:12px!important;padding-right:12px!important}.search-title{font-size:20px!important}.nx-mini-biz{flex-basis:158px;max-width:158px}.nx-mini-image{height:84px}.card{padding:14px!important}}
+[data-theme="dark"] .nx-mini-biz,[data-theme="dark"] .nx-category-chip{background:var(--surface);border-color:var(--border,var(--nx-line))}
+[data-theme="dark"] .nx-location-row{background:rgba(15,159,145,.12);border-color:rgba(15,159,145,.3)}
+
+
+/* ===== NOMAX UX FIXES v2 ===== */
+.header .theme-toggle{position:absolute!important;top:50%!important;left:14px!important;right:auto!important;transform:translateY(-50%)!important;z-index:8!important;flex:0 0 42px!important}
+.header .theme-toggle:hover{transform:translateY(-50%) scale(1.02)!important;position:absolute!important}
+.header .theme-toggle:active{transform:translateY(-50%) scale(.98)!important;position:absolute!important}
+.header .acct-btn{position:absolute!important;left:60px!important;top:50%!important;transform:translateY(-50%)!important}
+.header .acct-btn:hover{transform:translateY(-50%) scale(1.04)!important}
+#resultsCard{scroll-margin-top:12px}
+#nxHomeDiscover{padding-top:8px!important}
+.nx-location-row{align-items:center}
+.nx-location-copy b{font-size:13px;color:var(--nx-brand-dark)}
+.nx-quote-hero{display:flex;align-items:center;gap:12px;margin:14px 0 18px;padding:16px;border-radius:18px;background:linear-gradient(115deg,#087f74,#10a99a);color:#fff;box-shadow:0 8px 24px rgba(15,159,145,.18)}
+.nx-quote-hero-icon{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.2);border-radius:14px;font-size:25px}
+.nx-quote-hero-copy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.nx-quote-hero-copy b{font-size:14px;font-weight:900}
+.nx-quote-hero-copy span{font-size:11px;line-height:1.7;color:rgba(255,255,255,.88)}
+.nx-quote-hero-btn{border:0;border-radius:11px;background:#fff;color:#087f74;padding:10px 12px;font:inherit;font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer}
+.nx-no-results{padding:18px!important}
+.nx-no-results .icon-big{font-size:24px;margin-bottom:4px}
+.nx-no-results .rc-yes{margin-top:12px;border:0;border-radius:12px;padding:11px 18px;font:inherit;font-weight:850;cursor:pointer}
+@media(max-width:480px){.nx-quote-hero{padding:12px;gap:9px}.nx-quote-hero-icon{width:38px;height:38px;flex-basis:38px;font-size:21px}.nx-quote-hero-copy b{font-size:12px}.nx-quote-hero-copy span{font-size:10px}.nx-quote-hero-btn{padding:9px 10px;font-size:11px}}
+[data-theme="dark"] .nx-quote-hero{background:linear-gradient(115deg,#115e59,#0f766e)}
+[data-theme="dark"] .nx-quote-hero-btn{background:#d1fae5;color:#065f46}
+
+
+/* ===== NOMAX HOME REFINEMENT v3 ===== */
+#nxFeaturedHero{direction:rtl;margin:4px 0 14px;position:relative}
+.nx-featured-photo{height:clamp(150px,38vw,245px);min-height:150px;position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(125deg,#087f74,#13b8a5 58%,#d5f7ef);box-shadow:0 10px 28px rgba(8,127,116,.16);isolation:isolate}
+.nx-featured-photo>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0}.nx-featured-shade{z-index:1}.nx-featured-badge,.nx-featured-caption,.nx-featured-open,.nx-featured-art{z-index:2}
+.nx-featured-shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(7,34,32,.82),rgba(7,34,32,.05) 78%);pointer-events:none}
+.nx-featured-badge{position:absolute;top:12px;right:12px;border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.94);color:#087f74;font-size:11px;font-weight:900}
+.nx-featured-caption{position:absolute;right:17px;bottom:17px;left:100px;display:flex;flex-direction:column;gap:3px;color:white;text-shadow:0 1px 4px rgba(0,0,0,.18)}
+.nx-featured-caption small{font-size:11px;opacity:.9}.nx-featured-caption b{font-size:clamp(17px,4vw,23px);font-weight:900}.nx-featured-caption span{font-size:12px;opacity:.92}
+.nx-featured-open{position:absolute;left:14px;bottom:17px;border:0;border-radius:12px;background:#fff;color:#087f74;padding:10px 12px;font:inherit;font-size:12px;font-weight:900;cursor:pointer}
+.nx-featured-placeholder{background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.35),transparent 30%),linear-gradient(120deg,#087f74,#12a99a 62%,#6ad9c7)}
+.nx-featured-placeholder .nx-featured-shade{background:linear-gradient(0deg,rgba(5,65,59,.65),transparent)}
+.nx-featured-art{position:absolute;top:18%;left:8%;font-size:clamp(65px,18vw,115px);filter:drop-shadow(0 12px 12px rgba(0,0,0,.13));opacity:.95}
+#nxQuoteHeroTop{margin:10px 0 14px}
+#nxHomeDiscover .nx-quote-hero,#nxHomeDiscover .nx-location-row{display:none!important}
+#quickReqBtn{display:none!important}
+#resultsCard{scroll-margin-top:10px}
+@media(max-width:480px){#nxFeaturedHero{margin-top:2px}.nx-featured-photo{height:170px;border-radius:18px}.nx-featured-caption{right:13px;bottom:13px;left:92px}.nx-featured-open{left:10px;bottom:13px;padding:9px}.nx-featured-badge{top:9px;right:9px;font-size:10px}}
+[data-theme="dark"] .nx-featured-photo{box-shadow:0 10px 26px rgba(0,0,0,.25)}
+/* NOMAX refinement v4: compact header, reliable location, accessible details */
+.header{padding-right:68px!important;padding-left:112px!important;gap:7px!important;justify-content:flex-start!important;direction:rtl!important}
+.header h1{font-size:clamp(16px,4.2vw,21px)!important;white-space:nowrap!important;flex:0 0 auto!important}
+.header .logo-mark{flex:0 0 34px!important;width:34px!important;height:34px!important}
+.header .tagline{display:none!important}
+.header .header-menu-anchor{right:12px!important}
+.header .theme-toggle{left:12px!important;width:38px!important;height:38px!important;min-width:38px!important}
+.header .acct-btn{left:56px!important;width:38px!important;height:38px!important;min-width:38px!important}
+.nx-home-section .nx-section-link:after{content:"";display:inline-block;width:7px;height:7px;border-top:2px solid currentColor;border-left:2px solid currentColor;transform:rotate(-45deg);margin-right:7px;vertical-align:2px}
+.nx-category-chip{display:flex!important;align-items:center;justify-content:center;gap:8px;min-height:48px!important;padding:10px 13px!important}
+.nx-category-chip span{font-size:18px!important;margin:0!important}
+.nx-location-row{display:flex!important}
+.nx-location-btn{border-radius:10px!important;background:#fff!important;border:1px solid #bfe8df!important;padding:9px 12px!important;flex:0 0 auto}
+.nx-featured-admin{position:absolute;top:12px;left:12px;z-index:5;border:1px solid rgba(255,255,255,.7);border-radius:10px;padding:7px 10px;background:rgba(255,255,255,.94);color:#087f74;font:inherit;font-size:11px;font-weight:850;cursor:pointer}
+.nx-detail-close{display:grid!important;place-items:center!important;width:38px!important;height:38px!important;border:1px solid var(--nx-line,#e7eceb)!important;border-radius:13px!important;background:var(--surface-2,#f2f6f5)!important;color:var(--text,#17211f)!important;font-size:0!important;cursor:pointer;transition:background .15s,transform .15s!important}
+.nx-detail-close:before{content:"✕";font-size:15px;font-weight:700}
+.nx-detail-close:hover{background:var(--nx-brand-soft)!important;transform:rotate(90deg)!important}
+@media(max-width:480px){.header{padding-right:56px!important;padding-left:100px!important;min-height:62px!important}.header h1{font-size:16px!important}.header .logo-mark{width:30px!important;height:30px!important;min-width:30px!important}.header .theme-toggle{left:8px!important;width:35px!important;height:35px!important;min-width:35px!important}.header .acct-btn{left:48px!important;width:35px!important;height:35px!important;min-width:35px!important}.nx-featured-admin{top:8px;left:8px;font-size:10px;padding:6px 8px}}
+
+
+</style>
+<script id="nomax-home-redesign-script">
+/* Progressive home-page enhancement; keeps the existing Nomax search and workflows. */
+(function(){
+  'use strict';
+  var homeLocation = null;
+  var categories = [
+    {label:'ساختمان',emoji:'🧱',terms:['ساختمان','بنایی','ساخت و ساز']},
+    {label:'خانه و تعمیرات',emoji:'🏠',terms:['خانه','تعمیرات','لوله کشی','برق کاری']},
+    {label:'مکانیکی',emoji:'🔧',terms:['مکانیک','مکانیکی','تعمیر خودرو']},
+    {label:'غذا',emoji:'🍽️',terms:['غذا','رستوران','غذای خانگی']},
+    {label:'زیبایی',emoji:'✨',terms:['زیبایی','آرایشگاه','سالن زیبایی']},
+    {label:'حمل‌ونقل',emoji:'🚚',terms:['باربری','حمل و نقل','اسباب کشی']}
+  ];
+  function esc(s){ if(typeof escx==='function') return escx(String(s==null?'':s)); return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function faNum(n){return typeof toFa==='function'?toFa(String(n)):String(n);}
+  function rating(b){try{var r=typeof getBusinessRating==='function'?getBusinessRating(b.id):null;return r&&Number(r.avg)>0?{avg:Number(r.avg),count:Number(r.count)||0}:{avg:0,count:0};}catch(e){return {avg:0,count:0};}}
+  function approvedBusinesses(){
+    if(!Array.isArray(window.businesses)) return [];
+    return window.businesses.filter(function(b){return b&&b.status==='approved';});
+  }
+  function coords(b){var l=b&&b.location;if(!l)return null;var lat=Number(l.lat),lng=Number(l.lng);return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180?{lat:lat,lng:lng}:null;}
+  function distanceKm(a,b){var c=coords(b);if(!a||!c)return null;var rad=Math.PI/180,dLat=(c.lat-a.lat)*rad,dLng=(c.lng-a.lng)*rad;var x=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(c.lat*rad)*Math.sin(dLng/2)**2;return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+  function sortBusinesses(list){
+    return list.map(function(b){var r=rating(b);return {b:b,r:r,d:distanceKm(homeLocation,b)};}).sort(function(a,b){
+      if(homeLocation&&a.d!==null&&b.d!==null&&a.d<=100&&b.d<=100&&Math.abs(a.d-b.d)>0.15){var scoreA=(a.r.count>=3?a.r.avg:0)*0.65+Math.max(0,1-a.d/30)*2;var scoreB=(b.r.count>=3?b.r.avg:0)*0.65+Math.max(0,1-b.d/30)*2;if(scoreA!==scoreB)return scoreB-scoreA;}
+      if(b.r.count>=3&&a.r.count<3)return 1;if(a.r.count>=3&&b.r.count<3)return -1;
+      if(b.r.avg!==a.r.avg)return b.r.avg-a.r.avg;if(b.r.count!==a.r.count)return b.r.count-a.r.count;
+      return String(a.b.name||'').localeCompare(String(b.b.name||''),'fa');
+    }).map(function(x){return x.b;});
+  }
+  function imageFor(b){
+    var url=b.profileImage||b.image||b.logo||'';
+    if(url && typeof url==='string' && (/^(https?:|data:image\/)/i).test(url)) return '<img loading="lazy" alt="'+esc(b.name||'تصویر کسب‌وکار')+'" src="'+esc(url)+'" onerror="this.remove();">';
+    if(typeof avatarHTML==='function'){try{return avatarHTML(b);}catch(e){}}
+    return '<span aria-hidden="true">'+esc((b.name||'🏪').trim().charAt(0)||'🏪')+'</span>';
+  }
+  function cardHtml(b){
+    var r=rating(b),d=distanceKm(homeLocation,b);
+    var dist=d!==null&&d<=100?(d<1?Math.max(50,Math.round(d*1000))+' متر':d.toFixed(1)+' کیلومتر'):'';
+    var rate=r.avg>0?'<span class="nx-mini-rating">★ '+esc(r.avg.toFixed(1))+(r.count?' <span style="font-weight:500;color:var(--text-3)">('+faNum(r.count)+')</span>':'')+'</span>':'<span>پیشنهادی</span>';
+    return '<article class="nx-mini-biz" role="button" tabindex="0" data-nx-biz="'+esc(b.id)+'" aria-label="مشاهده '+esc(b.name||'کسب‌وکار')+'">'+
+      '<div class="nx-mini-image">'+imageFor(b)+(b.verified?'<span class="nx-mini-verified">✓ تأییدشده</span>':'')+'</div>'+
+      '<div class="nx-mini-body"><div class="nx-mini-name">'+esc(b.name||'کسب‌وکار بدون نام')+'</div>'+
+      '<div class="nx-mini-meta">'+rate+(dist?'<span>📍 '+esc(dist)+'</span>':'')+'</div><span class="nx-mini-action">مشاهده کسب‌وکار ←</span></div></article>';
+  }
+  function openBusinessInSearchAccordion(b){
+    if(!b)return;
+    var rc=document.getElementById('resultsCard');
+    if(!rc||typeof window.renderResults!=='function')return;
+    rc.classList.remove('hidden');
+    // Use the exact same full business card renderer as normal search results.
+    window.renderResults([b],'');
+    if(typeof window.decorateNomaxResults==='function')window.decorateNomaxResults();
+    window.setTimeout(function(){
+      if(typeof window.decorateNomaxResults==='function')window.decorateNomaxResults();
+      var details=rc.querySelector('details.biz-accordion');
+      if(details){
+        details.classList.add('nx-opened-from-home');
+        details.open=true;
+        details.scrollIntoView({behavior:'smooth',block:'start'});
+      }else{rc.scrollIntoView({behavior:'smooth',block:'start'});}
+    },80);
+  }
+  function render(){
+    var host=document.getElementById('nxHomeDiscover');if(!host)return;
+    var all=approvedBusinesses(),ordered=sortBusinesses(all),featured=ordered.slice(0,10);
+    var title=homeLocation?'کسب‌وکارهای برتر نزدیک شما':'کسب‌وکارهای پیشنهادی';
+    var sub=homeLocation?'براساس فاصله و بازخورد کاربران':'انتخاب‌هایی براساس امتیاز و بازخورد کاربران';
+    var bizHtml=featured.length?'<div class="nx-business-strip" aria-label="کسب‌وکارهای پیشنهادی">'+featured.map(cardHtml).join('')+'</div>':'<div class="nx-empty">هنوز کسب‌وکار تأییدشده‌ای برای نمایش در این بخش موجود نیست.</div>';
+    host.innerHTML='<section class="nx-home-section"><div class="nx-location-row"><div class="nx-location-copy"><b>کسب‌وکارهای نزدیک من</b><br>برای دیدن فاصله دقیق‌تر، موقعیت مکانی‌ات را فعال کن.</div><button type="button" class="nx-location-btn" id="nxEnableLocation">📍 ثبت موقعیت</button></div><div class="nx-section-head"><div><h2 class="nx-section-title">'+esc(title)+'</h2><p class="nx-section-sub">'+esc(sub)+'</p></div><button type="button" class="nx-section-link" id="nxSeeAllBusinesses">مشاهده همه</button></div>'+bizHtml+'</section>'+
+    '<section class="nx-home-section"><div class="nx-section-head"><div><h2 class="nx-section-title">دسته‌بندی‌های پرکاربرد</h2><p class="nx-section-sub">برای شروع سریع، یک دسته را انتخاب کن</p></div></div><div class="nx-category-strip">'+categories.map(function(c,i){return '<button type="button" class="nx-category-chip" data-nx-category="'+i+'"><span>'+c.emoji+'</span><b>'+esc(c.label)+'</b></button>';}).join('')+'</div></section>';
+    var see=document.getElementById('nxSeeAllBusinesses');if(see)see.onclick=function(){var results=document.getElementById('resultsCard');var all=sortBusinesses(approvedBusinesses());if(results&&typeof renderResults==='function'){results.classList.remove('hidden');renderResults(all,'');results.scrollIntoView({behavior:'smooth',block:'start'});}else{var input=document.getElementById('searchInput');if(input)input.scrollIntoView({behavior:'smooth',block:'center'});}};
+    var locBtn=document.getElementById('nxEnableLocation');if(locBtn)locBtn.onclick=function(){if(!navigator.geolocation){if(typeof showToast==='function')showToast('مرورگر شما از موقعیت مکانی پشتیبانی نمی‌کند.','error');return;}locBtn.disabled=true;locBtn.textContent='در حال دریافت موقعیت…';navigator.geolocation.getCurrentPosition(function(pos){homeLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};try{localStorage.setItem('nomax_home_location_v1',JSON.stringify(homeLocation));}catch(e){}render();if(typeof showToast==='function')showToast('موقعیت دریافت شد؛ کسب‌وکارهای نزدیک مرتب شدند.','success');},function(){locBtn.disabled=false;locBtn.textContent='📍 ثبت موقعیت';if(typeof showToast==='function')showToast('دسترسی به موقعیت انجام نشد؛ مجوز مرورگر را بررسی کن.','error');},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});};
+    host.querySelectorAll('[data-nx-biz]').forEach(function(el){function open(){var id=el.getAttribute('data-nx-biz');var b=approvedBusinesses().find(function(x){return String(x.id)===String(id);});if(b)openBusinessInSearchAccordion(b);}el.addEventListener('click',open);el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});
+    host.querySelectorAll('[data-nx-category]').forEach(function(el){el.onclick=function(){var c=categories[Number(el.getAttribute('data-nx-category'))];var input=document.getElementById('searchInput');if(input){input.value=c.terms[0];if(typeof searchBusinesses==='function')searchBusinesses();else{var btn=document.getElementById('searchButton');if(btn)btn.click();}var res=document.getElementById('resultsCard');if(res)res.scrollIntoView({behavior:'smooth',block:'start'});}};});
+  }
+  function renderFeaturedHero(){
+    var hero=document.getElementById('nxFeaturedHero');if(!hero)return;
+    var ordered=sortBusinesses(approvedBusinesses());
+    var chosenId='';try{chosenId=window.__nomaxFeaturedBusinessId || localStorage.getItem('nomax_admin_featured_business_v1') || '';}catch(e){}
+    var b=(chosenId?ordered.find(function(x){return String(x.id)===String(chosenId);}):null)||ordered.find(function(x){return !!(x.profileImage||x.image||x.logo);})||ordered[0];
+    if(b){
+      var img=imageFor(b);
+      hero.innerHTML='<div class="nx-featured-photo">'+img+'<span class="nx-featured-shade"></span><span class="nx-featured-badge">⭐ انتخاب نومکس</span><div class="nx-featured-caption"><small>کسب‌وکار شاخص</small><b>'+esc(b.name||'کسب‌وکار منتخب')+'</b></div><button type="button" class="nx-featured-open" aria-label="مشاهده کسب‌وکار">مشاهده ←</button></div>';
+      var adminBtn=document.createElement('button');adminBtn.type='button';adminBtn.className='nx-featured-admin';adminBtn.textContent='تنظیم انتخاب نومکس';adminBtn.style.display='none';hero.querySelector('.nx-featured-photo').appendChild(adminBtn);if(typeof window.isAdmin==='function'){Promise.resolve(window.isAdmin()).then(function(ok){if(ok)adminBtn.style.display='block';}).catch(function(){});}adminBtn.onclick=function(e){e.stopPropagation();var list=approvedBusinesses();if(!list.length)return;if(typeof window.isAdmin==='function'){Promise.resolve(window.isAdmin(true)).then(function(ok){if(!ok)return;var options=list.map(function(x,i){return (i+1)+'. '+(x.name||'بدون نام')+' ['+x.id+']';}).join('\n');var chosen=prompt('شماره کسب‌وکار شاخص را وارد کن:\n'+options,'');var n=Number(chosen);if(Number.isInteger(n)&&n>=1&&n<=list.length){try{localStorage.setItem('nomax_admin_featured_business_v1',String(list[n-1].id));}catch(err){}renderFeaturedHero();if(typeof showToast==='function')showToast('انتخاب شاخص در این مرورگر ذخیره شد. برای همه کاربران باید در بک‌اند ذخیره شود.','success');}});}};var btn=hero.querySelector('.nx-featured-open');if(btn)btn.onclick=function(){openBusinessInSearchAccordion(b);};
+    }else{
+      hero.innerHTML='<div class="nx-featured-photo nx-featured-placeholder"><div class="nx-featured-art" aria-hidden="true">🏪</div><span class="nx-featured-shade"></span><span class="nx-featured-badge">راهنمای هوشمند کسب‌وکارها</span><div class="nx-featured-caption"><small>به نومکس خوش آمدی</small><b>کسب‌وکار مناسب را پیدا کن</b><span>جست‌وجو کن، قیمت بگیر و مقایسه کن</span></div></div>';
+    }
+  }
+  window.addEventListener('nx-featured-updated', renderFeaturedHero);
+  function init(){
+    var container=document.querySelector('.container');if(!container)return false;
+    var first=container.querySelector(':scope > .card');if(!first)return false;
+    if(!document.getElementById('nxFeaturedHero')){
+      var hero=document.createElement('section');hero.id='nxFeaturedHero';hero.setAttribute('aria-label','کسب‌وکار شاخص');
+      first.insertAdjacentElement('beforebegin',hero);
+    }
+    var resultsCard=document.getElementById('resultsCard');
+    if(resultsCard && first.nextElementSibling!==resultsCard) first.insertAdjacentElement('afterend',resultsCard);
+    // The quote CTA belongs immediately after the search card, never repeated in the no-results state.
+    var quote=document.getElementById('nxQuoteHeroTop');
+    if(!quote){
+      quote=document.createElement('section');quote.id='nxQuoteHeroTop';quote.className='nx-quote-hero';
+      quote.innerHTML='<div class="nx-quote-hero-icon" aria-hidden="true">💰</div><div class="nx-quote-hero-copy"><b>قیمت بگیر، مقایسه کن، انتخاب کن</b><span>یک استعلام ثبت کن و پیشنهاد قیمت کسب‌وکارهای مرتبط را یک‌جا ببین.</span></div><button type="button" class="nx-quote-hero-btn" id="nxQuoteNow">استعلام قیمت</button>';
+      first.insertAdjacentElement('afterend',quote);
+      var qbtn=document.getElementById('nxQuoteNow');if(qbtn)qbtn.onclick=function(){if(typeof openRequestModal==='function')openRequestModal((document.getElementById('searchInput')||{}).value||'');};
+    }
+    if(resultsCard && quote.nextElementSibling!==resultsCard) quote.insertAdjacentElement('afterend',resultsCard);
+    var host=document.getElementById('nxHomeDiscover');
+    if(!host){host=document.createElement('div');host.id='nxHomeDiscover';host.setAttribute('aria-live','polite');(resultsCard||quote).insertAdjacentElement('afterend',host);}
+    renderFeaturedHero();render();
+    var attempts=0;var timer=setInterval(function(){attempts++;renderFeaturedHero();render();if((Array.isArray(window.businesses)&&window.businesses.length)||attempts>30)clearInterval(timer);},1000);
+    return true;
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){init();});else init();
+  window.addEventListener('load',function(){init();render();});
+  // Keep an explicitly granted location between visits; never request it automatically.
+  try{var saved=JSON.parse(localStorage.getItem('nomax_home_location_v1')||'null');if(saved&&Number.isFinite(saved.lat)&&Number.isFinite(saved.lng)&&Math.abs(saved.lat)<=90&&Math.abs(saved.lng)<=180)homeLocation=saved;}catch(e){}
+  document.addEventListener('click',function(e){var x=e.target.closest('.modal-head .close-x,.review-modal .close-x');if(x){x.classList.add('nx-detail-close');x.setAttribute('aria-label','بستن پنجره');}});
+})();
+
+</script>
+
+<style id="nomax-featured-suggested-detail-fix">
+/* Featured and recommended tiles show no category/subcategory labels. */
+#nxHomeDiscover .nx-mini-category{display:none!important}
+#nxFeaturedHero .nx-featured-caption>span{display:none!important}
+/* When a home tile opens, retain the full search accordion layout but hide category metadata. */
+.biz-accordion.nx-opened-from-home .business-category,
+.biz-accordion.nx-opened-from-home .business-type,
+.biz-accordion.nx-opened-from-home .category-badge,
+.biz-accordion.nx-opened-from-home .subcategory,
+.biz-accordion.nx-opened-from-home [data-field="category"],
+.biz-accordion.nx-opened-from-home [data-field="subcategory"]{display:none!important}
+</style>
+
+<style id="nomax-v9-search-location-admin-polish">
+/* v9: results disappear completely when the search is cleared. */
+#resultsCard[aria-hidden="true"]{display:none!important}
+/* Nearby location is a quiet utility, aligned to the same content grid as the section heading. */
+#nxHomeDiscover .nx-location-row{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:12px!important;padding:10px 12px!important;margin:0 0 16px!important;
+  border:1px solid var(--nx8-line,#dfe9e6)!important;border-radius:14px!important;
+  background:var(--nx8-soft,#f2faf8)!important;box-shadow:none!important;
+}
+#nxHomeDiscover .nx-location-copy{flex:1;min-width:0;line-height:1.55!important}
+#nxHomeDiscover .nx-location-copy b{display:block;margin-bottom:2px!important}
+#nxHomeDiscover .nx-location-btn{min-width:112px!important;min-height:38px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+/* Keep section actions consistently aligned without making them compete with search. */
+#nxHomeDiscover .nx-section-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+#nxHomeDiscover .nx-section-link{flex:0 0 auto!important;align-self:center!important}
+.nx-mini-action{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-height:36px!important;box-sizing:border-box!important;text-align:center!important}
+.nx-quote-hero-btn{min-width:116px!important;min-height:40px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+@media(max-width:480px){
+ #nxHomeDiscover .nx-location-row{padding:9px 10px!important;gap:8px!important}
+ #nxHomeDiscover .nx-location-copy{font-size:10.5px!important}
+ #nxHomeDiscover .nx-location-btn{min-width:100px!important;padding:8px 9px!important;font-size:10.5px!important}
+ #nxHomeDiscover .nx-section-head{gap:8px!important}
+ #nxHomeDiscover .nx-section-link{padding:6px 4px!important}
+ .nx-quote-hero-btn{min-width:100px!important}
+}
+[data-theme="dark"] #nxHomeDiscover .nx-location-row{background:rgba(13,148,136,.08)!important;border-color:var(--border,#34413f)!important}
+</style>
 </body>
   </html>
+<style id="nomax-location-arrow-fix">
+/* Location access: clear, prominent and placed directly below the search area */
+#nxHomeDiscover .nx-location-row{display:flex!important;visibility:visible!important;opacity:1!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:2px 0 16px!important;padding:13px 14px!important;border:1px solid #bfe9e2!important;border-radius:16px!important;background:linear-gradient(110deg,rgba(15,159,145,.09),rgba(15,159,145,.035))!important;min-height:72px!important;position:relative!important;z-index:2!important}
+#nxHomeDiscover .nx-location-copy{display:block!important;flex:1 1 auto!important;font-size:12px!important;line-height:1.8!important}
+#nxHomeDiscover .nx-location-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;min-height:42px!important;padding:10px 13px!important;border-radius:12px!important;background:var(--nx-brand,#0f9f91)!important;color:#fff!important;font-weight:800!important;box-shadow:0 4px 12px rgba(15,159,145,.17)!important}
+#nxHomeDiscover .nx-location-btn:disabled{opacity:.7;cursor:wait}
+.nx-mini-category{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;direction:ltr!important;unicode-bidi:isolate!important;white-space:normal!important;flex-wrap:wrap!important}
+.nx-mini-category .nx-cat-parent,.nx-mini-category .nx-cat-child{direction:rtl!important;unicode-bidi:isolate!important;display:inline-block!important}
+.nx-mini-category .nx-cat-arrow{direction:ltr!important;unicode-bidi:isolate!important;display:inline-block!important;font-size:13px!important;font-weight:900!important;color:var(--nx-brand-dark,#167b70)!important;line-height:1!important}
+@media(max-width:480px){#nxHomeDiscover .nx-location-row{align-items:flex-start!important}#nxHomeDiscover .nx-location-btn{font-size:11px!important;padding:9px 10px!important}.nx-mini-category{gap:4px!important}}
+</style>
+
+<script id="nomax-location-delegation-fix">
+(function(){document.addEventListener('click',function(e){var btn=e.target&&e.target.closest?e.target.closest('#nxEnableLocation'):null;if(!btn||btn.dataset.locationBound==='1'||typeof btn.onclick==='function')return;btn.dataset.locationBound='1';if(!navigator.geolocation){alert('مرورگر از موقعیت مکانی پشتیبانی نمی‌کند.');return;}btn.disabled=true;btn.textContent='در حال دریافت موقعیت…';navigator.geolocation.getCurrentPosition(function(pos){try{localStorage.setItem('nomax_home_location_v1',JSON.stringify({lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy||null}));}catch(err){}location.reload();},function(err){btn.disabled=false;btn.textContent='📍 ثبت موقعیت';alert(err&&err.code===1?'اجازه دسترسی به موقعیت داده نشد. از تنظیمات مرورگر اجازه بده.':'دریافت موقعیت ناموفق بود. برای موقعیت‌یابی، سایت باید روی HTTPS یا localhost باز شود.');},{enableHighAccuracy:true,timeout:15000,maximumAge:30000});},true);})();
+</script>
+
+<!-- ========== NOMAX HOME REDESIGN v7 — pure front-end, no backend changes ========== -->
+<style id="nomax-home-v7">
+/* Unified homepage visual system */
+:root{
+  --nx7-brand:#0d9488;
+  --nx7-brand-dark:#0f766e;
+  --nx7-soft:#ecfdf9;
+  --nx7-line:#e5e7eb;
+  --nx7-shadow:0 6px 24px rgba(15,23,42,.06);
+  --nx7-radius:18px;
+}
+
+/* Header: calm app-bar */
+.header{
+  min-height:64px!important;
+  padding:10px 100px 10px 108px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  background:var(--surface,#fff)!important;
+  color:var(--text)!important;
+  border-bottom:1px solid var(--nx7-line)!important;
+  box-shadow:0 1px 0 rgba(15,23,42,.04)!important;
+  text-align:center!important;
+  overflow:visible!important;
+}
+.header::before,.header .wave,.header .stats,.header .tagline{display:none!important}
+.header .logo-mark{
+  width:34px!important;height:34px!important;min-width:34px!important;margin:0!important;
+  border-radius:11px!important;background:var(--nx7-soft)!important;color:var(--nx7-brand-dark)!important;
+  border:1px solid #cceee8!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+.header h1{font-size:clamp(17px,4vw,20px)!important;margin:0!important;color:var(--text)!important;font-weight:850!important;white-space:nowrap}
+.header-menu-anchor{top:50%!important;right:12px!important;transform:translateY(-50%)!important}
+.header-menu-toggle,.theme-toggle{
+  width:38px!important;height:38px!important;
+  color:var(--text)!important;background:var(--muted,#f4f5f5)!important;
+  border:1px solid var(--nx7-line)!important;box-shadow:none!important;
+}
+.theme-toggle{position:absolute!important;top:50%!important;left:12px!important;transform:translateY(-50%)!important}
+.header .acct-btn{position:absolute!important;left:56px!important;top:50%!important;transform:translateY(-50%)!important;width:38px!important;height:38px!important}
+
+.container{max-width:800px!important;margin-top:0!important;padding:12px 16px calc(88px + env(safe-area-inset-bottom))!important}
+
+/* Search card: hero focus */
+.container > .card:first-of-type{
+  margin-top:8px!important;
+  border-radius:22px!important;
+  border:1px solid var(--nx7-line)!important;
+  box-shadow:var(--nx7-shadow)!important;
+  padding:18px 16px 16px!important;
+  background:linear-gradient(180deg,#fff 0%,#f8fbfa 100%)!important;
+}
+[data-theme="dark"] .container > .card:first-of-type{background:var(--surface)!important}
+.search-title{
+  font-size:clamp(18px,4.5vw,22px)!important;
+  font-weight:850!important;
+  margin:0 0 14px!important;
+  justify-content:center!important;
+  letter-spacing:-.3px;
+}
+.search-title .icon{background:var(--nx7-soft)!important;color:var(--nx7-brand)!important}
+#stickySearchWrap{position:relative!important;top:auto!important;background:transparent!important;box-shadow:none!important;padding:0!important;margin:0!important}
+.search-box{
+  min-height:54px!important;
+  border:1.5px solid #d1e5e1!important;
+  border-radius:16px!important;
+  box-shadow:0 4px 16px rgba(13,148,136,.08)!important;
+  background:var(--surface)!important;
+}
+.search-box:focus-within{border-color:var(--nx7-brand)!important;box-shadow:0 0 0 4px rgba(13,148,136,.12)!important}
+.search-box input{font-size:14.5px!important;min-height:50px!important}
+.search-box button{
+  border-radius:12px!important;
+  background:var(--nx7-brand)!important;
+  margin:4px!important;
+  min-height:44px!important;
+  font-weight:800!important;
+  padding:0 18px!important;
+}
+.search-box button:hover{background:var(--nx7-brand-dark)!important}
+
+/* Featured hero */
+#nxFeaturedHero{margin:6px 0 12px;direction:rtl}
+.nx-featured-photo{
+  height:clamp(148px,36vw,220px);
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+  background:linear-gradient(125deg,#0f766e,#14b8a6 55%,#99f6e4);
+  box-shadow:0 10px 28px rgba(13,148,136,.18);
+}
+.nx-featured-photo > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.nx-featured-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,rgba(6,40,38,.78) 0%,rgba(6,40,38,.08) 72%);pointer-events:none}
+.nx-featured-badge{
+  position:absolute;top:12px;right:12px;z-index:2;
+  background:rgba(255,255,255,.95);color:#0f766e;
+  border-radius:999px;padding:6px 11px;font-size:11px;font-weight:850;
+}
+.nx-featured-caption{
+  position:absolute;right:16px;bottom:16px;left:100px;z-index:2;
+  color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;gap:2px;
+}
+.nx-featured-caption small{font-size:11px;opacity:.9}
+.nx-featured-caption b{font-size:clamp(16px,4vw,21px);font-weight:900;line-height:1.35}
+.nx-featured-open{
+  position:absolute;left:14px;bottom:16px;z-index:2;
+  border:0;border-radius:12px;background:#fff;color:#0f766e;
+  padding:10px 14px;font:inherit;font-size:12px;font-weight:900;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);
+}
+.nx-featured-admin{
+  position:absolute;top:12px;left:12px;z-index:3;
+  border:1px solid rgba(255,255,255,.7);border-radius:10px;
+  padding:6px 10px;background:rgba(255,255,255,.94);color:#0f766e;
+  font:inherit;font-size:11px;font-weight:800;cursor:pointer;
+}
+.nx-featured-placeholder{background:radial-gradient(circle at 18% 22%,rgba(255,255,255,.28),transparent 32%),linear-gradient(120deg,#0f766e,#14b8a6)}
+.nx-featured-art{position:absolute;top:16%;left:8%;font-size:clamp(60px,16vw,100px);opacity:.9;z-index:2;filter:drop-shadow(0 10px 12px rgba(0,0,0,.12))}
+
+/* Quote CTA */
+#nxQuoteHeroTop,.nx-quote-hero{
+  display:flex!important;align-items:center;gap:12px;
+  margin:10px 0 14px!important;padding:14px 16px!important;
+  border-radius:18px!important;
+  background:linear-gradient(115deg,#0f766e,#14b8a6)!important;
+  color:#fff!important;
+  box-shadow:0 8px 22px rgba(13,148,136,.2)!important;
+}
+.nx-quote-hero-icon{
+  width:44px;height:44px;flex:0 0 44px;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);
+  border-radius:14px;font-size:22px;
+}
+.nx-quote-hero-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.nx-quote-hero-copy b{font-size:13.5px;font-weight:900}
+.nx-quote-hero-copy span{font-size:11px;line-height:1.7;color:rgba(255,255,255,.9)}
+.nx-quote-hero-btn{
+  border:0;border-radius:11px;background:#fff;color:#0f766e;
+  padding:10px 14px;font:inherit;font-size:12px;font-weight:900;
+  white-space:nowrap;cursor:pointer;
+}
+
+/* Discovery section */
+#nxHomeDiscover{padding:4px 0 8px;direction:rtl}
+.nx-home-section{margin:0 0 20px}
+.nx-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 2px 12px}
+.nx-section-title{font-size:15.5px;font-weight:850;margin:0;color:var(--text);display:flex;align-items:center;gap:8px}
+.nx-section-sub{font-size:11px;color:var(--text-3);margin:3px 0 0;line-height:1.6}
+.nx-section-link{
+  border:0;background:transparent;color:var(--nx7-brand-dark);
+  font:inherit;font-size:12px;font-weight:800;cursor:pointer;padding:6px 0;white-space:nowrap;
+}
+.nx-section-link:after{
+  content:"";display:inline-block;width:6px;height:6px;
+  border-top:2px solid currentColor;border-left:2px solid currentColor;
+  transform:rotate(-45deg);margin-right:6px;vertical-align:2px;
+}
+
+/* Location row — clear & friendly */
+#nxHomeDiscover .nx-location-row{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:12px!important;margin:0 0 16px!important;padding:12px 14px!important;
+  border:1px solid #bfe9e2!important;border-radius:16px!important;
+  background:linear-gradient(110deg,rgba(13,148,136,.09),rgba(13,148,136,.03))!important;
+  min-height:64px!important;
+}
+#nxHomeDiscover .nx-location-copy{font-size:12px!important;line-height:1.75!important;flex:1}
+#nxHomeDiscover .nx-location-copy b{font-size:13px;color:var(--nx7-brand-dark);display:block;margin-bottom:2px}
+#nxHomeDiscover .nx-location-btn{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;min-height:40px!important;padding:9px 14px!important;
+  border-radius:12px!important;border:0!important;
+  background:var(--nx7-brand)!important;color:#fff!important;
+  font:inherit!important;font-size:12px!important;font-weight:850!important;
+  box-shadow:0 4px 12px rgba(13,148,136,.2)!important;cursor:pointer;
+}
+#nxHomeDiscover .nx-location-btn:disabled{opacity:.7;cursor:wait}
+
+/* Business strip */
+.nx-business-strip{
+  display:flex;gap:12px;overflow-x:auto;overscroll-behavior-inline:contain;
+  scroll-snap-type:x mandatory;padding:2px 1px 10px;
+  scrollbar-width:thin;scrollbar-color:#c9d8d4 transparent;
+}
+.nx-business-strip::-webkit-scrollbar{height:4px}
+.nx-business-strip::-webkit-scrollbar-thumb{background:#c9d8d4;border-radius:8px}
+.nx-mini-biz{
+  flex:0 0 168px;max-width:168px;scroll-snap-align:start;
+  border:1px solid var(--nx7-line);border-radius:16px;overflow:hidden;
+  background:var(--surface);box-shadow:0 3px 14px rgba(15,23,42,.04);
+  cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+.nx-mini-biz:hover{border-color:#99d5cc;box-shadow:0 8px 22px rgba(13,148,136,.1);transform:translateY(-2px)}
+.nx-mini-biz:active{transform:scale(.98)}
+.nx-mini-image{
+  height:88px;background:linear-gradient(135deg,#e8f8f5,#f4f7f6);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  color:var(--nx7-brand-dark);font-size:28px;position:relative;
+}
+.nx-mini-image img{width:100%;height:100%;object-fit:cover;display:block}
+.nx-mini-verified{
+  position:absolute;top:7px;right:7px;
+  background:rgba(255,255,255,.95);color:#0f766e;
+  border-radius:20px;padding:3px 7px;font-size:9px;font-weight:850;
+}
+.nx-mini-body{padding:10px}
+.nx-mini-name{font-size:12.5px;font-weight:850;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.nx-mini-category{display:none!important}
+.nx-mini-meta{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:6px;font-size:10.5px;color:var(--text-2)}
+.nx-mini-rating{color:#b77908;font-weight:800}
+.nx-mini-action{
+  display:block;margin-top:8px;text-align:center;padding:7px 6px;
+  border-radius:10px;background:var(--nx7-soft);color:var(--nx7-brand-dark);
+  font-size:11px;font-weight:850;
+}
+
+/* Categories */
+.nx-category-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 1px 8px;scrollbar-width:none}
+.nx-category-strip::-webkit-scrollbar{display:none}
+.nx-category-chip{
+  flex:0 0 auto;min-width:88px;min-height:48px;
+  border:1px solid var(--nx7-line);border-radius:14px;
+  background:var(--surface);padding:10px 12px;
+  display:flex!important;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;color:var(--text);
+  box-shadow:0 2px 10px rgba(15,23,42,.03);
+  transition:border-color .15s,background .15s,transform .15s;
+}
+.nx-category-chip:hover{border-color:#99d5cc;background:var(--nx7-soft);transform:translateY(-1px)}
+.nx-category-chip span{font-size:18px!important;margin:0!important}
+.nx-category-chip b{font-size:11.5px;font-weight:800;white-space:nowrap}
+
+.nx-empty{
+  padding:18px;border:1px dashed var(--nx7-line);border-radius:14px;
+  color:var(--text-3);font-size:12.5px;text-align:center;line-height:1.9;
+}
+
+/* Owner CTA */
+#ownerCtaCard{
+  margin-top:8px!important;
+  border-radius:18px!important;
+  border:1px solid var(--nx7-line)!important;
+  box-shadow:var(--nx7-shadow)!important;
+}
+#ownerCtaCard .menu-btn.green{background:var(--nx7-brand)!important;box-shadow:0 6px 18px rgba(13,148,136,.28)!important}
+#ownerCtaCard .menu-btn.green:hover{background:var(--nx7-brand-dark)!important}
+
+/* Hide legacy duplicate CTAs inside discover */
+#nxHomeDiscover .nx-quote-hero,
+#nxHomeDiscover .nx-location-row + .nx-quote-hero,
+#quickReqBtn{display:none!important}
+
+/* Results polish when opened from home */
+#resultsCard{scroll-margin-top:12px;border-radius:20px!important}
+.biz-accordion.nx-opened-from-home .business-category,
+.biz-accordion.nx-opened-from-home .business-type,
+.biz-accordion.nx-opened-from-home .category-badge,
+.biz-accordion.nx-opened-from-home .subcategory{display:none!important}
+
+/* Dark mode */
+[data-theme="dark"] .header{background:var(--surface)!important;border-color:var(--border)!important}
+[data-theme="dark"] .nx-mini-biz,[data-theme="dark"] .nx-category-chip{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] #nxHomeDiscover .nx-location-row{background:rgba(13,148,136,.12)!important;border-color:rgba(13,148,136,.28)!important}
+[data-theme="dark"] .nx-quote-hero,#nxQuoteHeroTop{background:linear-gradient(115deg,#115e59,#0f766e)!important}
+[data-theme="dark"] .nx-quote-hero-btn{background:#d1fae5;color:#065f46}
+[data-theme="dark"] .search-box{border-color:var(--border)!important}
+
+/* Mobile */
+@media(max-width:480px){
+  .header{min-height:58px!important;padding:8px 52px 8px 96px!important}
+  .header h1{font-size:16px!important}
+  .header .logo-mark{width:30px!important;height:30px!important;min-width:30px!important}
+  .header .theme-toggle{left:8px!important;width:34px!important;height:34px!important}
+  .header .acct-btn{left:48px!important;width:34px!important;height:34px!important}
+  .container{padding-left:12px!important;padding-right:12px!important}
+  .nx-mini-biz{flex-basis:152px;max-width:152px}
+  .nx-mini-image{height:80px}
+  .nx-featured-photo{height:160px;border-radius:16px}
+  .nx-featured-caption{right:12px;bottom:12px;left:90px}
+  .nx-featured-open{left:10px;bottom:12px;padding:8px 11px}
+  #nxHomeDiscover .nx-location-row{align-items:flex-start!important}
+  #nxHomeDiscover .nx-location-btn{font-size:11px!important;padding:8px 11px!important}
+  .nx-quote-hero-icon{width:38px;height:38px;flex-basis:38px;font-size:18px}
+  .nx-quote-hero-copy b{font-size:12.5px}
+  .nx-quote-hero-copy span{font-size:10.5px}
+}
+@media(min-width:700px){
+  .container{padding-top:18px!important}
+  .nx-mini-biz{flex-basis:180px;max-width:180px}
+  .nx-mini-image{height:100px}
+}
+</style>
+
+<script id="nomax-home-v7-script">
+/* Homepage presentation only — does not change API, auth, or data layer */
+(function(){
+  'use strict';
+  var homeLocation = null;
+  var categories = [
+    {label:'ساختمان',emoji:'🧱',terms:['ساختمان','بنایی','ساخت و ساز']},
+    {label:'خانه و تعمیرات',emoji:'🏠',terms:['خانه','تعمیرات','لوله کشی','برق کاری']},
+    {label:'مکانیکی',emoji:'🔧',terms:['مکانیک','مکانیکی','تعمیر خودرو']},
+    {label:'غذا',emoji:'🍽️',terms:['غذا','رستوران','غذای خانگی']},
+    {label:'زیبایی',emoji:'✨',terms:['زیبایی','آرایشگاه','سالن زیبایی']},
+    {label:'حمل‌ونقل',emoji:'🚚',terms:['باربری','حمل و نقل','اسباب کشی']}
+  ];
+
+  function esc(s){
+    if(typeof escx==='function') return escx(String(s==null?'':s));
+    return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+  }
+  function faNum(n){ return typeof toFa==='function' ? toFa(String(n)) : String(n); }
+  function rating(b){
+    try{
+      var r = typeof getBusinessRating==='function' ? getBusinessRating(b.id) : null;
+      return r && Number(r.avg)>0 ? {avg:Number(r.avg),count:Number(r.count)||0} : {avg:0,count:0};
+    }catch(e){ return {avg:0,count:0}; }
+  }
+  function approvedBusinesses(){
+    if(!Array.isArray(window.businesses)) return [];
+    return window.businesses.filter(function(b){ return b && b.status==='approved'; });
+  }
+  function coords(b){
+    var l = b && b.location;
+    if(!l) return null;
+    var lat = Number(l.lat), lng = Number(l.lng);
+    return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat)<=90 && Math.abs(lng)<=180 ? {lat:lat,lng:lng} : null;
+  }
+  function distanceKm(a,b){
+    var c = coords(b);
+    if(!a || !c) return null;
+    var rad = Math.PI/180, dLat=(c.lat-a.lat)*rad, dLng=(c.lng-a.lng)*rad;
+    var x = Math.sin(dLat/2)**2 + Math.cos(a.lat*rad)*Math.cos(c.lat*rad)*Math.sin(dLng/2)**2;
+    return 6371*2*Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+  }
+  function sortBusinesses(list){
+    return list.map(function(b){
+      var r = rating(b);
+      return {b:b,r:r,d:distanceKm(homeLocation,b)};
+    }).sort(function(a,b){
+      if(homeLocation && a.d!==null && b.d!==null && a.d<=100 && b.d<=100 && Math.abs(a.d-b.d)>0.15){
+        var scoreA = (a.r.count>=3?a.r.avg:0)*0.65 + Math.max(0,1-a.d/30)*2;
+        var scoreB = (b.r.count>=3?b.r.avg:0)*0.65 + Math.max(0,1-b.d/30)*2;
+        if(scoreA !== scoreB) return scoreB - scoreA;
+      }
+      if(b.r.count>=3 && a.r.count<3) return 1;
+      if(a.r.count>=3 && b.r.count<3) return -1;
+      if(b.r.avg !== a.r.avg) return b.r.avg - a.r.avg;
+      if(b.r.count !== a.r.count) return b.r.count - a.r.count;
+      return String(a.b.name||'').localeCompare(String(b.b.name||''),'fa');
+    }).map(function(x){ return x.b; });
+  }
+  function imageFor(b){
+    var url = b.profileImage || b.image || b.logo || '';
+    if(url && typeof url==='string' && (/^(https?:|data:image\/)/i).test(url))
+      return '<img loading="lazy" alt="'+esc(b.name||'تصویر کسب‌وکار')+'" src="'+esc(url)+'" onerror="this.remove();">';
+    if(typeof avatarHTML==='function'){ try{ return avatarHTML(b); }catch(e){} }
+    return '<span aria-hidden="true">'+esc((b.name||'🏪').trim().charAt(0)||'🏪')+'</span>';
+  }
+  function cardHtml(b){
+    var r = rating(b), d = distanceKm(homeLocation,b);
+    var dist = d!==null && d<=100 ? (d<1 ? Math.max(50,Math.round(d*1000))+' متر' : d.toFixed(1)+' کیلومتر') : '';
+    var rate = r.avg>0
+      ? '<span class="nx-mini-rating">★ '+esc(r.avg.toFixed(1))+(r.count?' <span style="font-weight:500;color:var(--text-3)">('+faNum(r.count)+')</span>':'')+'</span>'
+      : '<span>پیشنهادی</span>';
+    return '<article class="nx-mini-biz" role="button" tabindex="0" data-nx-biz="'+esc(b.id)+'" aria-label="مشاهده '+esc(b.name||'کسب‌وکار')+'">'+
+      '<div class="nx-mini-image">'+imageFor(b)+(b.verified?'<span class="nx-mini-verified">✓ تأییدشده</span>':'')+'</div>'+
+      '<div class="nx-mini-body"><div class="nx-mini-name">'+esc(b.name||'کسب‌وکار بدون نام')+'</div>'+
+      '<div class="nx-mini-meta">'+rate+(dist?'<span>📍 '+esc(dist)+'</span>':'')+'</div>'+
+      '<span class="nx-mini-action">مشاهده ←</span></div></article>';
+  }
+  function openBusinessInSearchAccordion(b){
+    if(!b) return;
+    var rc = document.getElementById('resultsCard');
+    if(!rc || typeof window.renderResults!=='function') return;
+    rc.classList.remove('hidden');
+    window.renderResults([b],'');
+    if(typeof window.decorateNomaxResults==='function') window.decorateNomaxResults();
+    window.setTimeout(function(){
+      if(typeof window.decorateNomaxResults==='function') window.decorateNomaxResults();
+      var details = rc.querySelector('details.biz-accordion');
+      if(details){
+        details.classList.add('nx-opened-from-home');
+        details.open = true;
+        details.scrollIntoView({behavior:'smooth',block:'start'});
+      } else {
+        rc.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    },80);
+  }
+  function render(){
+    var host = document.getElementById('nxHomeDiscover');
+    if(!host) return;
+    var all = approvedBusinesses();
+    var ordered = sortBusinesses(all);
+    var featured = ordered.slice(0,10);
+    var title = homeLocation ? 'کسب‌وکارهای برتر نزدیک شما' : 'کسب‌وکارهای پیشنهادی';
+    var sub = homeLocation ? 'بر اساس فاصله و بازخورد کاربران' : 'انتخاب‌هایی بر اساس امتیاز و بازخورد کاربران';
+    var bizHtml = featured.length
+      ? '<div class="nx-business-strip" aria-label="کسب‌وکارهای پیشنهادی">'+featured.map(cardHtml).join('')+'</div>'
+      : '<div class="nx-empty">هنوز کسب‌وکار تأییدشده‌ای برای نمایش در این بخش موجود نیست.</div>';
+
+    host.innerHTML =
+      '<section class="nx-home-section">'+
+        '<div class="nx-location-row">'+
+          '<div class="nx-location-copy"><b>کسب‌وکارهای نزدیک من</b>برای دیدن فاصله دقیق‌تر، موقعیت مکانی‌ات را فعال کن.</div>'+
+          '<button type="button" class="nx-location-btn" id="nxEnableLocation">📍 ثبت موقعیت</button>'+
+        '</div>'+
+        '<div class="nx-section-head">'+
+          '<div><h2 class="nx-section-title">'+esc(title)+'</h2><p class="nx-section-sub">'+esc(sub)+'</p></div>'+
+          '<button type="button" class="nx-section-link" id="nxSeeAllBusinesses">مشاهده همه</button>'+
+        '</div>'+bizHtml+
+      '</section>'+
+      '<section class="nx-home-section">'+
+        '<div class="nx-section-head"><div><h2 class="nx-section-title">دسته‌بندی‌های پرکاربرد</h2><p class="nx-section-sub">برای شروع سریع، یک دسته را انتخاب کن</p></div></div>'+
+        '<div class="nx-category-strip">'+
+          categories.map(function(c,i){
+            return '<button type="button" class="nx-category-chip" data-nx-category="'+i+'"><span>'+c.emoji+'</span><b>'+esc(c.label)+'</b></button>';
+          }).join('')+
+        '</div>'+
+      '</section>';
+
+    var see = document.getElementById('nxSeeAllBusinesses');
+    if(see) see.onclick = function(){
+      var results = document.getElementById('resultsCard');
+      var list = sortBusinesses(approvedBusinesses());
+      if(results && typeof renderResults==='function'){
+        results.classList.remove('hidden');
+        renderResults(list,'');
+        results.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    };
+
+    var locBtn = document.getElementById('nxEnableLocation');
+    if(locBtn) locBtn.onclick = function(){
+      if(!navigator.geolocation){
+        if(typeof showToast==='function') showToast('مرورگر شما از موقعیت مکانی پشتیبانی نمی‌کند.','error');
+        return;
+      }
+      locBtn.disabled = true;
+      locBtn.textContent = 'در حال دریافت موقعیت…';
+      navigator.geolocation.getCurrentPosition(function(pos){
+        homeLocation = {lat:pos.coords.latitude, lng:pos.coords.longitude};
+        try{ localStorage.setItem('nomax_home_location_v1', JSON.stringify(homeLocation)); }catch(e){}
+        render();
+        if(typeof showToast==='function') showToast('موقعیت دریافت شد؛ کسب‌وکارهای نزدیک مرتب شدند.','success');
+      }, function(){
+        locBtn.disabled = false;
+        locBtn.textContent = '📍 ثبت موقعیت';
+        if(typeof showToast==='function') showToast('دسترسی به موقعیت انجام نشد؛ مجوز مرورگر را بررسی کن.','error');
+      }, {enableHighAccuracy:true, timeout:12000, maximumAge:60000});
+    };
+
+    host.querySelectorAll('[data-nx-biz]').forEach(function(el){
+      function open(){
+        var id = el.getAttribute('data-nx-biz');
+        var b = approvedBusinesses().find(function(x){ return String(x.id)===String(id); });
+        if(b) openBusinessInSearchAccordion(b);
+      }
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', function(e){
+        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); open(); }
+      });
+    });
+
+    host.querySelectorAll('[data-nx-category]').forEach(function(el){
+      el.onclick = function(){
+        var c = categories[Number(el.getAttribute('data-nx-category'))];
+        var input = document.getElementById('searchInput');
+        if(input){
+          input.value = c.terms[0];
+          if(typeof searchBusinesses==='function') searchBusinesses();
+          else {
+            var btn = document.getElementById('searchButton');
+            if(btn) btn.click();
+          }
+          var res = document.getElementById('resultsCard');
+          if(res) res.scrollIntoView({behavior:'smooth',block:'start'});
+        }
+      };
+    });
+  }
+
+  async function renderFeaturedHero(){
+    var hero = document.getElementById('nxFeaturedHero');
+    if(!hero) return;
+    var ordered = sortBusinesses(approvedBusinesses());
+    var chosenId = '';
+    // Read the site-wide featured business from Supabase. Local storage is only a fallback
+    // for deployments where the SQL migration has not yet been run.
+    try {
+      var client = window.__nomaxSupabaseClient;
+      if(client){
+        var setting = await client.from('nomax_site_settings').select('setting_value').eq('setting_key','nomax_featured_business_id').maybeSingle();
+        if(!setting.error && setting.data && setting.data.setting_value) chosenId = String(setting.data.setting_value);
+      }
+    } catch(e) {}
+    if(!chosenId){ try{ chosenId = window.__nomaxFeaturedBusinessId || localStorage.getItem('nomax_admin_featured_business_v1') || ''; }catch(e){} }
+    var b = (chosenId ? ordered.find(function(x){ return String(x.id)===String(chosenId); }) : null)
+      || ordered.find(function(x){ return !!(x.profileImage || x.image || x.logo); }) || ordered[0];
+    if(b){
+      var img = imageFor(b);
+      hero.innerHTML = '<div class="nx-featured-photo">'+img+'<span class="nx-featured-shade"></span><span class="nx-featured-badge">⭐ انتخاب نومکس</span><div class="nx-featured-caption"><small>کسب‌وکار شاخص</small><b>'+esc(b.name||'کسب‌وکار منتخب')+'</b></div><button type="button" class="nx-featured-open" aria-label="مشاهده کسب‌وکار">مشاهده ←</button></div>';
+      var adminBtn = document.createElement('button'); adminBtn.type='button'; adminBtn.className='nx-featured-admin'; adminBtn.textContent='تنظیم انتخاب نومکس'; adminBtn.style.display='none';
+      hero.querySelector('.nx-featured-photo').appendChild(adminBtn);
+      if(typeof window.isAdmin==='function') Promise.resolve(window.isAdmin()).then(function(ok){if(ok)adminBtn.style.display='block';}).catch(function(){});
+      adminBtn.onclick = async function(e){
+        e.stopPropagation();
+        var list=approvedBusinesses(); if(!list.length) return;
+        if(typeof window.isAdmin!=='function' || !(await window.isAdmin(true))){ if(typeof showToast==='function')showToast('فقط مدیر سایت می‌تواند کسب‌وکار شاخص را تغییر دهد.','error'); return; }
+        var options=list.map(function(x,i){return (i+1)+'. '+(x.name||'بدون نام')+' ['+x.id+']';}).join('\n');
+        var chosen=prompt('شماره کسب‌وکار شاخص را وارد کن. این انتخاب برای همه کاربران ذخیره می‌شود:\n'+options,'');
+        if(chosen===null || !String(chosen).trim()) return;
+        var n=Number(chosen); if(!Number.isInteger(n)||n<1||n>list.length){if(typeof showToast==='function')showToast('شماره انتخاب‌شده معتبر نیست.','error');return;}
+        var selected=list[n-1], client=window.__nomaxSupabaseClient;
+        if(!client){if(typeof showToast==='function')showToast('اتصال پایگاه داده در دسترس نیست.','error');return;}
+        adminBtn.disabled=true; adminBtn.textContent='در حال ذخیره…';
+        try{
+          var result=await client.from('nomax_site_settings').upsert({setting_key:'nomax_featured_business_id',setting_value:String(selected.id),updated_at:new Date().toISOString()},{onConflict:'setting_key'});
+          if(result.error) throw result.error;
+          try{localStorage.setItem('nomax_admin_featured_business_v1',String(selected.id));}catch(err){}
+          window.__nomaxFeaturedBusinessId=String(selected.id);
+          if(typeof showToast==='function')showToast('کسب‌وکار شاخص برای همه کاربران ذخیره شد.','success');
+          await renderFeaturedHero();
+        }catch(err){console.error('Featured business save failed:',err);if(typeof showToast==='function')showToast('ذخیره انجام نشد. اسکریپت SQL و دسترسی مدیر را بررسی کنید.','error');}
+        finally{adminBtn.disabled=false;adminBtn.textContent='تنظیم انتخاب نومکس';}
+      };
+      var btn=hero.querySelector('.nx-featured-open'); if(btn)btn.onclick=function(){openBusinessInSearchAccordion(b);};
+    }else{
+      hero.innerHTML='<div class="nx-featured-photo nx-featured-placeholder"><div class="nx-featured-art" aria-hidden="true">🏪</div><span class="nx-featured-shade"></span><span class="nx-featured-badge">راهنمای هوشمند کسب‌وکارها</span><div class="nx-featured-caption"><small>به نومکس خوش آمدی</small><b>کسب‌وکار مناسب را پیدا کن</b></div></div>';
+    }
+  }
+
+  window.addEventListener('nx-featured-updated', renderFeaturedHero);
+  function init(){
+    var container = document.querySelector('.container');
+    if(!container) return false;
+    var first = container.querySelector(':scope > .card');
+    if(!first) return false;
+
+    if(!document.getElementById('nxFeaturedHero')){
+      var hero = document.createElement('section');
+      hero.id = 'nxFeaturedHero';
+      hero.setAttribute('aria-label','کسب‌وکار شاخص');
+      first.insertAdjacentElement('beforebegin', hero);
+    }
+
+    var resultsCard = document.getElementById('resultsCard');
+    if(resultsCard && first.nextElementSibling !== resultsCard)
+      first.insertAdjacentElement('afterend', resultsCard);
+
+    var quote = document.getElementById('nxQuoteHeroTop');
+    if(!quote){
+      quote = document.createElement('section');
+      quote.id = 'nxQuoteHeroTop';
+      quote.className = 'nx-quote-hero';
+      quote.innerHTML =
+        '<div class="nx-quote-hero-icon" aria-hidden="true">💰</div>'+
+        '<div class="nx-quote-hero-copy"><b>قیمت بگیر، مقایسه کن، انتخاب کن</b>'+
+        '<span>یک استعلام ثبت کن و پیشنهاد قیمت کسب‌وکارهای مرتبط را یک‌جا ببین.</span></div>'+
+        '<button type="button" class="nx-quote-hero-btn" id="nxQuoteNow">استعلام قیمت</button>';
+      first.insertAdjacentElement('afterend', quote);
+      var qbtn = document.getElementById('nxQuoteNow');
+      if(qbtn) qbtn.onclick = function(){
+        if(typeof openRequestModal==='function')
+          openRequestModal((document.getElementById('searchInput')||{}).value||'');
+      };
+    }
+    if(resultsCard && quote.nextElementSibling !== resultsCard)
+      quote.insertAdjacentElement('afterend', resultsCard);
+
+    var host = document.getElementById('nxHomeDiscover');
+    if(!host){
+      host = document.createElement('div');
+      host.id = 'nxHomeDiscover';
+      host.setAttribute('aria-live','polite');
+      (resultsCard || quote).insertAdjacentElement('afterend', host);
+    }
+
+    renderFeaturedHero();
+    render();
+
+    var attempts = 0;
+    var timer = setInterval(function(){
+      attempts++;
+      renderFeaturedHero();
+      render();
+      if((Array.isArray(window.businesses) && window.businesses.length) || attempts > 30)
+        clearInterval(timer);
+    }, 1000);
+    return true;
+  }
+
+  try{
+    var saved = JSON.parse(localStorage.getItem('nomax_home_location_v1')||'null');
+    if(saved && Number.isFinite(saved.lat) && Number.isFinite(saved.lng) && Math.abs(saved.lat)<=90 && Math.abs(saved.lng)<=180)
+      homeLocation = saved;
+  }catch(e){}
+
+  if(document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', function(){ init(); });
+  else
+    init();
+
+  window.addEventListener('load', function(){ init(); render(); });
+})();
+</script>
+
+
+<!-- NOMAX UI POLISH v8: soften prominent buttons and reduce visual competition -->
+<style id="nomax-ui-polish-v8">
+:root{
+  --nx8-ink:#20312f;
+  --nx8-line:#dfe9e6;
+  --nx8-soft:#f2faf8;
+  --nx8-brand:#0d9488;
+  --nx8-brand-dark:#0f766e;
+}
+/* Make header controls feel like one quiet, consistent icon group. */
+.header .theme-toggle,
+.header .acct-btn,
+.header .header-menu-toggle{
+  border:1px solid var(--nx8-line)!important;
+  background:var(--surface,#fff)!important;
+  color:var(--nx8-brand-dark)!important;
+  box-shadow:none!important;
+  border-radius:13px!important;
+  transition:background .18s ease,border-color .18s ease,transform .18s ease!important;
+}
+.header .theme-toggle:hover,
+.header .acct-btn:hover,
+.header .header-menu-toggle:hover{
+  background:var(--nx8-soft)!important;
+  border-color:#b9ded7!important;
+  transform:translateY(-50%)!important;
+}
+.header .theme-toggle:active,
+.header .acct-btn:active,
+.header .header-menu-toggle:active{filter:brightness(.97)}
+/* Search remains the one primary filled button. */
+.search-box button{
+  border-radius:13px!important;
+  box-shadow:none!important;
+  background:var(--nx8-brand)!important;
+  transition:background .18s ease,transform .18s ease!important;
+}
+.search-box button:hover{background:var(--nx8-brand-dark)!important}
+.search-box button:active{transform:scale(.98)}
+/* Convert location prompt from a heavy card into a light inline utility. */
+#nxHomeDiscover .nx-location-row{
+  min-height:0!important;
+  padding:9px 2px!important;
+  margin:0 2px 18px!important;
+  border:0!important;
+  border-bottom:1px solid var(--nx8-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  gap:10px!important;
+}
+#nxHomeDiscover .nx-location-copy{font-size:11.5px!important;color:var(--text-2)!important;line-height:1.7!important}
+#nxHomeDiscover .nx-location-copy b{font-size:12.5px!important;color:var(--text)!important;font-weight:800!important}
+#nxHomeDiscover .nx-location-btn{
+  min-height:35px!important;padding:7px 11px!important;
+  border:1px solid #b9ded7!important;border-radius:10px!important;
+  background:var(--nx8-soft)!important;color:var(--nx8-brand-dark)!important;
+  box-shadow:none!important;font-size:11.5px!important;font-weight:800!important;
+  white-space:nowrap!important;
+}
+#nxHomeDiscover .nx-location-btn:hover{background:#e2f5f0!important;border-color:#8ecfc3!important}
+#nxHomeDiscover .nx-location-btn:active{transform:scale(.98)}
+/* Price quote: keep the brand color, but reduce the button's visual weight. */
+#nxQuoteHeroTop,.nx-quote-hero{
+  box-shadow:0 4px 14px rgba(13,148,136,.11)!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  gap:10px!important;
+  padding:12px 13px!important;
+}
+.nx-quote-hero-icon{width:40px!important;height:40px!important;flex-basis:40px!important;border-radius:12px!important}
+.nx-quote-hero-btn{
+  border:1px solid rgba(255,255,255,.65)!important;
+  border-radius:10px!important;
+  padding:9px 12px!important;
+  box-shadow:none!important;
+  transition:background .18s ease,transform .18s ease!important;
+}
+.nx-quote-hero-btn:hover{background:#e8f8f4!important}
+.nx-quote-hero-btn:active{transform:scale(.98)}
+/* Featured card action: understated, consistent with the site's controls. */
+.nx-featured-open{
+  border:1px solid rgba(255,255,255,.65)!important;
+  border-radius:11px!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.10)!important;
+  padding:9px 12px!important;
+  transition:background .18s ease,transform .18s ease!important;
+}
+.nx-featured-open:hover{background:#effaf7!important}
+.nx-featured-open:active{transform:scale(.98)}
+/* Recommended cards: action is a quiet label-like button, not another loud CTA. */
+.nx-mini-action{
+  background:transparent!important;
+  border:1px solid #d7eee8!important;
+  border-radius:9px!important;
+  color:var(--nx8-brand-dark)!important;
+  padding:7px 6px!important;
+  transition:background .18s ease,border-color .18s ease!important;
+}
+.nx-mini-biz:hover .nx-mini-action{background:var(--nx8-soft)!important;border-color:#b9ded7!important}
+/* Section links and category chips should not compete with the search button. */
+.nx-section-link{font-weight:750!important;font-size:11.5px!important;border-radius:8px!important;padding:6px 7px!important}
+.nx-section-link:hover{background:var(--nx8-soft)!important}
+.nx-category-chip{box-shadow:none!important;border-radius:12px!important;min-height:44px!important}
+.nx-category-chip:hover{box-shadow:none!important}
+:where(button,a,[role="button"]):focus-visible{outline:3px solid rgba(13,148,136,.35)!important;outline-offset:2px!important}
+[data-theme="dark"] #nxHomeDiscover .nx-location-row{border-bottom-color:var(--border)!important;background:transparent!important}
+[data-theme="dark"] #nxHomeDiscover .nx-location-btn{background:rgba(13,148,136,.13)!important;color:#99f6e4!important;border-color:rgba(45,212,191,.28)!important}
+[data-theme="dark"] .nx-mini-action{border-color:var(--border)!important;color:#99f6e4!important}
+[data-theme="dark"] .nx-section-link:hover{background:rgba(13,148,136,.12)!important}
+@media(max-width:480px){
+  #nxHomeDiscover .nx-location-row{align-items:center!important;padding:8px 0!important}
+  #nxHomeDiscover .nx-location-copy{font-size:10.5px!important}
+  #nxHomeDiscover .nx-location-btn{font-size:10.5px!important;padding:7px 9px!important}
+  #nxQuoteHeroTop,.nx-quote-hero{gap:8px!important;padding:11px!important}
+  .nx-quote-hero-btn{font-size:11px!important;padding:8px 9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+</style>
+
+
+<script id="nomax-featured-backend-integration">
+/* Nomax featured-business setting: persisted centrally in Supabase, not per-browser. */
+(function(){
+  'use strict';
+  var SETTING_KEY = 'featured_business_id';
+  window.__nomaxFeaturedBusinessId = '';
+  var loadPromise = null;
+  function toast(msg, kind){ if(typeof window.showToast === 'function') window.showToast(msg, kind || 'success'); else alert(msg); }
+  window.nxLoadFeaturedBusinessSetting = function(force){
+    if(loadPromise && !force) return loadPromise;
+    loadPromise = (async function(){
+      try {
+        if(typeof sb === 'undefined' || !sb) return '';
+        var res = await sb.from('nomax_site_settings').select('setting_value').eq('setting_key', SETTING_KEY).maybeSingle();
+        if(res.error) throw res.error;
+        var val = res.data && res.data.setting_value != null ? String(res.data.setting_value).replace(/^\"|\"$/g,'') : '';
+        window.__nomaxFeaturedBusinessId = val;
+        try { if(val) localStorage.setItem('nomax_admin_featured_business_v1', val); else localStorage.removeItem('nomax_admin_featured_business_v1'); } catch(e){}
+        window.dispatchEvent(new Event('nx-featured-updated'));
+        return val;
+      } catch(err) {
+        console.warn('Nomax featured setting could not be loaded. Run the supplied SQL migration and check RLS policies.', err);
+        return window.__nomaxFeaturedBusinessId || '';
+      }
+    })();
+    return loadPromise;
+  };
+  window.nxSaveFeaturedBusinessSetting = async function(businessId){
+    if(typeof sb === 'undefined' || !sb) throw new Error('اتصال پایگاه داده آماده نیست.');
+    if(typeof window.isAdmin !== 'function' || !(await window.isAdmin(true))) throw new Error('فقط مدیر سایت می‌تواند کسب‌وکار شاخص را تغییر دهد.');
+    var value = businessId ? String(businessId) : '';
+    var payload = {setting_key:SETTING_KEY, setting_value:value, updated_at:new Date().toISOString()};
+    var res = await sb.from('nomax_site_settings').upsert(payload, {onConflict:'setting_key'}).select('setting_key,setting_value').single();
+    if(res.error) throw res.error;
+    window.__nomaxFeaturedBusinessId = value;
+    try { if(value) localStorage.setItem('nomax_admin_featured_business_v1', value); else localStorage.removeItem('nomax_admin_featured_business_v1'); } catch(e){}
+    window.dispatchEvent(new Event('nx-featured-updated'));
+    return true;
+  };
+  // Capture the existing admin control so it cannot silently save only to localStorage.
+  document.addEventListener('click', async function(ev){
+    var btn = ev.target && ev.target.closest ? ev.target.closest('.nx-featured-admin') : null;
+    if(!btn) return;
+    ev.preventDefault(); ev.stopPropagation(); if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    try {
+      if(typeof window.isAdmin !== 'function' || !(await window.isAdmin(true))) { toast('برای تغییر کسب‌وکار شاخص باید با حساب مدیر وارد شوید.','error'); return; }
+      var list = Array.isArray(window.businesses) ? window.businesses.filter(function(b){return b && b.status==='approved';}) : [];
+      if(!list.length){ toast('کسب‌وکار تأییدشده‌ای برای انتخاب وجود ندارد.','error'); return; }
+      var lines = list.map(function(b,i){return (i+1)+'. '+(b.name||'بدون نام')+' ['+b.id+']';});
+      lines.push('0. حذف کسب‌وکار شاخص');
+      var current = window.__nomaxFeaturedBusinessId || '';
+      var answer = prompt('شماره کسب‌وکار شاخص را وارد کنید.\nاین انتخاب برای همه کاربران ذخیره می‌شود.\n\n'+lines.join('\n'), current ? String(Math.max(1,list.findIndex(function(b){return String(b.id)===String(current);})+1)) : '');
+      if(answer === null) return;
+      var n = Number(answer);
+      if(n === 0){ await window.nxSaveFeaturedBusinessSetting(''); toast('انتخاب کسب‌وکار شاخص حذف شد.'); return; }
+      if(!Number.isInteger(n) || n<1 || n>list.length){ toast('شماره واردشده معتبر نیست.','error'); return; }
+      await window.nxSaveFeaturedBusinessSetting(list[n-1].id);
+      toast('کسب‌وکار شاخص برای همه کاربران ذخیره شد.');
+    } catch(err) { console.error(err); toast('ذخیره انجام نشد. ابتدا SQL پیوست را در Supabase اجرا کنید و دسترسی مدیر را بررسی کنید.','error'); }
+  }, true);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){window.nxLoadFeaturedBusinessSetting();});
+  else window.nxLoadFeaturedBusinessSetting();
+})();
+</script>
