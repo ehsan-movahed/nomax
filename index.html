@@ -5768,12 +5768,12 @@ function scoreBusiness(b, q){
 }
   
   /* ============ RANKING HELPERS (v12) ============ */
-  /* «برتر» فقط بر اساس نظر کاربران است (میانگین وزن‌دار با تعداد نظر).
+  /* «برتر» فقط بر اساس بالاترین میانگین ستاره‌ی نظرهای مردمی است.
      فاصله، شاخص‌بودن و ... روی آن اثری ندارند. */
   function nxTopScore(b){
     var r = getBusinessRating(b.id);
     if(!r.count) return 0;
-    return (r.avg * r.count + 3.5 * 3) / (r.count + 3);
+    return r.avg; /* میانگین ساده‌ی ستاره‌ی نظرهای تأییدشده؛ در تساوی، نظر بیشتر بالاتر است */
   }
   window.nxTopScore = nxTopScore;
 
@@ -13002,16 +13002,13 @@ html.nx-bsheet-lock,html.nx-bsheet-lock body{overflow:hidden}
     host.setAttribute('data-sig', sig);
 
     var title = t.mode==='top' ? 'کسب‌وکارهای برتر' : 'تازه‌های نومکس';
-    var sub = t.mode==='top' ? 'مرتب‌شده براساس نظرهای تأییدشده‌ی کاربران' : 'هنوز نظر تأییدشده‌ای ثبت نشده؛ نظرها پس از تأیید مدیر در رتبه‌بندی اثر می‌کنند';
+    var sub = t.mode==='top' ? 'مرتب‌شده براساس بالاترین میانگین ستاره‌ی نظرهای مردمی' : 'هنوز نظر تأییدشده‌ای ثبت نشده؛ نظرها پس از تأیید مدیر در رتبه‌بندی اثر می‌کنند';
     var bizHtml = t.list.length
       ? '<div class="nx-business-strip" aria-label="'+esc(title)+'">'+t.list.map(cardHtml).join('')+'</div>'
       : '<div class="nx-empty">هنوز کسب‌وکار تأییدشده‌ای برای نمایش در این بخش موجود نیست.</div>';
 
     host.innerHTML =
       '<section class="nx-home-section">'+
-        '<div class="nx-quick-tabs" role="group" aria-label="دسترسی سریع">'+
-          quickTabs.map(function(q){ return '<button type="button" class="nx-quick-tab" data-nx-quick="'+q.tab+'">'+q.label+'</button>'; }).join('')+
-        '</div>'+
         '<div class="nx-section-head">'+
           '<div><h2 class="nx-section-title">'+esc(title)+'</h2><p class="nx-section-sub">'+esc(sub)+'</p></div>'+
           '<button type="button" class="nx-section-link" id="nxSeeAllBusinesses">مشاهده همه</button>'+
@@ -13032,12 +13029,6 @@ html.nx-bsheet-lock,html.nx-bsheet-lock body{overflow:hidden}
       if(input) input.value = '';
       if(typeof window.nxSetTab==='function') window.nxSetTab('top',{scroll:true});
     };
-
-    host.querySelectorAll('[data-nx-quick]').forEach(function(el){
-      el.onclick = function(){
-        if(typeof window.nxSetTab==='function') window.nxSetTab(el.getAttribute('data-nx-quick'),{scroll:true});
-      };
-    });
 
     host.querySelectorAll('[data-nx-biz]').forEach(function(el){
       function open(){ openBiz(findBiz(el.getAttribute('data-nx-biz'))); }
