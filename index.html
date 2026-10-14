@@ -11727,6 +11727,7 @@ if(!isOwnBiz){
       /* تکمیل پروفایل */
       '<div id="nxaScProfile" style="display:none">'+
         '<div class="nxa-f" id="nxaNameF"><label>نام و نام خانوادگی <span style="color:var(--danger)">*</span></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="nxaFirst" type="text" autocomplete="given-name" placeholder="نام"><input id="nxaLast" type="text" autocomplete="family-name" placeholder="نام خانوادگی"></div><input id="nxaName" type="hidden"><div class="nxa-kb" id="nxaKb">⌨️ صفحه کلید خود را تغییر دهید</div></div>'+
+        '<div class="nxa-f" id="nxaNidF"><label>کد ملی <span style="color:var(--danger)">*</span></label><input id="nxaNid" type="tel" class="ltr" inputmode="numeric" maxlength="10" placeholder="۱۰ رقم"></div>'+
         '<div class="nxa-f"><label>شماره موبایل</label><input id="nxaPhoneRO" type="tel" class="ltr" readonly></div>'+
         '<div class="nxa-f"><label id="nxaPassL">رمز عبور <span style="color:var(--danger)">*</span></label><input id="nxaP1" type="password" autocomplete="new-password" placeholder="حداقل ۸ کاراکتر"></div>'+
         '<div class="nxa-f"><label>تکرار رمز عبور <span style="color:var(--danger)">*</span></label><input id="nxaP2" type="password" autocomplete="new-password" placeholder="تکرار رمز"></div>'+
@@ -11885,35 +11886,14 @@ var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/ver
     }
 
     stopOtp();
-
-    // کاربر تأیید شد. حالا اطلاعاتش رو ذخیره می‌کنیم
-    // به جای استفاده از Supabase Auth، خودمون یه session محلی می‌سازیم
-    var uid = "u_" + phoneWithZero + "_" + Date.now();
-    var nameFromStore = localStorage.getItem("nomax_phone_names_" + phoneWithZero) || "";
-    var isRegistered = !!nameFromStore;
-
-    S.registered = isRegistered;
-
-    if(isRegistered){
-      // کاربر قبلاً ثبت‌نام کرده — مستقیم واردش کن
-      try{
-        localStorage.setItem("nomax_current_user", JSON.stringify({
-          id: uid,
-          phone: phoneWithZero,
-          name: nameFromStore,
-          loggedInAt: Date.now()
-        }));
-      }catch(e){}
-      await finish("خوش آمدید " + nameFromStore + " ✓");
-    } else {
-      // کاربر جدید — برو به صفحه‌ی تکمیل پروفایل
-      S.registered = false;
-      $("nxaNameF").style.display="";
-      $("nxaPhoneRO").value = phoneWithZero;
-      $("nxaPassL").innerHTML = 'رمز عبور <span style="color:var(--danger)">*</span>';
-      $("nxaSkip").style.display="none";
-      go("profile");
-    }
+    S.code = code;
+    S.registered = !!data.registered;
+    $("nxaPhoneRO").value = phoneWithZero;
+    $("nxaNameF").style.display = S.registered ? "none" : "";
+    $("nxaNidF").style.display = S.registered ? "none" : "";
+    $("nxaPassL").innerHTML = (S.registered ? 'رمز عبور جدید' : 'رمز عبور') + ' <span style="color:var(--danger)">*</span>';
+    $("nxaSkip").style.display = "none";
+    go("profile");
   }catch(e){
     msg(e.message || "کد اشتباه است");
   }
@@ -11921,31 +11901,37 @@ var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/ver
 }
 
   /* ---- تکمیل پروفایل و رمز ---- */
+function validNid(n){
+  if(!/^\d{10}$/.test(n) || /^(\d)\1{9}$/.test(n)) return false;
+  var s=0; for(var i=0;i<9;i++) s+=(+n[i])*(10-i);
+  var r=s%11, c=+n[9]; return r<2 ? c===r : c===11-r;
+}
 async function saveProfile(){
   if(S.busy) return;
-  var first=$("nxaFirst")?$("nxaFirst").value.trim():"", last=$("nxaLast")?$("nxaLast").value.trim():"", name=(first+" "+last).trim()||$("nxaName").value.trim(), p1=$("nxaP1").value, p2=$("nxaP2").value;
+  var first=$("nxaFirst").value.trim(), last=$("nxaLast").value.trim();
+  var name=(first+" "+last).trim();
+  var nid=latin($("nxaNid").value).replace(/\D/g,"");
+  var p1=$("nxaP1").value, p2=$("nxaP2").value;
   if(!S.registered){
     if(first.length<2 || last.length<2 || !/[\u0600-\u06FF]/.test(name)){ msg("نام و نام خانوادگی را کامل و فارسی وارد کنید."); return; }
+    if(!validNid(nid)){ msg("کد ملی معتبر نیست."); return; }
     $("nxaName").value=name;
   }
   if(p1.length<8){ msg("رمز عبور باید حداقل ۸ کاراکتر باشد."); return; }
   if(p1!==p2){ msg("رمز و تکرار آن یکسان نیست."); return; }
   var b=$("nxaSave"); setBusy(b,true,"در حال ثبت…");
   try{
-    var phoneWithZero = "0" + S.phone;
-    var uid = "u_" + phoneWithZero + "_" + Date.now();
-
-    // ذخیره‌ی نام کاربر برای بارهای بعدی
-    try{
-      localStorage.setItem("nomax_phone_names_" + phoneWithZero, name);
-      localStorage.setItem("nomax_current_user", JSON.stringify({
-        id: uid,
-        phone: phoneWithZero,
-        name: name,
-        loggedInAt: Date.now()
-      }));
-    }catch(e){}
-
+    var phoneWithZero="0"+S.phone;
+    var res=await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/register-user",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":"sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF"},
+      body:JSON.stringify({phone:phoneWithZero, code:S.code, first_name:first, last_name:last, national_id:nid, password:p1})
+    });
+    var data=await res.json();
+    if(!res.ok || data.error) throw new Error(data.error||"ثبت انجام نشد");
+    var r=await sb.auth.signInWithPassword({phone:"+98"+S.phone, password:p1});
+    if(r.error) throw r.error;
+    setRemember(true);
     await finish(S.registered?"رمز جدید ثبت شد ✓":"ثبت‌نام انجام شد؛ خوش آمدید ✓");
   }catch(e){ msg(e.message || "خطا در ثبت"); }
   finally{ setBusy(b,false,"ثبت و ورود"); }
@@ -11972,7 +11958,7 @@ async function finish(text){
     S.flow = opts.mode==="link" ? "link" : "signup";
     var why=$("nxaWhy");
     if(opts.reason){ why.textContent=opts.reason; why.style.display=""; } else if(opts.mode==="link"){ why.textContent="برای ثبت کسب‌وکار، شماره‌ی موبایل شما باید با کد پیامکی تأیید شود."; why.style.display=""; } else why.style.display="none";
-    $("nxaLPass").value=""; $("nxaP1").value=""; $("nxaP2").value=""; $("nxaCode").value=""; if($("nxaFirst"))$("nxaFirst").value=""; if($("nxaLast"))$("nxaLast").value="";
+$("nxaLPass").value=""; $("nxaP1").value=""; $("nxaP2").value=""; $("nxaCode").value=""; if($("nxaFirst"))$("nxaFirst").value=""; if($("nxaLast"))$("nxaLast").value=""; if($("nxaNid"))$("nxaNid").value="";
     if(opts.mode==="link") go("phone"); else go(opts.mode==="signup"?"phone":"login");
     if(opts.mode==="signup") S.flow="signup";
     $("nxaModal").classList.add("show"); document.body.style.overflow="hidden";
