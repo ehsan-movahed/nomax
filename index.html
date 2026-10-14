@@ -11844,11 +11844,14 @@ async function sendOtp(){
   var b=fromOtp?$("nxaResend"):$("nxaSend"); setBusy(b,true,"در حال ارسال…");
   try{
     var phoneWithZero = "0" + p;
-    var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/request-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: phoneWithZero })
-    });
+var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/request-otp", {
+  method: "POST",
+  headers: { 
+    "Content-Type": "application/json",
+    "apikey": "sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF"
+  },
+  body: JSON.stringify({ phone: phoneWithZero })
+});
     var data = await res.json();
     if(!res.ok || data.error){
       throw new Error(data.error || "ارسال پیامک ناموفق بود");
@@ -11868,11 +11871,14 @@ async function verify(){
   var b=$("nxaVerify"); setBusy(b,true,"در حال بررسی…");
   try{
     var phoneWithZero = "0" + S.phone;
-    var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/verify-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: phoneWithZero, code: code })
-    });
+var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/verify-otp", {
+  method: "POST",
+  headers: { 
+    "Content-Type": "application/json",
+    "apikey": "sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF"
+  },
+  body: JSON.stringify({ phone: phoneWithZero, code: code })
+});
     var data = await res.json();
     if(!res.ok || data.error){
       throw new Error(data.error || "کد اشتباه است");
