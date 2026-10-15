@@ -7062,10 +7062,7 @@ if(saveBizBtn){
     try{
       var rpcRes = await sb.rpc("submit_business", { p: payload });
       if(rpcRes.error){
-        var em = rpcRes.error.message || "";
-        if(em.indexOf("duplicate_phone") > -1)
-          showToast("این شماره قبلاً برای کسب‌وکار دیگری ثبت شده است. اگر مالک آن هستید با پشتیبانی تماس بگیرید.", "error");
-        else if(em.indexOf("login_required") > -1)
+        if(em.indexOf("login_required") > -1)
           showToast("ابتدا وارد حساب مالک شوید.", "error");
         else if(em.indexOf("invalid_input") > -1)
           showToast("نام یا شماره تلفن معتبر نیست.", "error");
@@ -7081,9 +7078,20 @@ if(saveBizBtn){
     saveBizBtn.disabled = false;
     if(!result) return;
 
-    showToast(existing
-      ? "ویرایش ارسال شد؛ تا تأیید مدیر، نسخه‌ی قبلی نمایش داده می‌شود ✓"
-      : "درخواست ثبت ارسال شد؛ پس از تأیید مدیر منتشر می‌شود ✓", "success");
+// اگر شماره‌ی تکراری بود، به کاربر هشدار بده
+if(result.duplicate_count && result.duplicate_count > 0){
+  var __dupTxt = toFa(result.duplicate_count) + " کسب‌وکار دیگر با این شماره ثبت شده است. ";
+  showToast(
+    (existing ? "ویرایش ارسال شد. " : "درخواست ثبت ارسال شد. ") +
+    __dupTxt +
+    "مدیر بررسی می‌کند و اگر تکراری بود با شما تماس می‌گیرد.",
+    "info"
+  );
+} else {
+  showToast(existing
+    ? "ویرایش ارسال شد؛ تا تأیید مدیر، نسخه‌ی قبلی نمایش داده می‌شود ✓"
+    : "درخواست ثبت ارسال شد؛ پس از تأیید مدیر منتشر می‌شود ✓", "success");
+}
     try{ await loadBusinessesFromServer(); }catch(e){ console.error(e); }
 
     window.editingOwnerBusinessId = null;
