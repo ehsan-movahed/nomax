@@ -11394,25 +11394,8 @@ window.NOMAX_CFG = {
       var addr=card.querySelector(".business-info .row")?card.querySelector(".business-info .row").textContent.replace("📍","").trim():"";
       var tel=card.querySelector('a[href^="tel:"]');
       var details=document.createElement("details");details.className="biz-accordion";
-      details.addEventListener('click', function(e){
-  if(e.target.closest && (e.target.closest('a[href^="tel:"]') || e.target.closest('button') || e.target.closest('a[href^="http"]'))) return;
-  var shareBtn = card.querySelector('button[onclick^="shareBusiness("]');
-  var m = shareBtn ? /shareBusiness\(([^,]+),/.exec(shareBtn.getAttribute('onclick')) : null;
-  if(m){
-    var bid = m[1].replace(/['"\s]/g,'');
-    var biz = businesses.filter(function(x){ return String(x.id) === String(bid); })[0];
-    if(biz && typeof window.nxOpenBusinessSheet === 'function') window.nxOpenBusinessSheet(biz);
-  }
-});
-      details.addEventListener('click', function(e){
-  if(e.target.closest && (e.target.closest('a[href^="tel:"]') || e.target.closest('button') || e.target.closest('a[href^="http"]'))) return;
-  var m = /shareBusiness\(([^,]+),/.exec(card.querySelector('button[onclick^="shareBusiness("]') ? card.querySelector('button[onclick^="shareBusiness("]').getAttribute('onclick') : '');
-  if(m){
-    var bid = m[1].replace(/['"\s]/g,'');
-    var biz = businesses.filter(function(x){ return String(x.id) === String(bid); })[0];
-    if(biz && typeof window.nxOpenBusinessSheet === 'function') window.nxOpenBusinessSheet(biz);
-  }
-});
+
+
       var sum=document.createElement("summary");sum.className="biz-acc-summary";
       var main=document.createElement("span");main.className="biz-acc-main";
 var bizId = null;
@@ -11462,7 +11445,32 @@ if(!isOwnBiz){
   });
   sum.appendChild(q);
 }
-      details.appendChild(sum);details.appendChild(inner);card.replaceWith(details);
+    // دکمه‌ی «این کسب‌وکار مال من است» در سر آکاردئون
+(function(){
+  var shareBtn = card.querySelector('button[onclick^="shareBusiness("]');
+  if(!shareBtn) return;
+  var m = /shareBusiness\(([^,]+),/.exec(shareBtn.getAttribute('onclick') || '');
+  if(!m) return;
+  var bid = m[1].replace(/['"\s]/g,'');
+  var u = window.nomaxAuth && window.nomaxAuth.user ? window.nomaxAuth.user() : null;
+  var biz = (window.businesses||[]).filter(function(x){ return String(x.id) === String(bid); })[0];
+  if(!u || !biz || biz.ownerId || String(biz.status) !== 'approved') return;
+  var claimBtn = document.createElement('button');
+  claimBtn.type = 'button';
+  claimBtn.className = 'biz-acc-claim';
+  claimBtn.title = 'این کسب‌وکار مال من است';
+  claimBtn.textContent = '🙋';
+  claimBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(typeof window.nxOpenOwnershipClaim === 'function') window.nxOpenOwnershipClaim(biz.id, biz.name || '');
+  });
+  sum.appendChild(claimBtn);
+})();
+
+details.appendChild(sum);
+details.appendChild(inner);
+
+card.replaceWith(details);
     });
     root.querySelectorAll(".biz-accordion").forEach(function(details){
       var actions=details.querySelector(".business-actions");
@@ -12360,6 +12368,25 @@ body{background:var(--bg,#f7f9f8)}
 .nx-bsheet-body{overflow-y:auto;padding:4px 14px calc(18px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
 .nx-bsheet-body .business{margin-bottom:12px}
 .nx-bsheet-quote{width:100%;min-height:46px;border:1.5px solid var(--primary-600,#0d9488);border-radius:14px;background:transparent;color:var(--primary-700,#0f766e);font:inherit;font-size:13.5px;font-weight:900;cursor:pointer}
+.biz-acc-claim{
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  border-radius:10px;
+  border:1px dashed var(--primary-400,#2dd4bf);
+  background:transparent;
+  color:var(--primary-700,#0f766e);
+  font-size:16px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-inline-start:4px;
+  padding:0;
+}
+.biz-acc-claim:hover{
+  background:var(--primary-50,#f0fdfa);
+}
 .nx-bsheet-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .nx-bsheet-actions .nx-bsheet-quote{margin-top:0}
 .nx-bsheet-claim{width:100%;min-height:46px;border:1.5px dashed var(--primary-400,#2dd4bf);border-radius:14px;background:transparent;color:var(--primary-700,#0f766e);font:inherit;font-size:13.5px;font-weight:900;cursor:pointer}
@@ -13031,14 +13058,19 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
             '<div class="modal-head"><h3 id="nxClaimTitle">ادعای مالکیت</h3>'+
             '<button type="button" class="close-x" id="nxClaimClose">×</button></div>'+
             '<div id="nxClaimStep1">'+
-              '<p style="font-size:13px;line-height:1.9;color:var(--text-2);margin:0 0 14px">'+
-                'اگر مالک «<b id="nxClaimBizName"></b>» هستی، برای اثبات، یک کد تأیید به شماره‌ای که روی کسب‌وکار ثبت شده فرستاده می‌شود.'+
-              '</p>'+
-              '<div style="background:var(--primary-50);border:1px solid var(--primary-100);border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:12.5px;line-height:1.9">'+
-                '📱 کد به شماره‌ی <b id="nxClaimPhone" dir="ltr"></b> فرستاده می‌شود.'+
-              '</div>'+
-              '<button type="button" class="btn-submit" id="nxClaimSend" style="width:100%">ارسال کد تأیید</button>'+
-            '</div>'+
+  '<p style="font-size:13.5px;line-height:1.9;color:var(--text-2);margin:0 0 12px">'+
+    'آیا کسب‌وکار «<b id="nxClaimBizName"></b>» مال توست؟'+
+  '</p>'+
+  '<div style="background:var(--primary-50);border:1px solid var(--primary-100);border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.9">'+
+    '<div style="font-weight:700;margin-bottom:6px">برای اثبات، یک کد تأیید فرستاده می‌شود به:</div>'+
+    '<div style="font-weight:800;font-size:16px;direction:ltr;text-align:center;letter-spacing:2px" id="nxClaimPhone">—</div>'+
+    '<div style="font-size:11.5px;color:var(--text-3);margin-top:6px">اگر این شماره مال تو نیست، این دکمه را نزن.</div>'+
+  '</div>'+
+  '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:11.5px;line-height:1.8;color:#92400e">'+
+    '⚠️ هر کاربر فقط <b>یک بار در ۲۴ ساعت</b> می‌تواند ادعای مالکیت کند.'+
+  '</div>'+
+  '<button type="button" class="btn-submit" id="nxClaimSend" style="width:100%">✓ بله، مال من است</button>'+
+'</div>'+
             '<div id="nxClaimStep2" style="display:none">'+
               '<p style="font-size:13px;line-height:1.9;color:var(--text-2);margin:0 0 10px">'+
                 'کد ۶ رقمی که پیامک شد را وارد کن:'+
@@ -13056,7 +13088,50 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
     
         $('nxClaimClose').onclick = close;
         $('nxClaimBack').onclick = function(){ step1(); msg(''); };
-        $('nxClaimSend').onclick = sendOtp;
+        $('nxClaimSend').onclick = async function(){
+  var btn = $('nxClaimSend');
+  btn.disabled = true;
+  btn.textContent = 'در حال بررسی...';
+  msg('');
+
+  try{
+    var r = await window.__nomaxSupabaseClient.rpc('create_ownership_request', { p_business_id: state.businessId });
+    if(r.error){
+      msg('ارتباط با سرور برقرار نشد. دوباره تلاش کن.');
+      btn.disabled = false;
+      btn.textContent = '✓ بله، مال من است';
+      return;
+    }
+    var d = r.data || {};
+    if(!d.ok){
+      var reasons = {
+        'business_not_found': 'این کسب‌وکار پیدا نشد.',
+        'already_owner': 'این کسب‌وکار همین حالا در پنل توست.',
+        'has_owner': 'این کسب‌وکار مالک دارد. اگر مالک واقعی تو هستی، با پشتیبانی تماس بگیر.',
+        'no_phone_on_business': 'شماره‌ی این کسب‌وکار معتبر نیست. با پشتیبانی تماس بگیر.',
+        'already_owner_of_another': 'هر حساب فقط می‌تواند یک کسب‌وکار داشته باشد. برای تغییر، با پشتیبانی تماس بگیر.',
+        'user_rate_limited': 'شما در ۲۴ ساعت گذشته یک درخواست مالکیت فرستاده‌اید. فردا دوباره تلاش کنید.',
+        'business_rate_limited': 'برای این کسب‌وکار در ۲۴ ساعت گذشته چند بار درخواست ارسال شده. کمی بعد تلاش کنید.',
+        'rate_limited': 'تعداد درخواست‌های تو زیاد است. کمی بعد دوباره تلاش کن.'
+      };
+      msg(reasons[d.reason] || 'امکان ثبت درخواست نیست.');
+      btn.style.display = 'none';
+      return;
+    }
+
+    // موفق → اطلاعات درخواست را ذخیره کن و OTP بفرست
+    state.requestId = d.request_id;
+    state.phoneMasked = d.business_phone_masked || '';
+    state.phoneRaw = d.business_phone_raw || '';
+    btn.textContent = 'در حال ارسال کد...';
+    sendOtp();
+  }catch(e){
+    console.error(e);
+    msg('ارتباط با سرور برقرار نشد.');
+    btn.disabled = false;
+    btn.textContent = '✓ بله، مال من است';
+  }
+};
         $('nxClaimResend').onclick = sendOtp;
         $('nxClaimVerify').onclick = verify;
         $('nxClaimCode').addEventListener('input', function(){
@@ -13090,54 +13165,47 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
       function step2(){ $('nxClaimStep1').style.display='none'; $('nxClaimStep2').style.display=''; setTimeout(function(){ var c=$('nxClaimCode'); if(c) c.focus(); }, 100); }
     
       async function open(businessId, businessName){
-        if(!user()){
-          window.nomaxAuth.open({ reason: 'برای ادعای مالکیت باید وارد حساب خود شوی.' });
-          return;
-        }
-        state.businessId = businessId;
-        state.businessName = businessName || 'این کسب‌وکار';
-        ensureModal();
-        $('nxClaimBizName').textContent = state.businessName;
-        $('nxClaimPhone').textContent = '...';
-        $('nxClaimCode').value = '';
-        msg('');
-        step1();
-        $('nxClaimModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    
-        // مرحله ۱: درخواست ایجاد
-        var r = await window.__nomaxSupabaseClient.rpc('create_ownership_request', { p_business_id: businessId });
-        if(r.error){
-          var m = r.error.message || '';
-          if(m.indexOf('login_required')>-1){ close(); window.nomaxAuth.open({}); return; }
-          msg('ارتباط با سرور برقرار نشد. دوباره تلاش کن.'); return;
-        }
-        var d = r.data || {};
-        if(!d.ok){
-          var reasons = {
-            'business_not_found': 'این کسب‌وکار پیدا نشد.',
-            'already_owner': 'این کسب‌وکار همین حالا در پنل توست.',
-            'has_owner': 'این کسب‌وکار مالک دارد. اگر مالک واقعی تو هستی، با پشتیبانی تماس بگیر.',
-            'no_phone_on_business': 'شماره‌ی این کسب‌وکار معتبر نیست. با پشتیبانی تماس بگیر.',
-            'already_owner_of_another': 'هر حساب فقط می‌تواند یک کسب‌وکار داشته باشد. برای تغییر، با پشتیبانی تماس بگیر.',
-            'rate_limited': 'تعداد درخواست‌های تو زیاد است. کمی بعد دوباره تلاش کن.'
-          };
-          msg(reasons[d.reason] || 'امکان ثبت درخواست نیست.');
-          return;
-        }
-        state.requestId = d.request_id;
-state.phoneMasked = d.business_phone_masked || '';
-state.phoneRaw = d.business_phone_raw || '';
-$('nxClaimPhone').textContent = d.business_phone_masked || '';
-    
-        // مرحله ۲: به‌طور خودکار OTP بفرست (شماره از قبل در درخواست ثبت شده)
-        await sendOtp();
-      }
+  if(!user()){
+    window.nomaxAuth.open({ reason: 'برای ادعای مالکیت باید وارد حساب خود شوی.' });
+    return;
+  }
+  state.businessId = businessId;
+  state.businessName = businessName || 'این کسب‌وکار';
+  state.requestId = null;
+  state.phoneMasked = '';
+  state.phoneRaw = '';
+
+  ensureModal();
+  $('nxClaimBizName').textContent = state.businessName;
+  $('nxClaimCode').value = '';
+  $('nxClaimSend').style.display = '';
+  $('nxClaimSend').disabled = false;
+  $('nxClaimSend').textContent = '✓ بله، مال من است';
+  msg('');
+  step1();
+
+  var biz = (window.businesses||[]).filter(function(x){ return String(x.id) === String(businessId); })[0];
+  var phone = biz && biz.phone ? String(biz.phone).replace(/\D/g,'') : '';
+  if(phone.length >= 10){
+    var last10 = phone.slice(-10);
+    state.phoneRaw = '0' + last10;
+    state.phoneMasked = '0' + last10.slice(0,3) + '***' + last10.slice(-4);
+    $('nxClaimPhone').textContent = state.phoneMasked;
+  } else {
+    state.phoneMasked = '—';
+    $('nxClaimPhone').textContent = '—';
+    msg('شماره‌ی این کسب‌وکار معتبر نیست.');
+    $('nxClaimSend').style.display = 'none';
+  }
+
+  $('nxClaimModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
     
       async function sendOtp(){
         if(!state.requestId) return;
         var b = $('nxClaimResend'); if(b) b.disabled = true;
-        var send = $('nxClaimSend'); if(send) send.disabled = true;
+        
         msg('در حال ارسال کد...');
         try{
           var r = await fetch(SUPABASE_URL + '/functions/v1/request-otp', {
@@ -13158,7 +13226,7 @@ $('nxClaimPhone').textContent = d.business_phone_masked || '';
           console.error(e);
           msg('ارتباط با سرور برقرار نشد.');
         }finally{
-          if(send) send.disabled = false;
+          
         }
       }
     
