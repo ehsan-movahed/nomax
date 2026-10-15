@@ -10889,7 +10889,7 @@ h += offers.map(function(o,i){
     if(!u){ a.innerHTML = ""; ac.innerHTML = ""; return; }
     var meta = u.user_metadata || {}, name = meta.full_name || meta.name || (u.email || "").split("@")[0];
     var admin = window.nomaxAuth.admin();
-    a.innerHTML = '<div class="np-card np-row"><div class="np-ava">'+esc((name||"؟").trim().charAt(0).toUpperCase())+'</div><div style="min-width:0"><div style="font-weight:800">'+esc(name)+'</div><div style="font-size:12px;color:var(--text-3);direction:ltr;text-align:right;word-break:break-all">'+esc(u.email||"")+'</div>'+(admin?'<span class="st-pill" style="background:rgba(220,38,38,.1);color:#b91c1c;margin-top:6px;display:inline-block">🛡 مدیر</span>':'')+'</div></div>';
+    a.innerHTML = '<div class="np-card np-row"><div class="np-ava">'+esc((name||"؟").trim().charAt(0).toUpperCase())+'</div><div style="min-width:0"><div style="font-weight:800">'+esc(name)+((u.app_metadata&&u.app_metadata.id_verified)?' <span class="st-pill" style="background:rgba(22,163,74,.12);color:#15803d;font-size:11px;margin-right:6px">✓ احراز هویت‌شده</span>':'')+'</div><div style="font-size:12px;color:var(--text-3);direction:ltr;text-align:right;word-break:break-all">'+esc(u.email||"")+'</div>'+(admin?'<span class="st-pill" style="background:rgba(220,38,38,.1);color:#b91c1c;margin-top:6px;display:inline-block">🛡 مدیر</span>':'')+'</div></div>';
     ac.innerHTML = (admin ? '<button type="button" class="np-act" id="npAdmin">🛡 پنل مدیریت</button>' : '')+'<button type="button" class="np-act danger" id="npOut">🚪 خروج از حساب</button>';
     if($("npAdmin")) $("npAdmin").onclick = function(){ close(); if(window.openAdminPanel) window.openAdminPanel(); };
     $("npOut").onclick = function(){ close(); window.nomaxAuth.signOut(); };
@@ -11772,7 +11772,7 @@ card.replaceWith(details);
         '<div class="nxa-f"><label>شماره موبایل</label><input id="nxaPhoneRO" type="tel" class="ltr" readonly></div>'+
         '<div class="nxa-f"><label id="nxaPassL">رمز عبور <span style="color:var(--danger)">*</span></label><input id="nxaP1" type="password" autocomplete="new-password" placeholder="حداقل ۸ کاراکتر"></div>'+
         '<div class="nxa-f"><label>تکرار رمز عبور <span style="color:var(--danger)">*</span></label><input id="nxaP2" type="password" autocomplete="new-password" placeholder="تکرار رمز"></div>'+
-        '<button type="button" class="nxa-btn" id="nxaSave">ثبت و ورود</button>'+
+        '<button type="button" class="nxa-btn" id="nxaSave">احراز هویت و ثبت‌نام</button>'+
         '<button type="button" class="nxa-link" id="nxaSkip" style="display:none">ورود بدون تغییر رمز</button>'+
       '</div>'+
       '<div class="nxa-msg" id="nxaMsg" aria-live="polite"></div>'+
@@ -11934,6 +11934,7 @@ var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/ver
     $("nxaNidF").style.display = S.registered ? "none" : "";
     $("nxaPassL").innerHTML = (S.registered ? 'رمز عبور جدید' : 'رمز عبور') + ' <span style="color:var(--danger)">*</span>';
     $("nxaSkip").style.display = "none";
+    $("nxaSave").textContent = S.registered ? "ثبت رمز جدید" : "احراز هویت و ثبت‌نام";
     go("profile");
   }catch(e){
     msg(e.message || "کد اشتباه است");
@@ -11960,7 +11961,7 @@ async function saveProfile(){
   }
   if(p1.length<8){ msg("رمز عبور باید حداقل ۸ کاراکتر باشد."); return; }
   if(p1!==p2){ msg("رمز و تکرار آن یکسان نیست."); return; }
-  var b=$("nxaSave"); setBusy(b,true,"در حال ثبت…");
+  var b=$("nxaSave"); setBusy(b,true,S.registered?"در حال ثبت…":"در حال احراز هویت…");
   try{
     var phoneWithZero="0"+S.phone;
     var res=await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/register-user",{
@@ -11975,7 +11976,7 @@ async function saveProfile(){
     setRemember(true);
     await finish(S.registered?"رمز جدید ثبت شد ✓":"ثبت‌نام انجام شد؛ خوش آمدید ✓");
   }catch(e){ msg(e.message || "خطا در ثبت"); }
-  finally{ setBusy(b,false,"ثبت و ورود"); }
+  finally{ setBusy(b,false,S.registered?"ثبت رمز جدید":"احراز هویت و ثبت‌نام"); }
 }
 
 async function finish(text){
