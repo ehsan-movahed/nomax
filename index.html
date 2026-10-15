@@ -11394,6 +11394,25 @@ window.NOMAX_CFG = {
       var addr=card.querySelector(".business-info .row")?card.querySelector(".business-info .row").textContent.replace("📍","").trim():"";
       var tel=card.querySelector('a[href^="tel:"]');
       var details=document.createElement("details");details.className="biz-accordion";
+      details.addEventListener('click', function(e){
+  if(e.target.closest && (e.target.closest('a[href^="tel:"]') || e.target.closest('button') || e.target.closest('a[href^="http"]'))) return;
+  var shareBtn = card.querySelector('button[onclick^="shareBusiness("]');
+  var m = shareBtn ? /shareBusiness\(([^,]+),/.exec(shareBtn.getAttribute('onclick')) : null;
+  if(m){
+    var bid = m[1].replace(/['"\s]/g,'');
+    var biz = businesses.filter(function(x){ return String(x.id) === String(bid); })[0];
+    if(biz && typeof window.nxOpenBusinessSheet === 'function') window.nxOpenBusinessSheet(biz);
+  }
+});
+      details.addEventListener('click', function(e){
+  if(e.target.closest && (e.target.closest('a[href^="tel:"]') || e.target.closest('button') || e.target.closest('a[href^="http"]'))) return;
+  var m = /shareBusiness\(([^,]+),/.exec(card.querySelector('button[onclick^="shareBusiness("]') ? card.querySelector('button[onclick^="shareBusiness("]').getAttribute('onclick') : '');
+  if(m){
+    var bid = m[1].replace(/['"\s]/g,'');
+    var biz = businesses.filter(function(x){ return String(x.id) === String(bid); })[0];
+    if(biz && typeof window.nxOpenBusinessSheet === 'function') window.nxOpenBusinessSheet(biz);
+  }
+});
       var sum=document.createElement("summary");sum.className="biz-acc-summary";
       var main=document.createElement("span");main.className="biz-acc-main";
 var bizId = null;
