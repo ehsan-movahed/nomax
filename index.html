@@ -8994,7 +8994,13 @@ else msg.textContent='ثبت‌نام انجام نشد. اگر قبلاً ثب�
     for(var i=0;i<list.length;i++){
       var b=list[i];
       var grp=(b.status==='approved')?'a':'p'; if(grp!==lastGrp){ html+='<div class="np-h">'+(grp==='a'?'✅ تأییدشده':'⏳ در انتظار تأیید / نیازمند اقدام')+'</div>'; lastGrp=grp; }
-      html+='<div class="owner-business"><div class="owner-head"><div class="avatar">'+avatarHTML(b)+'</div><div class="owner-head-text"><h3>'+esc(b.name)+'</h3><div class="meta">'+esc(b.type||'دسته‌بندی نشده')+'</div><div style="margin-top:6px">'+ownerStatusBadge(b)+'</div></div></div><div class="owner-info"><div class="row"><span>📞</span><span>'+toFa(esc(b.phone||''))+'</span></div><div class="row"><span>📍</span><span>'+esc(b.address||'بهبهان')+'</span></div></div><div class="owner-actions"><button class="edit-btn" data-own-edit="'+b.id+'">✏️ ویرایش</button><button class="delete-btn" data-own-delete="'+b.id+'">🗑 حذف</button></div></div>';
+      // کسب‌وکارهایی که ادمین ثبت کرده (claim_source = 'ownership_otp')
+// نباید دکمه‌ی حذف داشته باشند
+var __isAdminRegistered = (b.claim_source === 'ownership_otp' || (b.payload && b.payload.claim_source === 'ownership_otp'));
+var __deleteBtn = __isAdminRegistered
+  ? '<button class="delete-btn" disabled title="این کسب‌وکار توسط ادمین ثبت شده و فقط ادمین می‌تواند حذف کند" style="opacity:.5;cursor:not-allowed">🔒 حذف</button>'
+  : '<button class="delete-btn" data-own-delete="'+b.id+'">🗑 حذف</button>';
+html+='<div class="owner-business"><div class="owner-head"><div class="avatar">'+avatarHTML(b)+'</div><div class="owner-head-text"><h3>'+esc(b.name)+'</h3><div class="meta">'+esc(b.type||'دسته‌بندی نشده')+'</div><div style="margin-top:6px">'+ownerStatusBadge(b)+'</div></div></div><div class="owner-info"><div class="row"><span>📞</span><span>'+toFa(esc(b.phone||''))+'</span></div><div class="row"><span>📍</span><span>'+esc(b.address||'بهبهان')+'</span></div></div><div class="owner-actions"><button class="edit-btn" data-own-edit="'+b.id+'">✏️ ویرایش</button>'+__deleteBtn+'</div></div>';
     }
     box.innerHTML=html;
     box.querySelectorAll('[data-own-edit]').forEach(function(btn){btn.onclick=function(){editBusinessV2(+btn.getAttribute('data-own-edit'));};});
@@ -11521,7 +11527,7 @@ card.replaceWith(details);
     ".biz-quick-quote{border:1.5px solid var(--primary-200);background:var(--primary-50);color:var(--primary-700);border-radius:12px;padding:9px 12px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;flex:0 0 auto;white-space:nowrap;transition:all .18s}"+
     ".biz-quick-quote:hover{background:var(--primary-500);color:#fff;border-color:var(--primary-500)}"+
     ".biz-accordion>.business-inner{border-top:1px dashed var(--border);padding:12px 14px 14px}"+
-    ".biz-accordion .business-top-actions .call-btn,.biz-accordion .business-top-actions .emergency124{display:none}"+
+    
     ".emergency124{background:#fef2f2!important;color:#b91c1c!important;border-color:#fecaca!important}"+
     "#myRequests .owner-business{padding:12px;border-radius:16px;background:var(--surface);box-shadow:0 3px 14px rgba(15,23,42,.04)}"+
     "#myRequests .owner-business>div:first-child{display:grid!important;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}"+
