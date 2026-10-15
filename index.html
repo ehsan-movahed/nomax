@@ -12929,7 +12929,33 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
   window.addEventListener('load', boot);
 })();
 </script>
-
+<script>
+    /* نومکس: اتصال خودکار کسب‌وکارهای ثبت‌شده توسط ادمین به مالک (بر اساس شماره‌ی OTP) */
+    (function(){
+      var done = {};
+      async function tryClaim(){
+        try{
+          var u = window.nomaxAuth && window.nomaxAuth.user && window.nomaxAuth.user();
+          if(!u || done[u.id]) return;
+          done[u.id] = true;
+          var r = await sb.rpc('claim_businesses_by_phone');
+          if(r.error){
+            console.warn('claim', r.error);
+            setTimeout(function(){ done[u.id] = false; }, 60000);
+            return;
+          }
+          var d = r.data || {};
+          if(d.linked){
+            try{ if(window.nomaxAuth.refresh) await window.nomaxAuth.refresh(); }catch(e){}
+            try{ window.dispatchEvent(new Event('nomax-auth')); }catch(e){}
+            if(window.showToast) showToast('🎉 کسب‌وکار «' + (d.name || '') + '» به پنل شما اضافه شد', 'success');
+          }
+        }catch(e){ console.warn('claim', e); }
+      }
+      setInterval(tryClaim, 5000);
+      tryClaim();
+    })();
+    </script>
 </body>
   </html>
 <style id="nomax-location-arrow-fix">
