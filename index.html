@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com; connect-src 'self' https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://cdn.jsdelivr.net; connect-src 'self' https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(), usb=()">
@@ -2689,6 +2689,11 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
         <label>نام و نام خانوادگی مالک: <span class="req">*</span></label>
         <input id="businessOwner" type="text" placeholder="مثلاً علی محمدی" readonly aria-readonly="true">
         <div class="hint">این نام از حساب احراز‌شده شما گرفته می‌شود و قابل تغییر نیست.</div>
+      </div>
+      <div class="field" id="f-national-id">
+        <label>کد ملی: <span class="req">*</span></label>
+        <input id="businessNationalId" type="tel" inputmode="numeric" maxlength="10" placeholder="از حساب احراز‌شده" readonly aria-readonly="true">
+        <div class="hint">کد ملی از حساب احراز‌شده شما گرفته می‌شود و قابل تغییر نیست. هر کد ملی فقط یک کسب‌وکار می‌تواند داشته باشد.</div>
       </div>
     
       <div class="field" id="f-showOwner" style="display:none">
@@ -5431,12 +5436,14 @@ function fuzzyContains(text, q){
   }
   function licenseBadgeHTML(b){
     if(!businessHasLicense(b)) return "";
-    return '<span class="license-badge" title="پروانه کسب توسط مدیر تأیید شده است">📜 پروانه کسب</span>';
+    return '<span class="license-badge license-badge-icon" title="پروانه کسب توسط مدیر تأیید شده است" aria-label="دارای پروانه کسب تأییدشده"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>';
   }
   function licensePendingBadgeHTML(b){
     if(!b || b.licenseVerified || !businessLicenseClaimed(b)) return "";
-    return '<span class="license-badge" style="background:var(--accent-50);color:var(--accent-700);border-color:var(--accent-100)" title="در انتظار تأیید مدیر">⏳ پروانه در انتظار تأیید</span>';
+    return '<span class="license-badge license-badge-icon is-pending" title="در انتظار تأیید مدیر" aria-label="پروانه کسب در انتظار تأیید"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>';
   }
+  window.licenseBadgeHTML = licenseBadgeHTML;
+  window.licensePendingBadgeHTML = licensePendingBadgeHTML;
 
 
   /* ============ LICENSE IMAGE + FIELDS ============ */
@@ -6084,22 +6091,96 @@ function scoreBusiness(b, q){
   window.nxSyncTabs = nxSyncTabs;
 
   function nxRequestLocation(){
+    if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+    /* اگر قبلاً ذخیره شده */
+    try{
+      if(!window.nxUserLoc){
+        var s = localStorage.getItem('nomax_home_location_v1');
+        if(s){
+          var o = JSON.parse(s);
+          if(o && Number.isFinite(Number(o.lat)) && Number.isFinite(Number(o.lng))){
+            window.nxUserLoc = { lat:Number(o.lat), lng:Number(o.lng), t:o.t||Date.now() };
+            nxLocState = 'ok';
+            if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+            if(nxActiveTab === 'nearest') searchBusinesses(); else nxRenderTabNote();
+            return;
+          }
+        }
+      }
+    }catch(e0){}
     if(!navigator.geolocation){
       nxLocState = "unsupported"; nxRenderTabNote();
-      showToast("مرورگر شما از موقعیت مکانی پشتیبانی نمی‌کند.", "error");
+      if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+      /* به‌جای خطای خشک، نقشه را باز کن */
+      if(typeof window.nxOpenMapPicker === 'function'){
+        window.__nxLocPickMode = 'searchUser';
+        window.nxOpenMapPicker('req', null);
+        showToast('موقعیت را روی نقشه انتخاب کنید.', 'info');
+      } else {
+        showToast('مرورگر از موقعیت مکانی پشتیبانی نمی‌کند.', 'error');
+      }
+      return;
+    }
+    if(location.protocol === 'file:'){
+      nxLocState = 'denied';
+      if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+      if(typeof window.nxOpenMapPicker === 'function'){
+        window.__nxLocPickMode = 'searchUser';
+        window.nxOpenMapPicker('req', window.nxUserLoc || null);
+        showToast('برای GPS سایت را روی https باز کنید؛ فعلاً از نقشه استفاده کنید.', 'info');
+      } else {
+        showToast('برای موقعیت مکانی، سایت را روی https باز کنید.', 'error');
+      }
       return;
     }
     nxLocState = "loading"; nxRenderTabNote();
-    navigator.geolocation.getCurrentPosition(function(p){
+    if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+    function onOk(p){
       window.nxUserLoc = { lat:p.coords.latitude, lng:p.coords.longitude, t:Date.now() };
       try{ localStorage.setItem("nomax_home_location_v1", JSON.stringify(window.nxUserLoc)); }catch(e){}
       nxLocState = "ok";
+      if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
       if(nxActiveTab === "nearest") searchBusinesses(); else nxRenderTabNote();
-    }, function(){
+      showToast('موقعیت شما ثبت شد.', 'success');
+    }
+    function onFail(err){
+      /* یک‌بار با دقت کمتر تلاش کن */
+      if(!nxRequestLocation._retried){
+        nxRequestLocation._retried = true;
+        navigator.geolocation.getCurrentPosition(onOk, function(err2){
+          nxRequestLocation._retried = false;
+          nxLocState = "denied"; nxRenderTabNote();
+          if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+          if(typeof window.nxOpenMapPicker === 'function'){
+            window.__nxLocPickMode = 'searchUser';
+            window.nxOpenMapPicker('req', null);
+            showToast('GPS در دسترس نبود؛ موقعیت را روی نقشه انتخاب کنید.', 'info');
+          } else {
+            var msg = 'دسترسی به موقعیت انجام نشد.';
+            if(err2 && err2.code === 1) msg = 'اجازه موقعیت داده نشد. از تنظیمات مرورگر اجازه بدهید.';
+            else if(err2 && err2.code === 2) msg = 'موقعیت در دسترس نیست. GPS را روشن کنید.';
+            else if(err2 && err2.code === 3) msg = 'دریافت موقعیت طول کشید.';
+            showToast(msg, 'error');
+          }
+        }, { enableHighAccuracy:false, timeout:10000, maximumAge:300000 });
+        return;
+      }
+      nxRequestLocation._retried = false;
       nxLocState = "denied"; nxRenderTabNote();
-      showToast("دسترسی به موقعیت انجام نشد؛ مجوز مرورگر را بررسی کن.", "error");
-    }, { enableHighAccuracy:true, timeout:12000, maximumAge:60000 });
+      if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+      if(typeof window.nxOpenMapPicker === 'function'){
+        window.__nxLocPickMode = 'searchUser';
+        window.nxOpenMapPicker('req', null);
+        showToast('موقعیت را روی نقشه انتخاب کنید.', 'info');
+      } else {
+        showToast('دسترسی به موقعیت انجام نشد؛ مجوز مرورگر را بررسی کنید.', 'error');
+      }
+    }
+    nxRequestLocation._retried = false;
+    navigator.geolocation.getCurrentPosition(onOk, onFail, { enableHighAccuracy:true, timeout:12000, maximumAge:60000 });
   }
+  window.nxRequestLocation = nxRequestLocation;
+  window.nxClearLocation = nxClearLocation;
 
   function nxClearLocation(){
     window.nxUserLoc = null;
@@ -6196,14 +6277,50 @@ function scoreBusiness(b, q){
   /* ============ REGISTER ============ */
 /* ============ REGISTER ============ */
 function openRegister(){
+  /* مهم: nomaxPanel.close() صدا زده نشود — history.back باعث بسته شدن فوری فرم می‌شد */
   if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel();
-  if(window.nomaxPanel) window.nomaxPanel.close();
-  document.getElementById("registerCard").classList.remove("hidden");
   document.getElementById("ownerCard").classList.add("hidden");
   resetForm();
   goToStep(1);
-  document.getElementById("registerCard").scrollIntoView({behavior:"smooth",block:"start"});
+  var reg = document.getElementById("registerCard");
+  var host = document.getElementById("npEditHost");
+  var slot = document.getElementById("npEditSlot");
+  if(host && slot && reg){
+    slot.appendChild(reg);
+    reg.classList.remove("hidden");
+    reg.classList.add("nx-reg-overlay-card");
+    host.style.display = "block";
+    host.style.zIndex = "2600";
+    host.scrollTop = 0;
+    var h = host.querySelector(".np-head h2");
+    if(h) h.textContent = window.editingOwnerBusinessId ? "ویرایش کسب‌وکار" : "ثبت کسب‌وکار جدید";
+    var panel = document.getElementById("nomaxPanel");
+    if(panel && !panel.classList.contains("open")){
+      panel.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+  } else if(typeof window.nomaxOpenEditInPanel === "function"){
+    window.nomaxOpenEditInPanel();
+    if(reg){ reg.classList.remove("hidden"); reg.classList.add("nx-reg-overlay-card"); }
+  } else if(reg){
+    reg.classList.remove("hidden");
+    reg.classList.add("np-edit-mode");
+    try{ window.scrollTo(0,0); }catch(e){}
+  }
+  /* پر کردن نام و موبایل از حساب (خاکستری / فقط‌خواندنی) */
+  try{
+    var u = (typeof currentOwner === "function" && currentOwner()) || (window.nomaxAuth && window.nomaxAuth.user && window.nomaxAuth.user());
+    if(u){
+      var nm = u.name || (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || "";
+      var ph = u.phone || (u.user_metadata && u.user_metadata.phone) || "";
+      var oEl = document.getElementById("businessOwner");
+      var pEl = document.getElementById("businessPhone");
+      if(oEl){ oEl.value = nm; oEl.readOnly = true; }
+      if(pEl){ pEl.value = ph || ""; pEl.readOnly = true; }
+    }
+  }catch(ePref){}
 }
+window.openRegister = openRegister;
 document.getElementById("registerButton").onclick = openRegister;
 /* ============ REGISTER HELP MODAL ============ */
 function openRegisterHelp(){
@@ -7603,9 +7720,18 @@ function getTimeAgo(ts){
     buildCategories();
     updateStats();
     document.getElementById("ownerCard").classList.add("hidden");
-    document.getElementById("registerCard").classList.remove("hidden");
     goToStep(1);
-    document.getElementById("registerCard").scrollIntoView({behavior:"smooth",block:"start"});
+    window.editingOwnerBusinessId = id;
+    if(typeof window.nomaxOpenEditInPanel === "function"){
+      window.nomaxOpenEditInPanel();
+      var h = document.querySelector("#npEditHost .np-head h2");
+      if(h) h.textContent = "ویرایش کسب‌وکار";
+      var reg = document.getElementById("registerCard");
+      if(reg){ reg.classList.remove("hidden"); reg.classList.add("nx-reg-overlay-card"); }
+    } else {
+      document.getElementById("registerCard").classList.remove("hidden");
+      document.getElementById("registerCard").classList.add("np-edit-mode");
+    }
     showToast("فرم برای ویرایش باز شد. پس از تغییرات، دوباره ثبت کنید.", "success");
   }
   
@@ -8343,8 +8469,8 @@ function getTimeAgo(ts){
         ? '<span class="verified-badge" style="font-size:9px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>تأیید شده</span>'
         : '';
       var licenseBadge = businessHasLicense(b)
-        ? '<span class="license-badge" style="font-size:9px">📜 پروانه کسب</span>'
-        : (businessLicenseClaimed(b) ? '<span class="license-badge" style="font-size:9px;background:var(--accent-50);color:var(--accent-700);border-color:var(--accent-100)">⏳ پروانه در انتظار</span>' : '');
+        ? licenseBadgeHTML(b)
+        : licensePendingBadgeHTML(b);
       var licenseView = (b.licenseImage ? '<button type="button" class="biz-action-btn edit-a" onclick="viewLicenseImage('+b.id+')">👁 تصویر پروانه</button>' : '');
       var emergencyBadge = b.emergency
         ? '<span class="emergency-badge" style="font-size:9px">⚡ اورژانسی</span>'
@@ -9218,7 +9344,7 @@ html+='<div class="owner-business"><div class="owner-head"><div class="avatar">'
           ? '<span class="owner-status rejected">✕ رد شده</span>'
           : '<span class="owner-status approved">✓ منتشرشده</span>');
       var verifiedBadge=b.verified?'<span class="verified-badge" style="font-size:9px">✓ تأیید هویت/اطلاعات</span>':'';
-      var licenseBadge=businessHasLicense(b)?'<span class="license-badge" style="font-size:9px">📜 پروانه کسب</span>':(businessLicenseClaimed(b)?'<span class="license-badge" style="font-size:9px;background:var(--accent-50);color:var(--accent-700);border-color:var(--accent-100)">⏳ پروانه در انتظار</span>':'');
+      var licenseBadge=businessHasLicense(b)?licenseBadgeHTML(b):licensePendingBadgeHTML(b);
       var emergencyBadge=b.emergency?'<span class="emergency-badge" style="font-size:9px">⚡ اورژانسی</span>':'';
 
       html+='<div class="biz-manage-row'+(pending?' is-pending':'')+'">'+
@@ -9718,7 +9844,7 @@ updateStats();
       var badges=statusBadge
         +(b.verified?'<span class="verified-badge" style="font-size:9px">✓ تأیید</span>':'')
         +(isFeat?'<span class="verified-badge" style="font-size:9px;background:var(--accent-50);color:var(--accent-700);border-color:var(--accent-100)">⭐ شاخص</span>':'')
-        +(businessHasLicense(b)?'<span class="license-badge" style="font-size:9px">📜 پروانه</span>':(businessLicenseClaimed(b)?'<span class="license-badge" style="font-size:9px;background:var(--accent-50);color:var(--accent-700);border-color:var(--accent-100)">⏳ پروانه</span>':''))
+        +(businessHasLicense(b)?licenseBadgeHTML(b):licensePendingBadgeHTML(b))
         +(b.emergency?'<span class="emergency-badge" style="font-size:9px">⚡ اورژانسی</span>':(s.open24h?'<span class="emergency-badge" style="font-size:9px;opacity:.7">⚡ ادعای ۲۴ساعته</span>':''));
 
       var acts='';
@@ -11421,7 +11547,13 @@ if(bizId && typeof getBusinessRating === "function"){
     ratingHtml = window.nxRatedAvatar ? '' : '<span class="biz-acc-rating"><span class="star">★</span>' + toFa(rt.avg.toFixed(1)) + '</span>';
   }
 }
-main.innerHTML = '<strong class="biz-acc-name">'+esc(title)+'</strong>' +
+var licHtml = '';
+try{
+  var boLic = bizId ? businesses.filter(function(x){ return String(x.id) === String(bizId); })[0] : null;
+  if(boLic && typeof licenseBadgeHTML === 'function') licHtml = licenseBadgeHTML(boLic) || '';
+  else if(boLic && typeof window.licenseBadgeHTML === 'function') licHtml = window.licenseBadgeHTML(boLic) || '';
+}catch(eLic){}
+main.innerHTML = '<strong class="biz-acc-name">'+esc(title)+(licHtml ? ' '+licHtml : '')+'</strong>' +
   '<span class="biz-acc-meta">'+ratingHtml+'<span class="biz-acc-addr">📍 '+esc(addr)+'</span></span>';
       sum.appendChild(main);
       if(window.nxRatedAvatar && bizId){
@@ -12933,7 +13065,11 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
       row.innerHTML = ICON_LOC + '<b>موقعیت فعلی</b><span class="nx-loc-sep" aria-hidden="true">|</span>' +
         '<span class="nx-loc-text" id="nxLocText"></span>' + ICON_DOWN;
       c.appendChild(row);
-      row.onclick = function(){ if(typeof window.nxSetTab === 'function') window.nxSetTab('nearest'); };
+      row.onclick = function(){
+        if(typeof window.nxRequestLocation === 'function') window.nxRequestLocation();
+        else if(typeof nxRequestLocation === 'function') nxRequestLocation();
+        else if(typeof window.nxSetTab === 'function') window.nxSetTab('nearest');
+      };
     }
     if(sc && !$('nxPopular')){
       var pop = document.createElement('div');
@@ -13858,8 +13994,13 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
     var rate = r.avg>0
       ? '<span style="color:var(--text-3)">'+faNum(r.count)+' نظر</span>'
       : '<span>جدید</span>';
+    var licMini = '';
+    try{
+      if(typeof licenseBadgeHTML === 'function') licMini = licenseBadgeHTML(b) || '';
+      else if(typeof window.licenseBadgeHTML === 'function') licMini = window.licenseBadgeHTML(b) || '';
+    }catch(eL){}
     return '<article class="nx-mini-biz" role="button" tabindex="0" data-nx-biz="'+esc(b.id)+'" aria-label="مشاهده '+esc(b.name||'کسب‌وکار')+'">'+
-      '<div class="nx-mini-image">'+imageFor(b)+(b.verified?'<span class="nx-mini-verified">✓ تأییدشده</span>':'')+(typeof window.nxRatingPill==='function'?window.nxRatingPill(b,'nx-mini-pill'):'')+'</div>'+
+      '<div class="nx-mini-image">'+imageFor(b)+(b.verified?'<span class="nx-mini-verified">✓ تأییدشده</span>':'')+(licMini?'<span class="nx-mini-license">'+licMini+'</span>':'')+(typeof window.nxRatingPill==='function'?window.nxRatingPill(b,'nx-mini-pill'):'')+'</div>'+
       '<div class="nx-mini-body"><div class="nx-mini-name">'+esc(b.name||'کسب‌وکار بدون نام')+'</div>'+
       '<div class="nx-mini-meta">'+rate+'</div>'+
       '<span class="nx-mini-action">مشاهده ←</span></div></article>';
@@ -14468,5 +14609,3814 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
   mo = new MutationObserver(function(){ clearTimeout(timer); timer = setTimeout(work,60); });
   work();
   setInterval(function(){ loadMarks(); }, 5000);
+})();
+</script>
+
+<!-- ========== NOMAX UI QUALITY UPGRADE v2 — Achareh-inspired polish for Behbahan ========== -->
+<style id="nomax-ui-quality-v2">
+/* =========================================================
+   Design system refinements — calm, premium, local-service feel
+   Inspired by Achareh clarity + soft Iranian marketplace aesthetics
+   ========================================================= */
+:root{
+  --nxq-brand: #0d9488;
+  --nxq-brand-dark: #0f766e;
+  --nxq-brand-soft: #ecfdf5;
+  --nxq-brand-mid: #99f6e4;
+  --nxq-ink: #1c1917;
+  --nxq-muted: #78716c;
+  --nxq-line: #e7e5e4;
+  --nxq-surface: #ffffff;
+  --nxq-bg: #fafaf9;
+  --nxq-radius: 16px;
+  --nxq-radius-sm: 12px;
+  --nxq-radius-xs: 10px;
+  --nxq-shadow: 0 4px 20px rgba(28,25,23,.06);
+  --nxq-shadow-md: 0 8px 28px rgba(28,25,23,.08);
+  --nxq-shadow-lg: 0 16px 48px rgba(28,25,23,.10);
+  --nxq-ease: cubic-bezier(.4,0,.2,1);
+}
+
+[data-theme="dark"]{
+  --nxq-ink: #f1f5f9;
+  --nxq-muted: #94a3b8;
+  --nxq-line: #334155;
+  --nxq-surface: #1e293b;
+  --nxq-bg: #0f172a;
+  --nxq-brand-soft: rgba(13,148,136,.14);
+  --nxq-shadow: 0 4px 20px rgba(0,0,0,.35);
+  --nxq-shadow-md: 0 8px 28px rgba(0,0,0,.4);
+  --nxq-shadow-lg: 0 16px 48px rgba(0,0,0,.5);
+}
+
+/* ---------- Global polish ---------- */
+body{
+  background: var(--nxq-bg) !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Cards: softer, cleaner, more premium ---------- */
+.card,
+.business,
+.owner-business,
+.admin-review,
+.biz-manage-row,
+.nx-owner-req,
+.nx-oc,
+.nx-mini-biz{
+  border-radius: var(--nxq-radius) !important;
+  border: 1px solid var(--nxq-line) !important;
+  box-shadow: var(--nxq-shadow) !important;
+  transition: box-shadow .25s var(--nxq-ease), transform .25s var(--nxq-ease), border-color .2s !important;
+}
+
+.business:hover,
+.owner-business:hover,
+.biz-manage-row:hover,
+.nx-mini-biz:hover{
+  box-shadow: var(--nxq-shadow-md) !important;
+  border-color: #99d5cc !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Remove heavy left accent bars for cleaner look */
+.business::before{ opacity: .55 !important; width: 3px !important; }
+
+/* ---------- Buttons: high-quality, consistent, tactile ---------- */
+.call-btn,
+.menu-btn.green,
+.btn-submit,
+.nxa-btn,
+.nx-btn-p,
+.quick-modal .btn-save,
+.admin-toolbar .add-btn,
+.nx-location-btn,
+.nx-quote-hero-btn,
+.nx-featured-open,
+.search-box button{
+  border-radius: var(--nxq-radius-sm) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.2px !important;
+  box-shadow: 0 2px 8px rgba(13,148,136,.18) !important;
+  transition: background .2s var(--nxq-ease), transform .15s var(--nxq-ease), box-shadow .2s !important;
+  border: 0 !important;
+}
+
+.call-btn:hover,
+.menu-btn.green:hover,
+.btn-submit:hover,
+.nxa-btn:hover,
+.nx-btn-p:hover,
+.quick-modal .btn-save:hover,
+.admin-toolbar .add-btn:hover,
+.search-box button:hover{
+  box-shadow: 0 6px 18px rgba(13,148,136,.28) !important;
+  transform: translateY(-1px) !important;
+}
+
+.call-btn:active,
+.menu-btn.green:active,
+.btn-submit:active,
+.search-box button:active{
+  transform: translateY(0) scale(.98) !important;
+  box-shadow: 0 2px 6px rgba(13,148,136,.15) !important;
+}
+
+/* Secondary / action buttons — quieter but refined */
+.action-btn,
+.menu-btn:not(.green),
+.edit-btn,
+.delete-btn,
+.share-btn,
+.biz-action-btn,
+.nx-mini-btn,
+.admin-tab,
+.filter-pill,
+.admin-filter-chip{
+  border-radius: var(--nxq-radius-xs) !important;
+  font-weight: 650 !important;
+  transition: all .18s var(--nxq-ease) !important;
+  border: 1px solid var(--nxq-line) !important;
+}
+
+.action-btn:hover,
+.edit-btn:hover,
+.share-btn:hover,
+.biz-action-btn:hover{
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 10px rgba(28,25,23,.06) !important;
+}
+
+/* Icon-only action buttons: better visual weight */
+.action-btn svg{
+  width: 20px !important;
+  height: 20px !important;
+  stroke-width: 1.7 !important;
+}
+
+.action-btn.whatsapp-btn:hover{ background: #25d366 !important; color: #fff !important; border-color: #25d366 !important; }
+.action-btn.insta-btn:hover{ background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888) !important; color:#fff !important; border-color: transparent !important; }
+.action-btn.map-btn:hover{ background: var(--nxq-brand) !important; color:#fff !important; border-color: var(--nxq-brand) !important; }
+.action-btn.share-btn:hover{ background: #0284c7 !important; color:#fff !important; border-color: #0284c7 !important; }
+.action-btn.qr-btn:hover{ background: #7c3aed !important; color:#fff !important; border-color: #7c3aed !important; }
+.action-btn.sms-btn:hover{ background: #f59e0b !important; color:#fff !important; border-color: #f59e0b !important; }
+
+/* ---------- Forms & inputs ---------- */
+.field input,
+.field select,
+.field textarea,
+.quick-modal .qfield input,
+.quick-modal .qfield select,
+.quick-modal .qfield textarea,
+.nxa-f input,
+.search-box{
+  border-radius: var(--nxq-radius-xs) !important;
+  border: 1.5px solid var(--nxq-line) !important;
+  transition: border-color .2s, box-shadow .2s !important;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.quick-modal .qfield input:focus,
+.search-box:focus-within{
+  border-color: var(--nxq-brand) !important;
+  box-shadow: 0 0 0 4px rgba(13,148,136,.12) !important;
+}
+
+/* ---------- Header: calm app-bar ---------- */
+.header{
+  background: var(--nxq-surface) !important;
+  color: var(--nxq-ink) !important;
+  border-bottom: 1px solid var(--nxq-line) !important;
+  box-shadow: 0 1px 0 rgba(28,25,23,.04) !important;
+}
+
+.header h1{ color: var(--nxq-ink) !important; font-weight: 800 !important; }
+.header .logo-mark{
+  background: var(--nxq-brand-soft) !important;
+  color: var(--nxq-brand-dark) !important;
+  border: 1px solid #cceee8 !important;
+  box-shadow: none !important;
+}
+
+.theme-toggle,
+.header-menu-toggle,
+.acct-btn{
+  background: var(--nxq-surface) !important;
+  color: var(--nxq-brand-dark) !important;
+  border: 1px solid var(--nxq-line) !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+.theme-toggle:hover,
+.header-menu-toggle:hover,
+.acct-btn:hover{
+  background: var(--nxq-brand-soft) !important;
+  border-color: #b9ded7 !important;
+}
+
+/* ---------- Search box: hero focus ---------- */
+.search-box{
+  min-height: 52px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 16px rgba(13,148,136,.07) !important;
+  background: var(--nxq-surface) !important;
+}
+.search-box button{
+  background: var(--nxq-brand) !important;
+  border-radius: 11px !important;
+  min-height: 42px !important;
+  padding: 0 18px !important;
+}
+
+/* ---------- Business cards & accordion ---------- */
+.business-inner{ padding: 16px 16px 14px !important; }
+.business h3{ font-size: 16px !important; font-weight: 800 !important; letter-spacing: -.3px !important; }
+.avatar{
+  border-radius: 14px !important;
+  box-shadow: 0 4px 12px rgba(15,23,42,.1) !important;
+  border: 2px solid rgba(255,255,255,.8) !important;
+}
+
+.biz-accordion > summary{
+  border-radius: var(--nxq-radius) !important;
+  transition: background .15s !important;
+}
+.biz-accordion[open] > summary{ background: var(--nxq-brand-soft) !important; }
+
+/* ---------- Filter pills & chips ---------- */
+.filter-pill,
+.admin-filter-chip,
+.nx-category-chip,
+.nx-pop-chip{
+  border-radius: 100px !important;
+  font-weight: 650 !important;
+  transition: all .18s var(--nxq-ease) !important;
+}
+.filter-pill.active,
+.admin-filter-chip.active{
+  box-shadow: 0 3px 10px rgba(13,148,136,.2) !important;
+}
+
+/* ---------- Owner panel ---------- */
+.owner-business{
+  padding: 16px !important;
+  background: var(--nxq-surface) !important;
+}
+.owner-head .avatar{ border-radius: 12px !important; }
+.owner-actions button{
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  min-height: 40px !important;
+}
+.edit-btn{ background: #eff6ff !important; color: #1d4ed8 !important; border: 1px solid #bfdbfe !important; }
+.delete-btn{ background: #fef2f2 !important; color: #b91c1c !important; border: 1px solid #fecaca !important; }
+.share-btn{ background: var(--nxq-brand-soft) !important; color: var(--nxq-brand-dark) !important; border: 1px solid #99f6e4 !important; }
+
+/* ---------- Admin panel polish ---------- */
+.admin-stats-box{ gap: 10px !important; }
+.admin-stat-card{
+  border-radius: 14px !important;
+  padding: 14px 12px !important;
+  background: var(--nxq-surface) !important;
+  border: 1px solid var(--nxq-line) !important;
+  box-shadow: var(--nxq-shadow) !important;
+}
+.admin-stat-card .stat-num{ font-size: 22px !important; font-weight: 850 !important; }
+.admin-toolbar .add-btn{
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
+}
+.biz-manage-row{
+  padding: 14px !important;
+  border-radius: 14px !important;
+  gap: 12px !important;
+}
+.biz-manage-avatar{ border-radius: 12px !important; }
+.biz-action-btn{
+  border-radius: 9px !important;
+  padding: 8px 12px !important;
+  font-weight: 700 !important;
+  min-height: 36px !important;
+}
+.admin-tabs,
+.admin-sub-tabs{
+  background: var(--muted) !important;
+  border-radius: 14px !important;
+  padding: 5px !important;
+}
+.admin-tab.active,
+.admin-sub-tab.active{
+  border-radius: 10px !important;
+  box-shadow: 0 2px 8px rgba(28,25,23,.06) !important;
+}
+
+/* ---------- Modals & sheets ---------- */
+.modal,
+.quick-modal,
+.nxa-sheet,
+.nxm-sheet,
+.terms-card,
+.notif-prompt-card{
+  border-radius: 20px !important;
+  box-shadow: var(--nxq-shadow-lg) !important;
+  border: 1px solid var(--nxq-line) !important;
+}
+.modal-overlay{ backdrop-filter: blur(6px) !important; }
+
+/* ---------- Rating stars ---------- */
+.stars-display svg,
+.star-picker button svg,
+.review-item .review-stars svg{
+  width: 15px !important;
+  height: 15px !important;
+}
+.star-picker button svg{ width: 30px !important; height: 30px !important; }
+
+/* ---------- Toast ---------- */
+.toast{
+  border-radius: 14px !important;
+  font-weight: 650 !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.18) !important;
+  padding: 14px 22px !important;
+}
+
+/* ---------- Empty states ---------- */
+.empty .icon-big{
+  border-radius: 18px !important;
+  background: var(--nxq-brand-soft) !important;
+  color: var(--nxq-brand) !important;
+}
+.empty .cta{
+  border-radius: 12px !important;
+  box-shadow: 0 4px 14px rgba(13,148,136,.22) !important;
+}
+
+/* ---------- Home discovery cards ---------- */
+.nx-mini-biz{
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+.nx-mini-image{ height: 92px !important; }
+.nx-mini-body{ padding: 12px !important; }
+.nx-mini-name{ font-size: 13px !important; font-weight: 800 !important; }
+.nx-mini-action{
+  border-radius: 10px !important;
+  font-weight: 750 !important;
+  background: var(--nxq-brand-soft) !important;
+  color: var(--nxq-brand-dark) !important;
+  border: 1px solid #b9ded7 !important;
+}
+
+/* ---------- Category tiles ---------- */
+.nx-cat-tile{
+  border-radius: 16px !important;
+  transition: transform .18s, box-shadow .18s !important;
+}
+.nx-cat-tile:hover{
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(13,148,136,.12) !important;
+}
+.nx-cat-ico{
+  border-radius: 14px !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.08) !important;
+}
+
+/* ---------- Quote hero ---------- */
+#nxQuoteHeroTop, .nx-quote-hero{
+  border-radius: 18px !important;
+  box-shadow: 0 6px 20px rgba(13,148,136,.16) !important;
+}
+.nx-quote-hero-btn{
+  border-radius: 11px !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Featured hero ---------- */
+.nx-featured-photo{
+  border-radius: 20px !important;
+  box-shadow: 0 10px 28px rgba(13,148,136,.15) !important;
+}
+.nx-featured-open{
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+}
+
+/* ---------- Private marks / notes ---------- */
+.nxm-btn{
+  border-radius: 10px !important;
+  transition: all .15s !important;
+}
+.nxm-chip{ border-radius: 100px !important; font-weight: 700 !important; }
+
+/* ---------- Scrollbars (subtle) ---------- */
+::-webkit-scrollbar{ width: 7px; height: 7px; }
+::-webkit-scrollbar-track{ background: transparent; }
+::-webkit-scrollbar-thumb{ background: #d6d3d1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover{ background: #a8a29e; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb{ background: #475569; }
+
+/* ---------- Mobile refinements ---------- */
+@media (max-width: 480px){
+  .business-inner{ padding: 14px 14px 12px !important; }
+  .call-btn, .action-btn{ min-height: 44px !important; }
+  .avatar{ width: 50px !important; height: 50px !important; }
+  .nx-mini-biz{ flex-basis: 150px !important; max-width: 150px !important; }
+  .admin-stat-card .stat-num{ font-size: 18px !important; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+/* ---------- Final consistency: primary filled buttons ---------- */
+button.primary,
+.btn-primary,
+[data-primary]{
+  background: var(--nxq-brand) !important;
+  color: #fff !important;
+  border-radius: var(--nxq-radius-sm) !important;
+}
+</style>
+
+<!-- ========== NOMAX DESKTOP × ACHAREH + FORMS + ICONS UPGRADE ========== -->
+<style id="nomax-achareh-desktop-v3">
+/* =========================================================
+   Desktop layout closer to Achareh:
+   - Wider content area
+   - Clear section hierarchy
+   - Category grid prominence
+   - Soft surfaces, generous whitespace
+   - Refined forms
+   ========================================================= */
+
+/* ---- Desktop container & rhythm ---- */
+@media (min-width: 900px){
+  .container{
+    max-width: 1080px !important;
+    padding: 20px 28px 64px !important;
+  }
+  .header{
+    min-height: 68px !important;
+    padding: 12px 28px !important;
+  }
+  .header h1{ font-size: 20px !important; letter-spacing: -.4px !important; }
+  .header .logo-mark{ width: 38px !important; height: 38px !important; min-width: 38px !important; }
+
+  /* Search becomes a calm hero strip */
+  .container > .card:first-of-type,
+  #nxSearchCard{
+    max-width: 720px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 22px 24px 18px !important;
+    border-radius: 20px !important;
+  }
+  .search-title{
+    font-size: 22px !important;
+    margin-bottom: 16px !important;
+  }
+  .search-box{
+    min-height: 56px !important;
+    border-radius: 16px !important;
+  }
+  .search-box input{ font-size: 15.5px !important; }
+  .search-box button{
+    min-height: 46px !important;
+    padding: 0 22px !important;
+    font-size: 14.5px !important;
+  }
+
+  /* Home top: fake search + category grid like Achareh service tiles */
+  #nxHomeTop{
+    max-width: 1080px;
+    margin: 8px auto 18px !important;
+  }
+  .nx-fake-search{
+    max-width: 640px;
+    margin: 0 auto 22px !important;
+    min-height: 54px !important;
+    border-radius: 16px !important;
+    border: 1.5px solid var(--nxq-line, #e7e5e4) !important;
+    background: var(--nxq-surface, #fff) !important;
+    box-shadow: 0 4px 18px rgba(13,148,136,.07) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 0 18px !important;
+    cursor: pointer !important;
+    font-size: 15px !important;
+    color: var(--text-3) !important;
+    transition: border-color .2s, box-shadow .2s !important;
+  }
+  .nx-fake-search:hover{
+    border-color: #99d5cc !important;
+    box-shadow: 0 6px 22px rgba(13,148,136,.12) !important;
+  }
+  .nx-cat-grid{
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 14px !important;
+    margin: 0 0 8px !important;
+  }
+  .nx-cat-tile{
+    min-height: 104px !important;
+    border-radius: 18px !important;
+    border: 1px solid var(--nxq-line, #e7e5e4) !important;
+    background: var(--nxq-surface, #fff) !important;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    padding: 16px 10px !important;
+    transition: transform .2s, box-shadow .2s, border-color .2s !important;
+  }
+  .nx-cat-tile:hover{
+    transform: translateY(-3px) !important;
+    border-color: #99d5cc !important;
+    box-shadow: 0 10px 28px rgba(13,148,136,.12) !important;
+  }
+  .nx-cat-ico{
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 16px !important;
+    display: grid !important;
+    place-items: center !important;
+    font-size: 22px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08) !important;
+  }
+  .nx-cat-name{
+    font-size: 12.5px !important;
+    font-weight: 750 !important;
+    text-align: center !important;
+    line-height: 1.45 !important;
+    color: var(--text) !important;
+  }
+
+  /* Featured + quote + discover in a balanced desktop rhythm */
+  #nxFeaturedHero,
+  #nxQuoteHeroTop,
+  #nxHomeDiscover{
+    max-width: 1080px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #nxFeaturedHero{ margin-bottom: 18px !important; }
+  .nx-featured-photo{ height: 240px !important; border-radius: 22px !important; }
+  #nxQuoteHeroTop, .nx-quote-hero{
+    max-width: 720px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 16px 20px !important;
+  }
+
+  /* Business strip: more cards visible */
+  .nx-business-strip{ gap: 16px !important; padding-bottom: 12px !important; }
+  .nx-mini-biz{
+    flex: 0 0 200px !important;
+    max-width: 200px !important;
+    border-radius: 18px !important;
+  }
+  .nx-mini-image{ height: 110px !important; }
+  .nx-mini-body{ padding: 14px !important; }
+  .nx-mini-name{ font-size: 13.5px !important; }
+  .nx-mini-action{ padding: 8px !important; font-size: 12px !important; }
+
+  /* Results on desktop */
+  #resultsCard{
+    max-width: 800px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .business{ border-radius: 18px !important; }
+  .business-inner{ padding: 18px 20px 16px !important; }
+  .business h3{ font-size: 17px !important; }
+  .avatar{ width: 60px !important; height: 60px !important; border-radius: 16px !important; }
+
+  /* Owner / Admin panels breathe more on desktop */
+  #ownerPanelCard,
+  #adminPanelCard,
+  .owner-business,
+  .biz-manage-row{
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .admin-stats-box{ grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; }
+  .admin-stat-card{ padding: 16px !important; border-radius: 16px !important; }
+  .biz-manage-row{ padding: 16px 18px !important; }
+
+  /* Forms wider & cleaner */
+  #registerCard{
+    max-width: 640px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 28px 32px !important;
+    border-radius: 20px !important;
+  }
+}
+
+/* Extra-wide screens */
+@media (min-width: 1200px){
+  .container{ max-width: 1140px !important; }
+  .nx-cat-grid{ grid-template-columns: repeat(6, 1fr) !important; gap: 16px !important; }
+  .nx-cat-tile{ min-height: 112px !important; }
+}
+
+/* Tablet middle ground */
+@media (min-width: 640px) and (max-width: 899px){
+  .container{ max-width: 760px !important; padding: 16px 20px 48px !important; }
+  .nx-cat-grid{
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+  }
+  .nx-cat-tile{ min-height: 96px !important; border-radius: 16px !important; }
+}
+
+/* ---- Forms polish (all breakpoints) ---- */
+.field{ margin-bottom: 18px !important; }
+.field label{
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  color: var(--text) !important;
+  letter-spacing: -.1px;
+}
+.field label .req{ color: #dc2626 !important; margin-right: 3px !important; }
+.field input,
+.field select,
+.field textarea{
+  padding: 13px 14px !important;
+  border-radius: 12px !important;
+  border: 1.5px solid var(--nxq-line, #e7e5e4) !important;
+  font-size: 14.5px !important;
+  background: var(--nxq-surface, #fff) !important;
+  transition: border-color .2s, box-shadow .2s !important;
+}
+.field input:hover,
+.field select:hover,
+.field textarea:hover{
+  border-color: #c4c0bb !important;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 4px rgba(13,148,136,.12) !important;
+  outline: none !important;
+}
+.field .hint{
+  font-size: 12px !important;
+  color: var(--text-3) !important;
+  margin-top: 7px !important;
+  line-height: 1.7 !important;
+}
+.field .err-msg{
+  font-size: 12px !important;
+  margin-top: 7px !important;
+  font-weight: 600 !important;
+}
+.field.has-error input,
+.field.has-error select,
+.field.has-error textarea{
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220,38,38,.1) !important;
+}
+
+/* Multi-step indicator */
+.steps{ margin-bottom: 26px !important; gap: 0 !important; }
+.step .num{
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 13px !important;
+  border-radius: 50% !important;
+}
+.step.active .num{
+  box-shadow: 0 0 0 5px rgba(13,148,136,.14) !important;
+}
+.step-line{ max-width: 48px !important; height: 3px !important; border-radius: 2px !important; }
+
+/* Tag / service checklist box */
+.items-box{
+  border-radius: 14px !important;
+  padding: 14px !important;
+  gap: 6px 14px !important;
+  max-height: 280px !important;
+}
+.item{
+  padding: 9px 10px !important;
+  border-radius: 10px !important;
+  font-size: 13.5px !important;
+}
+.item:hover{ background: rgba(13,148,136,.08) !important; }
+.item input{ width: 18px !important; height: 18px !important; }
+
+.custom-box{ gap: 10px !important; margin-top: 14px !important; }
+.custom-box input{
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+}
+.custom-box button{
+  border-radius: 12px !important;
+  padding: 0 20px !important;
+  font-weight: 700 !important;
+  background: #0d9488 !important;
+}
+.custom-tag{
+  border-radius: 100px !important;
+  padding: 6px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+}
+
+/* Location box inside forms */
+.location-box{
+  border-radius: 14px !important;
+  padding: 14px !important;
+  background: var(--muted) !important;
+}
+.location-btn{
+  border-radius: 11px !important;
+  padding: 10px 14px !important;
+  font-weight: 700 !important;
+  background: rgba(13,148,136,.1) !important;
+  color: #0f766e !important;
+  border: 1px solid #99f6e4 !important;
+}
+.location-btn:hover{ background: rgba(13,148,136,.16) !important; }
+.location-clear-btn{
+  border-radius: 11px !important;
+  padding: 10px 14px !important;
+  font-weight: 650 !important;
+}
+
+/* Register card title */
+#registerCard .section-title{
+  font-size: 18px !important;
+  margin-bottom: 8px !important;
+}
+#registerCard .small-text{
+  margin-bottom: 18px !important;
+  font-size: 13px !important;
+  line-height: 1.85 !important;
+}
+
+/* Primary form actions */
+#registerCard .menu-btn.green,
+#registerCard .btn-submit,
+.form-step .menu-btn.green{
+  min-height: 48px !important;
+  border-radius: 13px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.2px !important;
+}
+
+/* ---- Icon quality (chrome UI) ---- */
+.nxi{
+  width: 1.05em !important;
+  height: 1.05em !important;
+  stroke-width: 1.65 !important;
+}
+.theme-toggle svg,
+.header-menu-toggle svg{
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 1.8 !important;
+}
+.action-btn svg{
+  width: 19px !important;
+  height: 19px !important;
+  stroke-width: 1.7 !important;
+}
+.call-btn svg{ width: 16px !important; height: 16px !important; }
+
+/* Soften remaining emoji in chrome labels (visual only) */
+.admin-sub-tab,
+.category-group-head .cat-emoji,
+.category-subitem .sub-emoji{
+  font-size: 15px !important;
+  line-height: 1 !important;
+  filter: saturate(.92);
+}
+
+/* ---- Section titles ---- */
+.section-title{
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.25px !important;
+}
+.section-title .icon{
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 11px !important;
+  background: rgba(13,148,136,.1) !important;
+  color: #0d9488 !important;
+}
+
+/* ---- Notice / helper boxes ---- */
+.notice{
+  border-radius: 14px !important;
+  padding: 13px 15px !important;
+  font-size: 13px !important;
+  line-height: 1.85 !important;
+}
+
+/* ---- Owner CTA card ---- */
+#ownerCtaCard{
+  max-width: 640px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  border-radius: 18px !important;
+  padding: 22px !important;
+}
+#ownerCtaCard .menu-btn.green{
+  min-height: 48px !important;
+  border-radius: 13px !important;
+  font-size: 14.5px !important;
+}
+
+/* ---- Dark mode desktop refinements ---- */
+[data-theme="dark"] .nx-fake-search{
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .nx-cat-tile{
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .nx-cat-tile:hover{
+  border-color: rgba(45,212,191,.35) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.35) !important;
+}
+[data-theme="dark"] .field input,
+[data-theme="dark"] .field select,
+[data-theme="dark"] .field textarea{
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* ---- Reduce visual noise on desktop results filters ---- */
+@media (min-width: 900px){
+  .filter-row{ gap: 8px !important; margin-bottom: 18px !important; }
+  .filter-pill{
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+    border-radius: 100px !important;
+  }
+  .result-header h2{ font-size: 18px !important; }
+  .count{ padding: 6px 14px !important; font-size: 12.5px !important; }
+}
+</style>
+
+<script id="nomax-icon-chrome-polish">
+/* Replace a few high-visibility emoji labels in chrome with cleaner text+SVG where safe.
+   Does NOT touch category data emojis (those stay as visual category marks). */
+(function(){
+  'use strict';
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function $all(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+
+  var ICON = {
+    store: '<svg class="nxi" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 9 1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12.5V20h14v-7.5"/></svg>',
+    pin: '<svg class="nxi" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    plus: '<svg class="nxi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+    doc: '<svg class="nxi" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>',
+    edit: '<svg class="nxi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    help: '<svg class="nxi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>'
+  };
+
+  function replaceLeadingEmoji(el, iconKey, keepText){
+    if(!el || el.dataset.nxIconDone) return;
+    var t = (el.textContent || '').replace(/\s+/g,' ').trim();
+    // Only touch labels that start with a known emoji we control
+    var map = {
+      '🏪': 'store',
+      '📍': 'pin',
+      '➕': 'plus',
+      '📜': 'doc',
+      '✏': 'edit',
+      '❓': 'help'
+    };
+    var first = t.charAt(0);
+    // handle variation selectors / multi-codepoint lightly
+    var key = map[first] || map[t.slice(0,2)];
+    if(!key && iconKey) key = iconKey;
+    if(!key || !ICON[key]) return;
+    var text = keepText != null ? keepText : t.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]+/u, '').trim();
+    el.innerHTML = ICON[key] + ' <span>' + text + '</span>';
+    el.dataset.nxIconDone = '1';
+    el.style.display = 'inline-flex';
+    el.style.alignItems = 'center';
+    el.style.gap = '6px';
+  }
+
+  function polish(){
+    // Admin / owner sub-tabs
+    $all('.admin-sub-tab').forEach(function(btn){
+      var t = (btn.textContent||'').trim();
+      if(t.indexOf('کسب‌وکار') !== -1) replaceLeadingEmoji(btn, 'store');
+      else if(t.indexOf('پیشنهاد') !== -1 || t.indexOf('دسته') !== -1) replaceLeadingEmoji(btn, 'plus');
+    });
+
+    // Location buttons
+    $all('.location-btn, #getBusinessLocationBtn, #qaGetLocationBtn, #reqGetLocationBtn').forEach(function(btn){
+      if((btn.textContent||'').indexOf('موقعیت') !== -1) replaceLeadingEmoji(btn, 'pin');
+    });
+
+    // Terms / helper titles if present
+    var terms = $('#termsTitle');
+    if(terms) replaceLeadingEmoji(terms, 'doc');
+
+    // "suggest category" style buttons
+    $all('button, .menu-btn, label, h2, h3, span').forEach(function(el){
+      var t = (el.textContent||'').trim();
+      if(t.indexOf('پیشنهاد دسته جدید') === 0 || t.indexOf('➕ پیشنهاد') === 0) replaceLeadingEmoji(el, 'plus');
+      if(t.indexOf('خودم انتخاب') !== -1 && t.charAt(0) === '✏') replaceLeadingEmoji(el, 'edit');
+    });
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', polish);
+  else polish();
+  // Re-run lightly after dynamic panel opens
+  setInterval(function(){ try{ polish(); }catch(e){} }, 4000);
+})();
+</script>
+
+<!-- ========== NOMAX ADMIN + OWNER PANEL DEEP UI UPGRADE ========== -->
+<style id="nomax-panels-deep-v1">
+/* =========================================================
+   Deep visual upgrade for Admin & Owner panels only
+   No logic / backend changes — pure presentation layer
+   ========================================================= */
+
+/* ---------- Shared panel card shell ---------- */
+#adminCard,
+#ownerCard{
+  border-radius: 20px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 32px rgba(15,23,42,.06) !important;
+  padding: 22px 20px 20px !important;
+  background: var(--surface) !important;
+  overflow: hidden;
+}
+#adminCard .section-title,
+#ownerCard .section-title{
+  font-size: 18px !important;
+  font-weight: 850 !important;
+  margin-bottom: 14px !important;
+  gap: 12px !important;
+}
+#adminCard .section-title .icon,
+#ownerCard .section-title .icon{
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(13,148,136,.12);
+}
+
+/* ---------- Sub-tabs (owner + admin) ---------- */
+#adminSubTabs,
+#ownerSubTabs,
+.admin-sub-tabs{
+  background: var(--muted) !important;
+  border-radius: 14px !important;
+  padding: 5px !important;
+  gap: 4px !important;
+  margin-bottom: 18px !important;
+  border: 1px solid var(--border) !important;
+}
+.admin-sub-tab{
+  border-radius: 11px !important;
+  padding: 11px 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 750 !important;
+  color: var(--text-2) !important;
+  background: transparent !important;
+  border: 0 !important;
+  transition: all .18s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+.admin-sub-tab:hover{
+  background: rgba(13,148,136,.08) !important;
+  color: var(--primary-700) !important;
+}
+.admin-sub-tab.active{
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: 0 2px 10px rgba(15,23,42,.08) !important;
+  font-weight: 800 !important;
+}
+#ownerRequestsBadge{
+  min-width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+  padding: 0 6px !important;
+  border-radius: 9px !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* ---------- Admin review status tabs ---------- */
+.admin-tabs{
+  background: var(--muted) !important;
+  border-radius: 14px !important;
+  padding: 5px !important;
+  gap: 4px !important;
+  border: 1px solid var(--border) !important;
+  margin-bottom: 4px !important;
+}
+.admin-tab{
+  border-radius: 11px !important;
+  padding: 10px 8px !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  gap: 6px !important;
+}
+.admin-tab.active{
+  background: var(--surface) !important;
+  box-shadow: 0 2px 10px rgba(15,23,42,.08) !important;
+  color: var(--text) !important;
+}
+.admin-tab .tab-count{
+  min-width: 20px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+  padding: 0 6px !important;
+  border-radius: 9px !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  background: #dc2626 !important;
+  color: #fff !important;
+}
+.admin-tab.active .tab-count{ background: #dc2626 !important; }
+
+/* ---------- Stats cards ---------- */
+.admin-stats-box{
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 10px !important;
+  margin-bottom: 16px !important;
+}
+.admin-stat-card{
+  background: linear-gradient(180deg, var(--surface), var(--muted)) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  padding: 14px 10px !important;
+  text-align: center !important;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04) !important;
+  transition: transform .18s ease, box-shadow .18s ease !important;
+}
+.admin-stat-card:hover{
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(15,23,42,.08) !important;
+}
+.admin-stat-card .stat-num{
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  letter-spacing: -.5px !important;
+  display: block !important;
+  margin-bottom: 4px !important;
+  color: var(--text) !important;
+}
+.admin-stat-card .stat-lbl{
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: var(--text-3) !important;
+}
+.admin-stat-card.emergency{
+  background: linear-gradient(180deg, #fff5f5, #fef2f2) !important;
+  border-color: #fecaca !important;
+}
+.admin-stat-card.emergency .stat-num{ color: #dc2626 !important; }
+.admin-stat-card.verified{
+  background: linear-gradient(180deg, #f0fdfa, #ecfdf5) !important;
+  border-color: #99f6e4 !important;
+}
+.admin-stat-card.verified .stat-num{ color: #0f766e !important; }
+[data-theme="dark"] .admin-stat-card{
+  background: var(--surface) !important;
+}
+[data-theme="dark"] .admin-stat-card.emergency{
+  background: rgba(220,38,38,.12) !important;
+  border-color: rgba(220,38,38,.3) !important;
+}
+[data-theme="dark"] .admin-stat-card.verified{
+  background: rgba(13,148,136,.12) !important;
+  border-color: rgba(13,148,136,.3) !important;
+}
+
+/* ---------- Toolbar (search + add) ---------- */
+.admin-toolbar{
+  display: flex !important;
+  gap: 10px !important;
+  margin-bottom: 14px !important;
+  flex-wrap: wrap !important;
+  align-items: stretch !important;
+}
+.admin-toolbar .add-btn{
+  border-radius: 13px !important;
+  padding: 12px 18px !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  min-height: 46px !important;
+  background: linear-gradient(135deg, #0d9488, #0f766e) !important;
+  box-shadow: 0 4px 14px rgba(13,148,136,.28) !important;
+  gap: 8px !important;
+}
+.admin-toolbar .add-btn:hover{
+  background: linear-gradient(135deg, #0f766e, #115e59) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(13,148,136,.34) !important;
+}
+.admin-toolbar .search-wrap{
+  flex: 1 !important;
+  min-width: 200px !important;
+  position: relative !important;
+}
+.admin-toolbar .search-wrap input{
+  width: 100% !important;
+  min-height: 46px !important;
+  padding: 12px 40px 12px 14px !important;
+  border-radius: 13px !important;
+  border: 1.5px solid var(--border) !important;
+  background: var(--muted) !important;
+  font-size: 13.5px !important;
+  transition: all .2s ease !important;
+}
+.admin-toolbar .search-wrap input:focus{
+  border-color: #0d9488 !important;
+  background: var(--surface) !important;
+  box-shadow: 0 0 0 4px rgba(13,148,136,.12) !important;
+  outline: none !important;
+}
+.admin-toolbar .search-wrap svg{
+  position: absolute !important;
+  right: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 17px !important;
+  height: 17px !important;
+  color: var(--text-3) !important;
+  pointer-events: none !important;
+}
+
+/* Add menu dropdown */
+.add-menu{
+  border-radius: 14px !important;
+  box-shadow: 0 16px 40px rgba(15,23,42,.16) !important;
+  border: 1px solid var(--border) !important;
+  padding: 8px !important;
+  min-width: 240px !important;
+}
+.add-menu button{
+  border-radius: 11px !important;
+  padding: 12px 14px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  gap: 10px !important;
+}
+.add-menu button:hover{ background: rgba(13,148,136,.08) !important; color: var(--primary-700) !important; }
+
+/* ---------- Filter chips ---------- */
+.admin-filters{
+  gap: 8px !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 6px !important;
+}
+.admin-filter-chip{
+  border-radius: 100px !important;
+  padding: 8px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 750 !important;
+  border: 1.5px solid var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text-2) !important;
+  transition: all .18s ease !important;
+}
+.admin-filter-chip:hover{
+  background: rgba(13,148,136,.08) !important;
+  color: var(--primary-700) !important;
+  border-color: #99f6e4 !important;
+}
+.admin-filter-chip.active{
+  background: #0d9488 !important;
+  color: #fff !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 3px 12px rgba(13,148,136,.25) !important;
+}
+.admin-filter-chip .fcount{
+  background: rgba(0,0,0,.08) !important;
+  padding: 2px 8px !important;
+  border-radius: 100px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  min-width: 20px !important;
+  text-align: center !important;
+}
+.admin-filter-chip.active .fcount{
+  background: rgba(255,255,255,.25) !important;
+}
+.admin-filter-chip.emergency-f{
+  color: #b91c1c !important;
+  border-color: #fecaca !important;
+}
+.admin-filter-chip.emergency-f.active{
+  background: #dc2626 !important;
+  color: #fff !important;
+  border-color: #dc2626 !important;
+}
+.admin-filter-chip.pending-f.active{
+  background: #d97706 !important;
+  border-color: #d97706 !important;
+  color: #fff !important;
+}
+
+/* ---------- Business manage rows (admin) ---------- */
+.biz-manage-row{
+  display: flex !important;
+  gap: 12px !important;
+  padding: 14px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  margin-bottom: 10px !important;
+  background: var(--surface) !important;
+  align-items: flex-start !important;
+  flex-wrap: wrap !important;
+  transition: all .2s ease !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,.03) !important;
+}
+.biz-manage-row:hover{
+  border-color: #99d5cc !important;
+  box-shadow: 0 6px 20px rgba(13,148,136,.1) !important;
+  transform: translateY(-1px) !important;
+}
+.biz-manage-row.is-emergency{
+  border-color: rgba(220,38,38,.35) !important;
+  background: linear-gradient(100deg, rgba(220,38,38,.04), transparent 40%) !important;
+}
+.biz-manage-row.is-pending{
+  border-style: dashed !important;
+  border-color: #fbbf24 !important;
+  background: linear-gradient(100deg, rgba(251,191,36,.06), transparent 40%) !important;
+}
+.biz-manage-avatar{
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 13px !important;
+  font-size: 17px !important;
+  box-shadow: 0 4px 12px rgba(15,23,42,.1) !important;
+  flex-shrink: 0 !important;
+}
+.biz-manage-info{
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+.biz-manage-title{
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  flex-wrap: wrap !important;
+}
+.biz-manage-title h4{
+  margin: 0 !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  color: var(--text) !important;
+  line-height: 1.4 !important;
+}
+.biz-manage-owner{
+  font-size: 12.5px !important;
+  color: var(--text-2) !important;
+  font-weight: 600 !important;
+}
+.biz-manage-meta{
+  font-size: 12px !important;
+  color: var(--text-3) !important;
+  line-height: 1.6 !important;
+}
+.biz-manage-actions{
+  display: flex !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  margin-top: 2px !important;
+}
+.biz-action-btn{
+  border: 0 !important;
+  border-radius: 10px !important;
+  padding: 9px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 750 !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  transition: all .15s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-height: 36px !important;
+}
+.biz-action-btn svg{ width: 14px !important; height: 14px !important; }
+.biz-action-btn.verify-on{
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+.biz-action-btn.verify-on:hover{ background: #d1fae5 !important; }
+.biz-action-btn.verify-off{
+  background: var(--muted) !important;
+  color: var(--text-3) !important;
+  border: 1px solid var(--border) !important;
+}
+.biz-action-btn.verify-off:hover{ background: var(--border) !important; color: var(--text-2) !important; }
+.biz-action-btn.emerg-on{
+  background: rgba(220,38,38,.12) !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+.biz-action-btn.emerg-on:hover{ background: rgba(220,38,38,.2) !important; }
+.biz-action-btn.emerg-off{
+  background: var(--muted) !important;
+  color: var(--text-3) !important;
+  border: 1px solid var(--border) !important;
+}
+.biz-action-btn.edit-a{
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+}
+.biz-action-btn.edit-a:hover{ background: #dbeafe !important; }
+.biz-action-btn.del-a{
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+.biz-action-btn.del-a:hover{ background: #fee2e2 !important; }
+
+/* ---------- Owner business cards ---------- */
+.owner-business{
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin-bottom: 12px !important;
+  background: var(--surface) !important;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04) !important;
+  transition: all .2s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.owner-business::before{
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 4px !important;
+  background: linear-gradient(180deg, #2dd4bf, #0d9488) !important;
+  border-radius: 0 16px 16px 0 !important;
+}
+.owner-business:hover{
+  border-color: #99d5cc !important;
+  box-shadow: 0 8px 24px rgba(13,148,136,.1) !important;
+  transform: translateY(-2px) !important;
+}
+.owner-head{
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 12px !important;
+}
+.owner-head .avatar{
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+  font-size: 18px !important;
+  box-shadow: 0 4px 12px rgba(15,23,42,.1) !important;
+}
+.owner-head-text h3{
+  margin: 0 0 4px !important;
+  font-size: 15.5px !important;
+  font-weight: 800 !important;
+  line-height: 1.4 !important;
+}
+.owner-head-text .meta{
+  font-size: 12px !important;
+  color: var(--text-3) !important;
+  font-weight: 600 !important;
+}
+.owner-info{
+  font-size: 13px !important;
+  color: var(--text-2) !important;
+  background: var(--muted) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  gap: 6px !important;
+  margin-bottom: 4px !important;
+}
+.owner-info .row{
+  display: flex !important;
+  gap: 8px !important;
+  align-items: flex-start !important;
+  line-height: 1.65 !important;
+}
+.owner-actions{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+}
+.owner-actions button{
+  border: 0 !important;
+  border-radius: 11px !important;
+  padding: 11px 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 750 !important;
+  cursor: pointer !important;
+  transition: all .18s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-family: inherit !important;
+  min-height: 42px !important;
+}
+.owner-actions .edit-btn{
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+}
+.owner-actions .edit-btn:hover{ background: #dbeafe !important; transform: translateY(-1px) !important; }
+.owner-actions .share-btn{
+  background: rgba(13,148,136,.1) !important;
+  color: #0f766e !important;
+  border: 1px solid #99f6e4 !important;
+}
+.owner-actions .share-btn:hover{ background: rgba(13,148,136,.16) !important; transform: translateY(-1px) !important; }
+.owner-actions .delete-btn{
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+.owner-actions .delete-btn:hover{ background: #fee2e2 !important; transform: translateY(-1px) !important; }
+
+/* New business CTA in owner panel */
+#newBusinessButton,
+#ownerCard .menu-btn.green{
+  min-height: 48px !important;
+  border-radius: 13px !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  margin-top: 8px !important;
+  box-shadow: 0 4px 14px rgba(13,148,136,.25) !important;
+}
+
+/* ---------- Admin reviews ---------- */
+.admin-review{
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin-bottom: 12px !important;
+  background: var(--surface) !important;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04) !important;
+  transition: border-color .18s, box-shadow .18s !important;
+}
+.admin-review:hover{
+  border-color: #99d5cc !important;
+  box-shadow: 0 6px 18px rgba(13,148,136,.08) !important;
+}
+.admin-review .ar-target{
+  font-size: 12px !important;
+  color: var(--primary-600) !important;
+  font-weight: 750 !important;
+  margin-bottom: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.admin-review .ar-head{
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+  flex-wrap: wrap !important;
+}
+.admin-review .ar-user{ font-weight: 800 !important; font-size: 13.5px !important; }
+.admin-review .ar-text{
+  font-size: 13.5px !important;
+  color: var(--text-2) !important;
+  line-height: 1.9 !important;
+  margin: 8px 0 !important;
+  background: var(--muted) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  border: 1px solid var(--border) !important;
+}
+.admin-review .ar-date{ font-size: 11.5px !important; color: var(--text-3) !important; }
+.admin-review .ar-actions{
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+  flex-wrap: wrap !important;
+}
+.admin-review .ar-actions button{
+  flex: 1 !important;
+  min-width: 90px !important;
+  border: 0 !important;
+  border-radius: 11px !important;
+  padding: 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 750 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  transition: all .15s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  min-height: 40px !important;
+}
+.btn-approve{
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+.btn-approve:hover{ background: #d1fae5 !important; }
+.btn-reject{
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+.btn-reject:hover{ background: #fee2e2 !important; }
+.btn-edit-admin{
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+}
+.btn-edit-admin:hover{ background: #dbeafe !important; }
+.btn-delete-admin{
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+.btn-delete-admin:hover{ background: #fee2e2 !important; }
+.btn-reply{
+  background: rgba(13,148,136,.1) !important;
+  color: #0f766e !important;
+  border: 1px solid #99f6e4 !important;
+}
+.btn-reply:hover{ background: rgba(13,148,136,.16) !important; }
+
+/* ---------- Owner / market request cards ---------- */
+.nx-owner-req{
+  border-radius: 16px !important;
+  border: 1px solid var(--border) !important;
+  border-right: 4px solid #2dd4bf !important;
+  margin-bottom: 12px !important;
+  box-shadow: 0 2px 10px rgba(15,23,42,.04) !important;
+  overflow: hidden !important;
+  background: var(--surface) !important;
+}
+.nx-owner-req.archived-ok{ border-right-color: #16a34a !important; }
+.nx-owner-req.archived-no{ border-right-color: #dc2626 !important; }
+.nx-owner-req summary{
+  padding: 14px !important;
+  min-height: 72px !important;
+  gap: 12px !important;
+}
+.nx-owner-req .nx-summary-service{
+  font-size: 14.5px !important;
+  font-weight: 850 !important;
+}
+.nx-owner-req .nx-summary-user,
+.nx-owner-req .nx-summary-contact{
+  font-size: 12px !important;
+  margin-top: 3px !important;
+}
+.nx-mini-btn{
+  border-radius: 11px !important;
+  padding: 9px 12px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  min-height: 36px !important;
+}
+.nx-mini-btn.ok{
+  background: #ecfdf5 !important;
+  color: #15803d !important;
+  border: 1px solid #bbf7d0 !important;
+}
+.nx-mini-btn.no{
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+.nx-owner-body{
+  padding: 0 14px 14px !important;
+  border-top: 1px solid var(--border) !important;
+}
+.nx-owner-detail{
+  border-radius: 12px !important;
+  padding: 10px !important;
+  font-size: 12px !important;
+}
+.nx-owner-market{
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+  border: 1px solid #99f6e4 !important;
+  background: linear-gradient(135deg, rgba(13,148,136,.08), var(--surface)) !important;
+}
+.nx-owner-market h3{ font-size: 14.5px !important; font-weight: 900 !important; }
+.nx-market-row{
+  border-radius: 12px !important;
+  padding: 11px 12px !important;
+  border: 1px solid var(--border) !important;
+}
+.nx-market-rank{
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+  font-size: 12px !important;
+}
+
+/* ---------- Modern account panel (#nomaxPanel) ---------- */
+.np{
+  background: var(--bg) !important;
+}
+.np-head{
+  padding: 14px 16px !important;
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 1px 0 rgba(15,23,42,.04) !important;
+  gap: 12px !important;
+}
+.np-head h2{
+  font-size: 17px !important;
+  font-weight: 850 !important;
+  letter-spacing: -.3px !important;
+}
+.np-back{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background: var(--muted) !important;
+  color: var(--text) !important;
+  font-size: 18px !important;
+  transition: background .15s !important;
+}
+.np-back:hover{ background: var(--border) !important; }
+.np-pane{
+  max-width: 720px !important;
+  padding: 18px 16px 32px !important;
+}
+.np-h{
+  font-size: 16px !important;
+  font-weight: 850 !important;
+  margin: 0 0 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  letter-spacing: -.2px !important;
+}
+.np-tabs{
+  background: var(--surface) !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: 0 -4px 20px rgba(15,23,42,.05) !important;
+  padding-top: 4px !important;
+}
+.np-tabs button{
+  font-size: 11.5px !important;
+  font-weight: 750 !important;
+  padding: 10px 4px 10px !important;
+  gap: 4px !important;
+  color: var(--text-3) !important;
+  transition: color .15s !important;
+}
+.np-tabs button .ic{
+  font-size: 18px !important;
+  line-height: 1 !important;
+  height: 22px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+.np-tabs button.active{
+  color: #0d9488 !important;
+}
+.np-tabs button.active::after{
+  height: 3px !important;
+  border-radius: 0 0 4px 4px !important;
+  background: #0d9488 !important;
+  left: 22% !important;
+  right: 22% !important;
+}
+.np-tabs .np-badge{
+  top: 6px !important;
+  min-width: 17px !important;
+  height: 17px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  border-radius: 9px !important;
+}
+
+/* Cards inside modern panel */
+.np-card,
+#npBiz .owner-business,
+#npNeeds .nx-oc,
+#npInbox .nx-oc,
+#npBizReqList .nx-owner-req{
+  border-radius: 16px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 12px rgba(15,23,42,.04) !important;
+}
+#npAccount,
+#npActions{
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+#npSettings .menu-btn,
+#npActions .menu-btn,
+#npAccount button{
+  border-radius: 13px !important;
+  min-height: 48px !important;
+  font-weight: 750 !important;
+  font-size: 14px !important;
+}
+
+/* ---------- Footer buttons in classic admin card ---------- */
+#logoutAdminBtn{
+  border-radius: 13px !important;
+  min-height: 46px !important;
+  font-weight: 750 !important;
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+#logoutAdminBtn:hover{ background: #fee2e2 !important; }
+#closeAdminBtn,
+#closeOwnerBtn{
+  border-radius: 13px !important;
+  min-height: 46px !important;
+  font-weight: 700 !important;
+  background: var(--muted) !important;
+  color: var(--text-2) !important;
+  border: 1px solid var(--border) !important;
+}
+#closeAdminBtn:hover,
+#closeOwnerBtn:hover{ background: var(--border) !important; }
+
+/* ---------- Quick-add modal polish (admin) ---------- */
+.quick-modal{
+  border-radius: 20px !important;
+  padding: 22px !important;
+}
+.quick-modal .modal-head{
+  margin-bottom: 18px !important;
+  padding-bottom: 14px !important;
+}
+.quick-modal .modal-head h3{
+  font-size: 16.5px !important;
+  font-weight: 850 !important;
+}
+.quick-modal .qfield{ margin-bottom: 14px !important; }
+.quick-modal .qfield label{
+  font-size: 12.5px !important;
+  font-weight: 750 !important;
+  margin-bottom: 7px !important;
+  color: var(--text-2) !important;
+}
+.quick-modal .qfield input,
+.quick-modal .qfield select,
+.quick-modal .qfield textarea{
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+  border: 1.5px solid var(--border) !important;
+}
+.quick-modal .qfield input:focus,
+.quick-modal .qfield select:focus,
+.quick-modal .qfield textarea:focus{
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 4px rgba(13,148,136,.12) !important;
+}
+.quick-modal .qcheck{
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  margin-bottom: 12px !important;
+}
+.quick-modal .btn-save{
+  border-radius: 13px !important;
+  min-height: 48px !important;
+  font-weight: 800 !important;
+  font-size: 14.5px !important;
+}
+.quick-modal .btn-cancel,
+.quick-modal .btn-save-add-another{
+  border-radius: 13px !important;
+  min-height: 48px !important;
+  font-weight: 750 !important;
+}
+
+/* ---------- Empty states inside panels ---------- */
+#myBusinesses .empty,
+#adminBizManageList .empty,
+#adminReviewsBox .empty,
+#npBizReqList .empty,
+#npNeeds .empty{
+  padding: 32px 20px !important;
+  border-radius: 16px !important;
+  border: 1px dashed var(--border) !important;
+  background: var(--muted) !important;
+}
+#myBusinesses .empty .title,
+#adminBizManageList .empty .title{
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  margin-bottom: 6px !important;
+}
+
+/* ---------- Desktop panel refinements ---------- */
+@media (min-width: 900px){
+  #adminCard,
+  #ownerCard{
+    max-width: 880px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 28px 28px 24px !important;
+  }
+  .admin-stats-box{
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 14px !important;
+  }
+  .admin-stat-card{ padding: 18px 14px !important; }
+  .admin-stat-card .stat-num{ font-size: 26px !important; }
+  .biz-manage-row{
+    padding: 16px 18px !important;
+    align-items: center !important;
+  }
+  .biz-manage-actions{ margin-top: 0 !important; }
+  .owner-actions{ grid-template-columns: 1fr 1fr 1fr !important; gap: 10px !important; }
+  .np-pane{ max-width: 760px !important; padding: 24px 20px 40px !important; }
+  .np-head{ padding: 16px 24px !important; }
+  .np-tabs button{ font-size: 12.5px !important; padding: 12px 6px !important; }
+}
+
+/* ---------- Mobile panel tweaks ---------- */
+@media (max-width: 480px){
+  .admin-stats-box{ gap: 8px !important; }
+  .admin-stat-card{ padding: 12px 8px !important; border-radius: 14px !important; }
+  .admin-stat-card .stat-num{ font-size: 18px !important; }
+  .admin-stat-card .stat-lbl{ font-size: 10.5px !important; }
+  .biz-manage-row{ padding: 12px !important; }
+  .biz-manage-avatar{ width: 42px !important; height: 42px !important; }
+  .owner-actions{ grid-template-columns: 1fr !important; }
+  .owner-actions button{ min-height: 44px !important; }
+  .admin-review .ar-actions{ flex-direction: column !important; }
+  .admin-review .ar-actions button{ width: 100% !important; }
+  .admin-toolbar .add-btn{ width: 100% !important; justify-content: center !important; }
+  .admin-toolbar .search-wrap{ min-width: 100% !important; }
+}
+
+/* ---------- Dark mode panel specifics ---------- */
+[data-theme="dark"] #adminCard,
+[data-theme="dark"] #ownerCard{
+  box-shadow: 0 8px 32px rgba(0,0,0,.35) !important;
+}
+[data-theme="dark"] .biz-manage-row:hover,
+[data-theme="dark"] .owner-business:hover,
+[data-theme="dark"] .admin-review:hover{
+  border-color: rgba(45,212,191,.35) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3) !important;
+}
+[data-theme="dark"] .np-tabs{
+  box-shadow: 0 -4px 20px rgba(0,0,0,.3) !important;
+}
+[data-theme="dark"] .admin-filter-chip{
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] .admin-filter-chip.active{
+  background: #0d9488 !important;
+  border-color: #0d9488 !important;
+  color: #fff !important;
+}
+</style>
+
+<!-- ========== NOMAX MAP LOCATION PICKER (Admin + Owner) ========== -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+<style id="nomax-map-picker-css">
+#nxMapModal{
+  position:fixed; inset:0; z-index:2800;
+  background:rgba(15,23,42,.55);
+  backdrop-filter:blur(5px);
+  display:none; align-items:flex-end; justify-content:center;
+  padding:12px;
+}
+#nxMapModal.show{ display:flex; }
+.nx-map-sheet{
+  width:min(560px, 100%);
+  max-height:min(92vh, 720px);
+  background:var(--surface, #fff);
+  color:var(--text, #1c1917);
+  border:1px solid var(--border, #e7e5e4);
+  border-radius:20px 20px 16px 16px;
+  box-shadow:0 20px 50px rgba(0,0,0,.28);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  animation:nxMapUp .22s ease both;
+}
+@keyframes nxMapUp{ from{ transform:translateY(24px); opacity:0 } to{ transform:none; opacity:1 } }
+@media(min-width:640px){
+  #nxMapModal{ align-items:center; }
+  .nx-map-sheet{ border-radius:20px; max-height:min(88vh, 700px); }
+}
+.nx-map-head{
+  display:flex; align-items:center; gap:10px;
+  padding:14px 16px 10px;
+  border-bottom:1px solid var(--border, #e7e5e4);
+  flex-shrink:0;
+}
+.nx-map-head h3{
+  margin:0; flex:1; font-size:15.5px; font-weight:850;
+}
+.nx-map-x{
+  width:34px; height:34px; border:0; border-radius:10px;
+  background:var(--muted, #f5f5f4); color:var(--text-2);
+  font-size:18px; cursor:pointer; line-height:1;
+}
+.nx-map-x:hover{ background:var(--border, #e7e5e4); }
+.nx-map-hint{
+  padding:8px 16px 0;
+  font-size:12px; line-height:1.8; color:var(--text-3);
+  flex-shrink:0;
+}
+#nxMapCanvas{
+  height:min(48vh, 340px);
+  margin:10px 12px 0;
+  border-radius:14px;
+  border:1px solid var(--border, #e7e5e4);
+  z-index:1;
+  background:#e8f0ef;
+}
+.nx-map-coords{
+  padding:8px 16px 0;
+  font-size:12px; font-weight:700;
+  color:var(--primary-700, #0f766e);
+  direction:ltr; text-align:center;
+  min-height:22px;
+  flex-shrink:0;
+}
+.nx-map-actions{
+  display:grid;
+  grid-template-columns:1fr 1.2fr;
+  gap:8px;
+  padding:12px 14px calc(14px + env(safe-area-inset-bottom));
+  flex-shrink:0;
+}
+.nx-map-actions button{
+  border:0; border-radius:12px; min-height:46px;
+  font:inherit; font-size:13.5px; font-weight:800; cursor:pointer;
+}
+.nx-map-gps{
+  background:rgba(13,148,136,.1);
+  color:#0f766e;
+  border:1px solid #99f6e4 !important;
+}
+.nx-map-gps:disabled{ opacity:.65; cursor:wait; }
+.nx-map-confirm{
+  background:linear-gradient(135deg,#0d9488,#0f766e);
+  color:#fff;
+  box-shadow:0 4px 14px rgba(13,148,136,.28);
+}
+.nx-map-confirm:disabled{
+  opacity:.45; cursor:not-allowed; box-shadow:none;
+}
+.nx-map-secondary{
+  grid-column:1 / -1;
+  background:var(--muted, #f5f5f4);
+  color:var(--text-2);
+  font-weight:700 !important;
+  min-height:40px !important;
+}
+/* Leaflet inside modal tweaks */
+#nxMapCanvas .leaflet-control-attribution{ font-size:9px; }
+#nxMapCanvas .leaflet-bar a{ width:32px; height:32px; line-height:32px; }
+/* Improve location boxes in forms */
+.location-box .location-actions{ gap:8px; flex-wrap:wrap; }
+.location-box .location-btn-map{
+  background:#eff6ff !important;
+  color:#1d4ed8 !important;
+  border-color:#bfdbfe !important;
+}
+.location-box .location-btn-map:hover{ background:#dbeafe !important; }
+</style>
+<script id="nomax-map-picker-js">
+(function(){
+  'use strict';
+  /* مرکز پیش‌فرض: بهبهان */
+  var BEHBAHAN = { lat: 30.5959, lng: 50.2417 };
+  var state = {
+    open: false,
+    target: null, /* 'business' | 'qa' | 'req' */
+    lat: null,
+    lng: null,
+    accuracy: null,
+    map: null,
+    marker: null,
+    loaded: false
+  };
+
+  function $(id){ return document.getElementById(id); }
+  function toast(m, k){
+    if(typeof showToast === 'function') showToast(m, k || 'success');
+    else try{ alert(m); }catch(e){}
+  }
+  function leafletReady(){ return typeof window.L !== 'undefined'; }
+
+  function ensureModal(){
+    if($('nxMapModal')) return;
+    var el = document.createElement('div');
+    el.id = 'nxMapModal';
+    el.innerHTML =
+      '<div class="nx-map-sheet" role="dialog" aria-modal="true" aria-labelledby="nxMapTitle">'+
+        '<div class="nx-map-head">'+
+          '<h3 id="nxMapTitle">انتخاب موقعیت روی نقشه</h3>'+
+          '<button type="button" class="nx-map-x" id="nxMapClose" aria-label="بستن">×</button>'+
+        '</div>'+
+        '<div class="nx-map-hint" id="nxMapHint">سنجاق را جابه‌جا کنید یا روی نقشه بزنید. می‌توانید از موقعیت فعلی دستگاه هم استفاده کنید.</div>'+
+        '<div id="nxMapCanvas"></div>'+
+        '<div class="nx-map-coords" id="nxMapCoords">—</div>'+
+        '<div class="nx-map-actions">'+
+          '<button type="button" class="nx-map-gps" id="nxMapGps">موقعیت فعلی من</button>'+
+          '<button type="button" class="nx-map-confirm" id="nxMapConfirm" disabled>تأیید این نقطه</button>'+
+          '<button type="button" class="nx-map-secondary" id="nxMapCancel">انصراف</button>'+
+        '</div>'+
+      '</div>';
+    document.body.appendChild(el);
+    $('nxMapClose').onclick = close;
+    $('nxMapCancel').onclick = close;
+    $('nxMapConfirm').onclick = confirmPick;
+    $('nxMapGps').onclick = useGps;
+    el.addEventListener('click', function(e){ if(e.target === el) close(); });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && state.open) close();
+    });
+  }
+
+  function setCoordsLabel(lat, lng){
+    var el = $('nxMapCoords');
+    if(!el) return;
+    if(lat == null || lng == null){ el.textContent = '—'; return; }
+    el.textContent = Number(lat).toFixed(6) + ' , ' + Number(lng).toFixed(6);
+  }
+
+  function setPoint(lat, lng, accuracy){
+    state.lat = Number(lat);
+    state.lng = Number(lng);
+    state.accuracy = accuracy != null ? Number(accuracy) : null;
+    setCoordsLabel(state.lat, state.lng);
+    var conf = $('nxMapConfirm');
+    if(conf) conf.disabled = !(Number.isFinite(state.lat) && Number.isFinite(state.lng));
+    if(state.map && state.marker){
+      state.marker.setLatLng([state.lat, state.lng]);
+    }
+    window.__nxMapPicked = { lat: state.lat, lng: state.lng, accuracy: state.accuracy, source: accuracy != null ? 'browser' : 'map', updatedAt: Date.now() };
+  }
+  window.__nxMapInternalSet = function(lat, lng, accuracy){
+    if(state.map){ state.map.setView([lat, lng], Math.max(state.map.getZoom() || 15, 16)); }
+    setPoint(lat, lng, accuracy);
+  };
+
+  function initMap(lat, lng){
+    if(!leafletReady()){
+      toast('بارگذاری نقشه ناموفق بود. اتصال اینترنت را بررسی کنید.', 'error');
+      return;
+    }
+    var canvas = $('nxMapCanvas');
+    if(!canvas) return;
+    if(state.map){
+      state.map.setView([lat, lng], state.map.getZoom() || 15);
+      setPoint(lat, lng, state.accuracy);
+      setTimeout(function(){ try{ state.map.invalidateSize(); }catch(e){} }, 80);
+      return;
+    }
+    state.map = L.map(canvas, {
+      zoomControl: true,
+      attributionControl: true
+    }).setView([lat, lng], 15);
+    window.__nxLeafletMap = state.map;
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(state.map);
+    state.marker = L.marker([lat, lng], { draggable: true }).addTo(state.map);
+    window.__nxLeafletMarker = state.marker;
+    state.marker.on('dragend', function(){
+      var p = state.marker.getLatLng();
+      setPoint(p.lat, p.lng, null);
+    });
+    state.map.on('click', function(e){
+      setPoint(e.latlng.lat, e.latlng.lng, null);
+    });
+    setPoint(lat, lng, state.accuracy);
+    setTimeout(function(){ try{ state.map.invalidateSize(); }catch(e){} }, 120);
+    setTimeout(function(){ try{ state.map.invalidateSize(); }catch(e){} }, 350);
+  }
+
+  function open(target, seed){
+    ensureModal();
+    state.target = target || 'business';
+    state.open = true;
+    var title = $('nxMapTitle');
+    if(title){
+      title.textContent = target === 'req'
+        ? 'موقعیت شما روی نقشه'
+        : 'موقعیت کسب‌وکار روی نقشه';
+    }
+    var startLat = BEHBAHAN.lat;
+    var startLng = BEHBAHAN.lng;
+    if(seed && Number.isFinite(Number(seed.lat)) && Number.isFinite(Number(seed.lng))){
+      startLat = Number(seed.lat);
+      startLng = Number(seed.lng);
+      state.accuracy = seed.accuracy != null ? Number(seed.accuracy) : null;
+    } else {
+      state.accuracy = null;
+    }
+    $('nxMapModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+    /* کمی صبر تا شیت باز شود، بعد نقشه را بساز */
+    setTimeout(function(){ initMap(startLat, startLng); }, 60);
+  }
+
+  function close(){
+    var el = $('nxMapModal');
+    if(el) el.classList.remove('show');
+    document.body.style.overflow = '';
+    state.open = false;
+  }
+
+  function confirmPick(){
+    if(!Number.isFinite(state.lat) || !Number.isFinite(state.lng)){
+      toast('لطفاً یک نقطه روی نقشه انتخاب کنید.', 'error');
+      return;
+    }
+    var loc = {
+      lat: state.lat,
+      lng: state.lng,
+      accuracy: state.accuracy,
+      source: state.accuracy != null ? 'browser' : 'map',
+      updatedAt: Date.now()
+    };
+    applyToTarget(loc);
+    close();
+    toast('موقعیت روی نقشه ثبت شد.', 'success');
+  }
+
+  function applyToTarget(loc){
+    /* موقعیت کاربر برای جستجوی نزدیک‌ترین */
+    if(window.__nxLocPickMode === 'searchUser' || state.target === 'searchUser'){
+      window.__nxLocPickMode = null;
+      window.nxUserLoc = { lat: loc.lat, lng: loc.lng, t: Date.now() };
+      try{ localStorage.setItem('nomax_home_location_v1', JSON.stringify(window.nxUserLoc)); }catch(e){}
+      try{ if(typeof nxLocState !== 'undefined') nxLocState = 'ok'; }catch(e){}
+      if(typeof window.nxUpdateLocRow === 'function') window.nxUpdateLocRow();
+      if(typeof window.nxRenderTabNote === 'function') window.nxRenderTabNote();
+      else if(typeof nxRenderTabNote === 'function') nxRenderTabNote();
+      if(typeof searchBusinesses === 'function') searchBusinesses({ keepOpen:true });
+      return;
+    }
+    if(state.target === 'qa'){
+      if(typeof renderQaLocation === 'function') renderQaLocation(loc);
+      else if(typeof window.renderQaLocation === 'function') window.renderQaLocation(loc);
+      return;
+    }
+    if(state.target === 'req'){
+      if(typeof renderReqLocation === 'function') renderReqLocation(loc);
+      else if(typeof window.renderReqLocation === 'function') window.renderReqLocation(loc);
+      return;
+    }
+    /* business / owner */
+    if(typeof window.renderBusinessLocation === 'function') window.renderBusinessLocation(loc);
+    else if(typeof renderBusinessLocation === 'function') renderBusinessLocation(loc);
+  }
+
+  function getSeedForTarget(target){
+    try{
+      if(target === 'qa' && typeof qaPendingLocation !== 'undefined' && qaPendingLocation) return qaPendingLocation;
+      if(target === 'business' && typeof pendingBusinessLocation !== 'undefined' && pendingBusinessLocation) return pendingBusinessLocation;
+      if(target === 'req' && typeof reqPendingLocation !== 'undefined' && reqPendingLocation) return reqPendingLocation;
+    }catch(e){}
+    return null;
+  }
+
+  function useGps(){
+    var btn = $('nxMapGps');
+    if(!navigator.geolocation){
+      toast('مرورگر از موقعیت مکانی پشتیبانی نمی‌کند. نقطه را دستی روی نقشه بگذارید.', 'error');
+      return;
+    }
+    /* file:// و بعضی محیط‌ها geolocation را قطع می‌کنند */
+    if(location.protocol === 'file:'){
+      toast('برای GPS، سایت باید روی http یا https باز باشد. فعلاً نقطه را روی نقشه انتخاب کنید.', 'error');
+      return;
+    }
+    if(btn){ btn.disabled = true; btn.textContent = 'در حال دریافت…'; }
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var acc = pos.coords.accuracy || null;
+      if(state.map){
+        state.map.setView([lat, lng], 16);
+      } else {
+        initMap(lat, lng);
+      }
+      setPoint(lat, lng, acc);
+      if(btn){ btn.disabled = false; btn.textContent = 'موقعیت فعلی من'; }
+      toast('موقعیت فعلی دریافت شد. در صورت نیاز سنجاق را جابه‌جا کنید.', 'success');
+    }, function(err){
+      var msg = 'دریافت موقعیت ناموفق بود.';
+      if(err){
+        if(err.code === 1) msg = 'اجازه دسترسی به موقعیت داده نشد. از تنظیمات مرورگر اجازه بدهید یا نقطه را دستی روی نقشه بگذارید.';
+        else if(err.code === 2) msg = 'موقعیت در دسترس نیست (GPS/شبکه). نقطه را روی نقشه انتخاب کنید.';
+        else if(err.code === 3) msg = 'دریافت موقعیت طول کشید. GPS را روشن کنید یا نقطه را روی نقشه بگذارید.';
+      }
+      toast(msg, 'error');
+      if(btn){ btn.disabled = false; btn.textContent = 'موقعیت فعلی من'; }
+    }, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 30000
+    });
+  }
+
+  /* ---- Bind buttons: open map picker instead of GPS-only ---- */
+  function enhanceLocationUI(){
+    ensureModal();
+
+    /* Owner / register form */
+    var bizBox = $('f-location') || ($('businessLocationStatus') && $('businessLocationStatus').closest('.location-box'));
+    var getBiz = $('getBusinessLocationBtn');
+    var clearBiz = $('clearBusinessLocationBtn');
+    if(getBiz && !getBiz.dataset.mapBound){
+      getBiz.dataset.mapBound = '1';
+      getBiz.textContent = 'انتخاب روی نقشه';
+      getBiz.classList.add('location-btn-map');
+      getBiz.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        open('business', getSeedForTarget('business'));
+      };
+    }
+    /* secondary GPS quick button next to map button for owner */
+    if(getBiz && !$('getBusinessLocationGpsBtn')){
+      var gpsBiz = document.createElement('button');
+      gpsBiz.type = 'button';
+      gpsBiz.id = 'getBusinessLocationGpsBtn';
+      gpsBiz.className = 'location-btn';
+      gpsBiz.textContent = 'موقعیت فعلی';
+      gpsBiz.onclick = function(e){
+        e.preventDefault();
+        quickGps('business', gpsBiz);
+      };
+      if(getBiz.parentNode) getBiz.parentNode.insertBefore(gpsBiz, getBiz.nextSibling);
+    }
+    if(clearBiz && !clearBiz.dataset.mapBound){
+      clearBiz.dataset.mapBound = '1';
+      clearBiz.onclick = function(e){
+        e.preventDefault();
+        if(typeof window.renderBusinessLocation === 'function') window.renderBusinessLocation(null);
+        toast('موقعیت پاک شد.', 'info');
+      };
+    }
+
+    /* Admin quick-add */
+    var getQa = $('qaGetLocationBtn');
+    var clearQa = $('qaClearLocationBtn');
+    if(getQa && !getQa.dataset.mapBound){
+      getQa.dataset.mapBound = '1';
+      getQa.textContent = 'انتخاب روی نقشه';
+      getQa.classList.add('location-btn-map');
+      getQa.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        open('qa', getSeedForTarget('qa'));
+      };
+    }
+    if(getQa && !$('qaGetLocationGpsBtn')){
+      var gpsQa = document.createElement('button');
+      gpsQa.type = 'button';
+      gpsQa.id = 'qaGetLocationGpsBtn';
+      gpsQa.className = 'location-btn';
+      gpsQa.textContent = 'موقعیت فعلی';
+      gpsQa.onclick = function(e){
+        e.preventDefault();
+        quickGps('qa', gpsQa);
+      };
+      if(getQa.parentNode) getQa.parentNode.insertBefore(gpsQa, getQa.nextSibling);
+    }
+    if(clearQa && !clearQa.dataset.mapBound){
+      clearQa.dataset.mapBound = '1';
+      clearQa.onclick = function(e){
+        e.preventDefault();
+        if(typeof renderQaLocation === 'function') renderQaLocation(null);
+        toast('موقعیت پاک شد.', 'info');
+      };
+    }
+
+    /* Request form location (optional) */
+    var getReq = $('reqGetLocationBtn');
+    if(getReq && !getReq.dataset.mapBound){
+      getReq.dataset.mapBound = '1';
+      getReq.textContent = 'انتخاب روی نقشه';
+      getReq.classList.add('location-btn-map');
+      getReq.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        open('req', getSeedForTarget('req'));
+      };
+    }
+  }
+
+  function quickGps(target, btn){
+    if(!navigator.geolocation){
+      toast('مرورگر از موقعیت پشتیبانی نمی‌کند. از انتخاب روی نقشه استفاده کنید.', 'error');
+      open(target, getSeedForTarget(target));
+      return;
+    }
+    if(location.protocol === 'file:'){
+      toast('برای GPS سایت را روی http/https باز کنید. فعلاً نقشه را باز می‌کنیم.', 'error');
+      open(target, getSeedForTarget(target));
+      return;
+    }
+    if(btn){ btn.disabled = true; btn.textContent = 'در حال دریافت…'; }
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var loc = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy || null,
+        source: 'browser',
+        updatedAt: Date.now()
+      };
+      state.target = target;
+      applyToTarget(loc);
+      if(btn){ btn.disabled = false; btn.textContent = 'موقعیت فعلی'; }
+      toast('موقعیت فعلی ثبت شد.', 'success');
+    }, function(err){
+      var msg = 'دریافت موقعیت ناموفق بود.';
+      if(err && err.code === 1) msg = 'اجازه موقعیت داده نشد.';
+      else if(err && err.code === 2) msg = 'موقعیت در دسترس نیست.';
+      else if(err && err.code === 3) msg = 'زمان دریافت موقعیت تمام شد.';
+      toast(msg + ' می‌توانید روی نقشه انتخاب کنید.', 'error');
+      if(btn){ btn.disabled = false; btn.textContent = 'موقعیت فعلی'; }
+      open(target, getSeedForTarget(target));
+    }, { enableHighAccuracy:true, timeout:15000, maximumAge:30000 });
+  }
+
+  /* public API */
+  window.nxOpenMapPicker = open;
+  window.nxCloseMapPicker = close;
+
+  function boot(){
+    enhanceLocationUI();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  /* re-bind when panels/modals are opened dynamically */
+  setInterval(function(){ try{ enhanceLocationUI(); }catch(e){} }, 2500);
+})();
+</script>
+
+<!-- ========== NOMAX: register overlay + license icon + map address search ========== -->
+<style id="nomax-license-icon-css">
+/* نشان پروانه کسب — سبک نشان آبی تأیید (مشابه اینستاگرام) */
+.license-badge,
+.license-badge-icon{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:0 !important;
+  width:18px !important;
+  height:18px !important;
+  min-width:18px !important;
+  padding:0 !important;
+  border-radius:50% !important;
+  background:#2563eb !important;
+  color:#fff !important;
+  border:2px solid #fff !important;
+  box-shadow:0 1px 4px rgba(37,99,235,.35) !important;
+  font-size:0 !important;
+  line-height:1 !important;
+  vertical-align:middle !important;
+  position:relative !important;
+}
+.license-badge svg,
+.license-badge-icon svg{
+  width:11px !important;
+  height:11px !important;
+  display:block !important;
+  stroke:#fff !important;
+  fill:none !important;
+}
+.license-badge::after,
+.license-badge-icon::after{ content:none !important; }
+/* حالت در انتظار تأیید */
+.license-badge.is-pending,
+.license-badge-icon.is-pending{
+  background:#d97706 !important;
+  box-shadow:0 1px 4px rgba(217,119,6,.35) !important;
+}
+/* روی آواتار (گوشه) */
+.avatar-license-mark{
+  position:absolute !important;
+  bottom:-2px !important;
+  left:-2px !important;
+  width:20px !important;
+  height:20px !important;
+  border-radius:50% !important;
+  background:#2563eb !important;
+  border:2px solid #fff !important;
+  box-shadow:0 2px 6px rgba(37,99,235,.4) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  z-index:2 !important;
+}
+.avatar-license-mark svg{ width:11px; height:11px; stroke:#fff; fill:none; }
+.avatar{ position:relative !important; }
+[data-theme="dark"] .license-badge,
+[data-theme="dark"] .license-badge-icon,
+[data-theme="dark"] .avatar-license-mark{
+  border-color: var(--surface, #1e293b) !important;
+}
+/* عنوان کسب‌وکار: نشان کنار اسم */
+.business h3 .license-badge,
+.business h3 .license-badge-icon,
+.biz-acc-name .license-badge,
+.owner-head-text h3 .license-badge{
+  margin-right:4px !important;
+  transform:translateY(1px);
+}
+/* فرم ثبت تمام‌صفحه */
+#npEditHost .np-head h2{ font-size:16px !important; font-weight:850 !important; }
+#registerCard.nx-reg-overlay-card{
+  border:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+/* جستجوی آدرس روی نقشه */
+.nx-map-search{
+  display:flex; gap:8px; padding:0 12px; margin-top:8px; flex-shrink:0;
+}
+.nx-map-search input{
+  flex:1; min-width:0; padding:11px 12px;
+  border:1.5px solid var(--border,#e7e5e4); border-radius:12px;
+  font:inherit; font-size:13.5px; background:var(--surface,#fff); color:var(--text);
+  outline:none;
+}
+.nx-map-search input:focus{
+  border-color:#0d9488;
+  box-shadow:0 0 0 3px rgba(13,148,136,.12);
+}
+.nx-map-search button{
+  border:0; border-radius:12px; padding:0 14px;
+  background:#0d9488; color:#fff; font:inherit; font-weight:800; font-size:13px;
+  cursor:pointer; white-space:nowrap;
+}
+.nx-map-search button:disabled{ opacity:.6; cursor:wait; }
+.nx-map-results{
+  margin:6px 12px 0; max-height:120px; overflow:auto;
+  border:1px solid var(--border,#e7e5e4); border-radius:12px;
+  background:var(--surface,#fff); display:none; flex-shrink:0;
+}
+.nx-map-results.show{ display:block; }
+.nx-map-results button{
+  display:block; width:100%; border:0; background:transparent;
+  text-align:right; padding:10px 12px; font:inherit; font-size:12.5px;
+  color:var(--text); cursor:pointer; border-bottom:1px solid var(--border,#e7e5e4);
+  line-height:1.6;
+}
+.nx-map-results button:last-child{ border-bottom:0; }
+.nx-map-results button:hover{ background:rgba(13,148,136,.08); }
+.nx-map-results .nx-map-empty{
+  padding:10px 12px; font-size:12px; color:var(--text-3); text-align:center;
+}
+</style>
+<script id="nomax-register-license-mapsearch-js">
+(function(){
+  'use strict';
+
+  /* ========== 1) نشان پروانه کسب (آیکون آبی) ========== */
+  var LICENSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 2.2L17 4.5l.3 2.8L20 8.5l-1.5 2.3L20 13.2l-2.7 1.2-.3 2.8L14.2 16.5 12 18.7l-2.2-2.2L7 17.2l-.3-2.8L4 13.2l1.5-2.4L4 8.5l2.7-1.2.3-2.8L9.8 5.2 12 3z" fill="currentColor" stroke="none"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+  var LICENSE_SVG_SIMPLE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function licenseIconHTML(title, pending){
+    var cls = 'license-badge license-badge-icon' + (pending ? ' is-pending' : '');
+    var t = title || (pending ? 'پروانه کسب در انتظار تأیید مدیر' : 'دارای پروانه کسب تأییدشده');
+    return '<span class="'+cls+'" title="'+t+'" aria-label="'+t+'">'+LICENSE_SVG_SIMPLE+'</span>';
+  }
+
+  function patchLicenseFns(){
+    if(typeof window.licenseBadgeHTML === 'function' || typeof licenseBadgeHTML === 'function'){
+      window.licenseBadgeHTML = function(b){
+        try{
+          if(typeof businessHasLicense === 'function' ? !businessHasLicense(b) : !(b && b.licenseVerified)) return '';
+        }catch(e){
+          if(!(b && b.licenseVerified)) return '';
+        }
+        return licenseIconHTML('پروانه کسب توسط مدیر تأیید شده است', false);
+      };
+    }
+    if(typeof window.licensePendingBadgeHTML === 'function' || typeof licensePendingBadgeHTML === 'function'){
+      window.licensePendingBadgeHTML = function(b){
+        try{
+          if(!b || b.licenseVerified) return '';
+          var claimed = typeof businessLicenseClaimed === 'function' ? businessLicenseClaimed(b) : !!(b.licenseClaimed || b.hasLicense || b.licenseNumber);
+          if(!claimed) return '';
+        }catch(e){ return ''; }
+        return licenseIconHTML('پروانه کسب در انتظار تأیید مدیر', true);
+      };
+    }
+    /* override globals used inside non-module scripts */
+    try{ licenseBadgeHTML = window.licenseBadgeHTML; }catch(e){}
+    try{ licensePendingBadgeHTML = window.licensePendingBadgeHTML; }catch(e){}
+  }
+
+  /* Replace existing text badges already in DOM */
+  function polishLicenseBadgesInDOM(root){
+    root = root || document;
+    root.querySelectorAll('.license-badge').forEach(function(el){
+      if(el.classList.contains('license-badge-icon') && el.querySelector('svg')) return;
+      var t = (el.textContent || '') + (el.getAttribute('title') || '');
+      var pending = /انتظار|pending/i.test(t) || el.classList.contains('is-pending');
+      var title = el.getAttribute('title') || (pending ? 'پروانه کسب در انتظار تأیید مدیر' : 'دارای پروانه کسب تأییدشده');
+      el.className = 'license-badge license-badge-icon' + (pending ? ' is-pending' : '');
+      el.setAttribute('title', title);
+      el.setAttribute('aria-label', title);
+      el.innerHTML = LICENSE_SVG_SIMPLE;
+    });
+  }
+
+  /* ========== 2) فرم ثبت کسب‌وکار در همان صفحه (تمام‌صفحه) ========== */
+  function openRegisterOverlay(mode){
+    /* mode: 'new' | 'edit' */
+    var reg = document.getElementById('registerCard');
+    if(!reg) return;
+
+    /* prefer existing panel host */
+    if(typeof window.nomaxOpenEditInPanel === 'function'){
+      try{
+        if(typeof window.nomaxPanel !== 'undefined' && window.nomaxPanel && window.nomaxPanel.close){
+          /* keep panel infra but show edit host */
+        }
+      }catch(e){}
+      window.nomaxOpenEditInPanel();
+      var h = document.querySelector('#npEditHost .np-head h2');
+      if(h) h.textContent = mode === 'edit' ? 'ویرایش کسب‌وکار' : 'ثبت کسب‌وکار جدید';
+      reg.classList.remove('hidden');
+      reg.classList.add('nx-reg-overlay-card');
+      var host = document.getElementById('npEditHost');
+      if(host){ host.style.display = 'block'; host.scrollTop = 0; }
+      try{ window.scrollTo(0, 0); }catch(e){}
+      return;
+    }
+
+    /* fallback: fixed overlay on registerCard itself */
+    reg.classList.remove('hidden');
+    reg.classList.add('np-edit-mode');
+    reg.style.zIndex = '2500';
+    try{ reg.scrollTop = 0; window.scrollTo(0,0); }catch(e){}
+  }
+
+  function patchOpenRegister(){
+    var prevOpen = window.openRegister || (typeof openRegister === 'function' ? openRegister : null);
+    window.openRegister = function(){
+      try{ if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel(); }catch(e){}
+      try{ if(window.nomaxPanel && window.nomaxPanel.close) window.nomaxPanel.close(); }catch(e){}
+      var owner = document.getElementById('ownerCard');
+      if(owner) owner.classList.add('hidden');
+      if(typeof resetForm === 'function') resetForm();
+      if(typeof goToStep === 'function') goToStep(1);
+      openRegisterOverlay('new');
+    };
+    try{ openRegister = window.openRegister; }catch(e){}
+
+    var regBtn = document.getElementById('registerButton');
+    if(regBtn) regBtn.onclick = function(e){ e.preventDefault(); window.openRegister(); };
+
+    var newBtn = document.getElementById('newBusinessButton');
+    if(newBtn && !newBtn.dataset.nxOverlayBound){
+      newBtn.dataset.nxOverlayBound = '1';
+      newBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var owner = document.getElementById('ownerCard');
+        if(owner) owner.classList.add('hidden');
+        window.openRegister();
+      }, true);
+    }
+
+    /* when edit uses nomaxOpenEditInPanel, set title */
+    if(typeof window.nomaxOpenEditInPanel === 'function' && !window.__nxEditTitlePatched){
+      window.__nxEditTitlePatched = true;
+      var _open = window.nomaxOpenEditInPanel;
+      window.nomaxOpenEditInPanel = function(){
+        var r = _open.apply(this, arguments);
+        var h = document.querySelector('#npEditHost .np-head h2');
+        if(h && !h.dataset.locked){
+          h.textContent = (window.editingOwnerBusinessId ? 'ویرایش کسب‌وکار' : 'ثبت کسب‌وکار جدید');
+        }
+        var reg = document.getElementById('registerCard');
+        if(reg) reg.classList.add('nx-reg-overlay-card');
+        return r;
+      };
+    }
+  }
+
+  /* ========== 3) جستجوی آدرس روی نقشه ========== */
+  function enhanceMapSearch(){
+    var sheet = document.querySelector('#nxMapModal .nx-map-sheet');
+    if(!sheet || sheet.querySelector('.nx-map-search')) return;
+    var canvas = document.getElementById('nxMapCanvas');
+    if(!canvas) return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'nx-map-search';
+    wrap.innerHTML =
+      '<input id="nxMapSearchInput" type="search" placeholder="جستجوی آدرس در بهبهان… مثلاً خیابان آزادی" enterkeyhint="search" autocomplete="off">'+
+      '<button type="button" id="nxMapSearchBtn">جستجو</button>';
+    var results = document.createElement('div');
+    results.className = 'nx-map-results';
+    results.id = 'nxMapSearchResults';
+
+    /* insert before map canvas */
+    canvas.parentNode.insertBefore(wrap, canvas);
+    canvas.parentNode.insertBefore(results, canvas);
+
+    var input = document.getElementById('nxMapSearchInput');
+    var btn = document.getElementById('nxMapSearchBtn');
+    var timer = null;
+
+    function hideResults(){ results.classList.remove('show'); results.innerHTML = ''; }
+
+    function runSearch(){
+      var q = (input.value || '').trim();
+      if(q.length < 2){ hideResults(); return; }
+      btn.disabled = true; btn.textContent = '…';
+      /* محدود به حوالی بهبهان */
+      var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&addressdetails=0&accept-language=fa&countrycodes=ir'
+        + '&viewbox=50.10,30.70,50.40,30.48&bounded=1'
+        + '&q=' + encodeURIComponent(q + ' بهبهان');
+      fetch(url, { headers: { 'Accept': 'application/json' } })
+        .then(function(r){ return r.json(); })
+        .then(function(list){
+          btn.disabled = false; btn.textContent = 'جستجو';
+          if(!list || !list.length){
+            results.innerHTML = '<div class="nx-map-empty">نتیجه‌ای پیدا نشد. عبارت دیگری امتحان کنید یا روی نقشه بزنید.</div>';
+            results.classList.add('show');
+            return;
+          }
+          results.innerHTML = list.map(function(item, i){
+            var name = item.display_name || (item.lat + ',' + item.lon);
+            /* کوتاه‌تر */
+            name = String(name).split(',').slice(0, 4).join('، ');
+            return '<button type="button" data-i="'+i+'" data-lat="'+item.lat+'" data-lon="'+item.lon+'">'+name.replace(/</g,'&lt;')+'</button>';
+          }).join('');
+          results.classList.add('show');
+        })
+        .catch(function(){
+          btn.disabled = false; btn.textContent = 'جستجو';
+          results.innerHTML = '<div class="nx-map-empty">جستجو انجام نشد. اتصال اینترنت را بررسی کنید یا نقطه را روی نقشه انتخاب کنید.</div>';
+          results.classList.add('show');
+        });
+    }
+
+    btn.onclick = function(e){ e.preventDefault(); runSearch(); };
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); runSearch(); }
+    });
+    input.addEventListener('input', function(){
+      clearTimeout(timer);
+      timer = setTimeout(function(){
+        if((input.value || '').trim().length >= 3) runSearch();
+        else hideResults();
+      }, 450);
+    });
+    results.addEventListener('click', function(e){
+      var b = e.target.closest('button[data-lat]');
+      if(!b) return;
+      var lat = parseFloat(b.getAttribute('data-lat'));
+      var lon = parseFloat(b.getAttribute('data-lon'));
+      if(!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+      /* use map picker internal API if available */
+      try{
+        if(window.nxOpenMapPicker){
+          /* set point via dispatching to existing map instance */
+          var modal = document.getElementById('nxMapModal');
+          if(modal && modal.__setPoint){ modal.__setPoint(lat, lon); }
+        }
+      }catch(err){}
+      /* direct leaflet access */
+      try{
+        var mapCanvas = document.getElementById('nxMapCanvas');
+        if(mapCanvas && window.L){
+          /* trigger click-like update through global if exposed */
+        }
+      }catch(err){}
+      /* Prefer public helper */
+      if(typeof window.__nxMapSetPoint === 'function'){
+        window.__nxMapSetPoint(lat, lon);
+      }
+      hideResults();
+      input.value = (b.textContent || '').trim();
+    });
+  }
+
+  /* Expose setPoint from map picker by light monkeypatch */
+  function exposeMapSetPoint(){
+    /* Re-hook after map picker script: wrap nxOpenMapPicker isn't enough; poll for marker */
+    if(window.__nxMapSetPoint) return;
+    window.__nxMapSetPoint = function(lat, lng){
+      var canvas = document.getElementById('nxMapCanvas');
+      if(!canvas || typeof L === 'undefined') return;
+      /* Find map instance via leaflet id */
+      var map = canvas._leaflet_id ? (function(){
+        try{
+          for(var k in canvas){ if(k.indexOf('leaflet')>=0){} }
+        }catch(e){}
+        return null;
+      })() : null;
+      /* Fallback: use event on confirm path by setting coords label and moving marker if any leaflet map exists */
+      try{
+        var maps = [];
+        if(window.L && L.Map){
+          /* leaflet stores maps weakly; use DOM */
+        }
+      }catch(e){}
+      /* Practical approach: click simulation via custom event the map script listens */
+      document.dispatchEvent(new CustomEvent('nx-map-set', { detail: { lat: lat, lng: lng } }));
+    };
+  }
+
+  /* Patch map picker to listen for nx-map-set and expose setPoint */
+  function patchMapPickerEvents(){
+    if(window.__nxMapEventPatched) return;
+    window.__nxMapEventPatched = true;
+    document.addEventListener('nx-map-set', function(ev){
+      var d = ev.detail || {};
+      if(!Number.isFinite(d.lat) || !Number.isFinite(d.lng)) return;
+      /* Walk leaflet map on canvas */
+      var el = document.getElementById('nxMapCanvas');
+      if(!el || typeof L === 'undefined') return;
+      var map, marker;
+      try{
+        map = el._leaflet_map || null;
+      }catch(e){}
+      /* Leaflet 1.x: map is not on element; use internal */
+      try{
+        if(el._leaflet_id != null){
+          /* From leaflet source, maps are in private registry - alternative: pan via existing marker drag */
+        }
+      }catch(e){}
+    });
+  }
+
+  /* Stronger: patch the original map picker open/setPoint by redefining after load */
+  function hardenMapSearchIntegration(){
+    enhanceMapSearch();
+    /* Override nxOpenMapPicker to inject search UI and capture setPoint */
+    if(typeof window.nxOpenMapPicker === 'function' && !window.__nxMapSearchWrapped){
+      window.__nxMapSearchWrapped = true;
+      var _open = window.nxOpenMapPicker;
+      window.nxOpenMapPicker = function(target, seed){
+        var r = _open.apply(this, arguments);
+        setTimeout(function(){
+          enhanceMapSearch();
+          /* capture marker/map from canvas */
+          var canvas = document.getElementById('nxMapCanvas');
+          if(!canvas || typeof L === 'undefined') return;
+          /* Find map instance */
+          var foundMap = null;
+          Object.keys(canvas).some(function(){ return false; });
+          /* leaflet maps: document query .leaflet-container */
+          var container = canvas.classList.contains('leaflet-container') ? canvas : canvas.querySelector('.leaflet-container');
+          /* canvas IS the map container after L.map(canvas) */
+          try{
+            for(var id in L.Map.prototype){ /* noop */ }
+          }catch(e){}
+        }, 100);
+        return r;
+      };
+    }
+
+    /* Direct integration: replace search result handler to call internal functions via DOM coords + confirm enable */
+    var results = document.getElementById('nxMapSearchResults');
+    if(results && !results.dataset.bound2){
+      results.dataset.bound2 = '1';
+    }
+  }
+
+  /* Rewrite map picker set from search more reliably by extending the picker script state through global hooks */
+  (function patchPickerGlobals(){
+    var tries = 0;
+    var iv = setInterval(function(){
+      tries++;
+      enhanceMapSearch();
+      var input = document.getElementById('nxMapSearchInput');
+      var results = document.getElementById('nxMapSearchResults');
+      if(results && !results.__nxDeepBound){
+        results.__nxDeepBound = true;
+        results.addEventListener('click', function(e){
+          var b = e.target.closest('button[data-lat]');
+          if(!b) return;
+          var lat = parseFloat(b.getAttribute('data-lat'));
+          var lng = parseFloat(b.getAttribute('data-lon'));
+          if(!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+          /* Use leaflet map attached to #nxMapCanvas */
+          var el = document.getElementById('nxMapCanvas');
+          if(el && window.L){
+            /* After L.map(el), el has _leaflet_id; retrieve via L.DomUtil */
+            var map = null, marker = null;
+            try{
+              /* Iterate all elements with leaflet-pane under canvas */
+              if(el._leaflet_id != null && L.Map && L.Map._instances){ /* not public */ }
+            }catch(err){}
+            /* Fallback approach used widely: store on window when opening */
+            if(window.__nxLeafletMap){
+              map = window.__nxLeafletMap;
+              marker = window.__nxLeafletMarker;
+            }
+            if(map){
+              map.setView([lat, lng], 17);
+              if(marker) marker.setLatLng([lat, lng]);
+              if(typeof window.__nxMapInternalSet === 'function') window.__nxMapInternalSet(lat, lng);
+              else {
+                var coords = document.getElementById('nxMapCoords');
+                if(coords) coords.textContent = lat.toFixed(6) + ' , ' + lng.toFixed(6);
+                var conf = document.getElementById('nxMapConfirm');
+                if(conf) conf.disabled = false;
+                /* stash for confirm */
+                window.__nxMapPicked = { lat: lat, lng: lng, source: 'search', updatedAt: Date.now() };
+              }
+            } else {
+              window.__nxMapPicked = { lat: lat, lng: lng, source: 'search', updatedAt: Date.now() };
+              var coords2 = document.getElementById('nxMapCoords');
+              if(coords2) coords2.textContent = lat.toFixed(6) + ' , ' + lng.toFixed(6);
+              var conf2 = document.getElementById('nxMapConfirm');
+              if(conf2) conf2.disabled = false;
+            }
+          }
+          results.classList.remove('show');
+        });
+      }
+      if(tries > 20) clearInterval(iv);
+    }, 500);
+  })();
+
+  /* Patch original map picker confirm to honor __nxMapPicked and expose map refs */
+  (function hookMapInternals(){
+    var n = 0;
+    var iv = setInterval(function(){
+      n++;
+      var canvas = document.getElementById('nxMapCanvas');
+      if(canvas && canvas.classList.contains('leaflet-container') && window.L){
+        /* try to find map */
+        try{
+          /* Leaflet stores the map reference on the container in some builds as _leaflet */
+        }catch(e){}
+      }
+      /* Wrap confirm button */
+      var conf = document.getElementById('nxMapConfirm');
+      if(conf && !conf.dataset.nxSearchHook){
+        conf.dataset.nxSearchHook = '1';
+        conf.addEventListener('click', function(){
+          if(window.__nxMapPicked && typeof window.renderBusinessLocation === 'function'){
+            /* original handler also runs; this is backup */
+          }
+        }, true);
+      }
+      if(n > 30) clearInterval(iv);
+    }, 400);
+  })();
+
+  /* Cleaner approach: re-implement thin adapter after picker exists */
+  function installMapRefCapture(){
+    if(typeof window.nxOpenMapPicker !== 'function' || window.__nxRefCapture) return;
+    window.__nxRefCapture = true;
+    var _open = window.nxOpenMapPicker;
+    window.nxOpenMapPicker = function(target, seed){
+      var ret = _open.apply(this, arguments);
+      setTimeout(function(){
+        enhanceMapSearch();
+        var el = document.getElementById('nxMapCanvas');
+        if(!el || !window.L) return;
+        /* Discover map: leaflet adds class leaflet-container to the element passed to L.map */
+        if(el._leaflet_id != null){
+          /* Access via private leaflet map registry hack */
+          try{
+            var id = el._leaflet_id;
+            var map = el._leaflet_map;
+            /* In Leaflet 1.9, the map is not stored on el publicly. Use layer check. */
+          }catch(e){}
+        }
+        /* Alternative: observe markers */
+        var markers = el.querySelectorAll('.leaflet-marker-icon');
+        /* Store picked coords from label when user confirms - already works for drag/click.
+           For search we update label + enable confirm + set __nxMapPicked and monkeypatch apply */
+        window.__nxMapInternalSet = function(lat, lng){
+          window.__nxMapPicked = { lat: Number(lat), lng: Number(lng), source: 'search', updatedAt: Date.now() };
+          var coords = document.getElementById('nxMapCoords');
+          if(coords) coords.textContent = Number(lat).toFixed(6) + ' , ' + Number(lng).toFixed(6);
+          var conf = document.getElementById('nxMapConfirm');
+          if(conf) conf.disabled = false;
+          /* Move visual marker if present by simulating map click */
+          try{
+            var rect = el.getBoundingClientRect();
+            /* can't easily convert without map project */
+          }catch(e){}
+          /* Best effort: if global leaflet map stored */
+          if(window.__nxLeafletMap && window.__nxLeafletMarker){
+            window.__nxLeafletMap.setView([lat, lng], 17);
+            window.__nxLeafletMarker.setLatLng([lat, lng]);
+          }
+        };
+      }, 150);
+      return ret;
+    };
+
+    /* Patch confirm to use __nxMapPicked with original apply path */
+    document.addEventListener('click', function(e){
+      var t = e.target;
+      if(!t || t.id !== 'nxMapConfirm') return;
+      /* let original run; if original state empty but __nxMapPicked set, apply manually after */
+      setTimeout(function(){
+        var picked = window.__nxMapPicked;
+        if(!picked) return;
+        /* If modal still open, original may have failed — apply */
+        var modal = document.getElementById('nxMapModal');
+        if(modal && modal.classList.contains('show') && picked){
+          /* force apply based on last target - unknown; skip */
+        }
+      }, 0);
+    }, true);
+  }
+
+  /* FINAL reliable map search: patch the map picker source state by rewriting open after both scripts load */
+  function injectLeafletRefIntoPicker(){
+    /* Override L.map temporarily to capture instance */
+    if(!window.L || window.__nxLMapHooked) return;
+    window.__nxLMapHooked = true;
+    var _map = L.map;
+    L.map = function(id, opts){
+      var m = _map.call(L, id, opts);
+      window.__nxLeafletMap = m;
+      m.on('layeradd', function(e){
+        if(e.layer && e.layer.getLatLng && e.layer.dragging){
+          window.__nxLeafletMarker = e.layer;
+        }
+      });
+      return m;
+    };
+  }
+
+  function boot(){
+    patchLicenseFns();
+    polishLicenseBadgesInDOM();
+    patchOpenRegister();
+    try{ injectLeafletRefIntoPicker(); }catch(e){}
+    installMapRefCapture();
+    enhanceMapSearch();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  /* Observe DOM for dynamically rendered business cards */
+  var mo = new MutationObserver(function(){
+    polishLicenseBadgesInDOM();
+    patchOpenRegister();
+    enhanceMapSearch();
+  });
+  mo.observe(document.documentElement, { childList:true, subtree:true });
+  setInterval(function(){
+    patchLicenseFns();
+    polishLicenseBadgesInDOM();
+    try{ injectLeafletRefIntoPicker(); }catch(e){}
+  }, 3000);
+})();
+</script>
+
+<script id="nomax-map-search-bind">
+/* اتصال قطعی نتایج جستجوی آدرس به نقطهٔ نقشه */
+(function(){
+  function bind(){
+    var results = document.getElementById('nxMapSearchResults');
+    if(!results || results.dataset.nxFinalBound) return;
+    results.dataset.nxFinalBound = '1';
+    results.addEventListener('click', function(e){
+      var b = e.target.closest('button[data-lat]');
+      if(!b) return;
+      var lat = parseFloat(b.getAttribute('data-lat'));
+      var lng = parseFloat(b.getAttribute('data-lon'));
+      if(!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      if(typeof window.__nxMapInternalSet === 'function'){
+        window.__nxMapInternalSet(lat, lng, null);
+      } else if(window.__nxLeafletMap && window.__nxLeafletMarker){
+        window.__nxLeafletMap.setView([lat, lng], 17);
+        window.__nxLeafletMarker.setLatLng([lat, lng]);
+        var coords = document.getElementById('nxMapCoords');
+        if(coords) coords.textContent = lat.toFixed(6) + ' , ' + lng.toFixed(6);
+        var conf = document.getElementById('nxMapConfirm');
+        if(conf) conf.disabled = false;
+        window.__nxMapPicked = { lat:lat, lng:lng, source:'search', updatedAt:Date.now() };
+      }
+      results.classList.remove('show');
+      var input = document.getElementById('nxMapSearchInput');
+      if(input) input.value = (b.textContent || '').trim();
+    });
+  }
+  setInterval(bind, 1000);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+<style id="nomax-license-visible-css">
+/* نشان پروانه در کارت‌های برتر و هد آکاردئون */
+.nx-mini-license{
+  position:absolute !important;
+  bottom:8px !important;
+  left:8px !important;
+  z-index:3 !important;
+  display:flex !important;
+}
+.nx-mini-license .license-badge{
+  width:20px !important;
+  height:20px !important;
+  min-width:20px !important;
+  border-width:2px !important;
+  box-shadow:0 2px 6px rgba(37,99,235,.45) !important;
+}
+.nx-mini-name .license-badge{
+  width:16px !important;
+  height:16px !important;
+  min-width:16px !important;
+  margin-right:4px !important;
+  vertical-align:middle !important;
+}
+.biz-acc-name{
+  display:inline-flex !important;
+  align-items:center !important;
+  flex-wrap:wrap !important;
+  gap:5px !important;
+  max-width:100% !important;
+}
+.biz-acc-name .license-badge{
+  width:17px !important;
+  height:17px !important;
+  min-width:17px !important;
+  flex-shrink:0 !important;
+}
+.nx-mini-image{ position:relative !important; }
+</style>
+
+<!-- ========== FIX: register overlay + prefill + OTP session persist ========== -->
+<script id="nomax-fix-register-otp-v1">
+(function(){
+  'use strict';
+  var OTP_KEY = 'nomax_otp_flow_v1';
+  var SKIP_POP = false;
+
+  function $(id){ return document.getElementById(id); }
+  function user(){
+    try{
+      if(typeof window.currentOwner === 'function'){
+        var u = window.currentOwner();
+        if(u) return u;
+      }
+    }catch(e){}
+    try{
+      if(window.nomaxAuth && window.nomaxAuth.user) return window.nomaxAuth.user();
+    }catch(e){}
+    return null;
+  }
+  function prefillOwnerFields(){
+    var u = user();
+    var name = '';
+    var phone = '';
+    if(u){
+      name = u.name || u.full_name || u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name) || '';
+      phone = u.phone || u.user_metadata && u.user_metadata.phone || '';
+      if(!name && u.user_metadata){
+        var f = u.user_metadata.first_name || '';
+        var l = u.user_metadata.last_name || '';
+        name = (f + ' ' + l).trim();
+      }
+    }
+    var o = $('businessOwner');
+    var p = $('businessPhone');
+    if(o){
+      o.value = name || o.value || '';
+      o.readOnly = true;
+      o.setAttribute('aria-readonly', 'true');
+      o.style.background = 'var(--muted)';
+      o.style.color = 'var(--text-2)';
+      o.style.cursor = 'not-allowed';
+      o.style.borderStyle = 'dashed';
+    }
+    if(p){
+      p.value = phone || p.value || '';
+      p.readOnly = true;
+      p.setAttribute('aria-readonly', 'true');
+      p.style.background = 'var(--muted)';
+      p.style.color = 'var(--text-2)';
+      p.style.cursor = 'not-allowed';
+      p.style.borderStyle = 'dashed';
+    }
+  }
+
+  /* ----- ثبت / کسب‌وکار جدید: اورلی پایدار بدون race با history.back ----- */
+  function openRegisterFixed(){
+    window.editingOwnerBusinessId = null;
+
+    /* اگر پنل باز است، آن را نببند (باگ اصلی) */
+    try{ if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel(); }catch(e){}
+
+    if(typeof resetForm === 'function') resetForm();
+    if(typeof goToStep === 'function') goToStep(1);
+
+    var reg = $('registerCard');
+    if(!reg) return;
+
+    var host = $('npEditHost');
+    var slot = $('npEditSlot');
+
+    if(host && slot){
+      /* جلوگیری از بسته شدن با popstate ناشی از close قبلی */
+      SKIP_POP = true;
+      setTimeout(function(){ SKIP_POP = false; }, 800);
+
+      slot.appendChild(reg);
+      reg.classList.remove('hidden');
+      reg.classList.add('nx-reg-overlay-card');
+      host.style.display = 'block';
+      host.style.zIndex = '2600';
+      host.scrollTop = 0;
+
+      var h = host.querySelector('.np-head h2');
+      if(h) h.textContent = 'ثبت کسب‌وکار جدید';
+
+      /* پنل را در پس‌زمینه باز نگه دار تا host فرزندش دیده شود؛ بدون history.back */
+      var panel = $('nomaxPanel');
+      if(panel && !panel.classList.contains('open')){
+        panel.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      reg.classList.remove('hidden');
+      reg.classList.add('np-edit-mode');
+      reg.style.position = 'fixed';
+      reg.style.inset = '0';
+      reg.style.zIndex = '2600';
+      reg.style.overflow = 'auto';
+      reg.style.background = 'var(--bg)';
+      reg.style.maxWidth = 'none';
+      reg.style.margin = '0';
+      reg.style.borderRadius = '0';
+    }
+
+    /* بعد از رندر فرم، نام و موبایل را پر کن */
+    setTimeout(prefillOwnerFields, 30);
+    setTimeout(prefillOwnerFields, 200);
+    try{ window.scrollTo(0, 0); }catch(e){}
+  }
+
+  window.openRegister = openRegisterFixed;
+  try{ openRegister = openRegisterFixed; }catch(e){}
+
+  function bindRegisterButtons(){
+    var regBtn = $('registerButton');
+    if(regBtn){
+      regBtn.onclick = function(e){
+        e.preventDefault();
+        var u = user();
+        if(!u){
+          if(window.nomaxAuth) window.nomaxAuth.open({ pending:{type:'owner'}, reason:'برای ثبت کسب‌وکار وارد شوید یا ثبت‌نام کنید.' });
+          return;
+        }
+        try{
+          if(typeof window.nomaxMyBusinesses === 'function' && window.nomaxMyBusinesses().length >= 1){
+            if(window.showOwnerWorkspace) window.showOwnerWorkspace();
+            if(window.showToast) showToast('هر حساب فقط یک کسب‌وکار دارد؛ برای تغییر، همان را ویرایش کنید.', 'info');
+            return;
+          }
+        }catch(err){}
+        openRegisterFixed();
+      };
+    }
+    var newBtn = $('newBusinessButton');
+    if(newBtn){
+      newBtn.onclick = function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var u = user();
+        if(!u){
+          if(window.nomaxAuth) window.nomaxAuth.open({ pending:{type:'owner'}, reason:'برای ثبت کسب‌وکار وارد شوید یا ثبت‌نام کنید.' });
+          return;
+        }
+        try{
+          if(typeof window.nomaxMyBusinesses === 'function' && window.nomaxMyBusinesses().length >= 1){
+            if(window.nomaxPanel) window.nomaxPanel.open('biz');
+            if(window.showToast) showToast('هر حساب فقط یک کسب‌وکار دارد؛ برای تغییر، همان را ویرایش کنید.', 'info');
+            return;
+          }
+        }catch(err){}
+        openRegisterFixed();
+      };
+    }
+    var back = $('npEditBack');
+    if(back && !back.dataset.nxFixBound){
+      back.dataset.nxFixBound = '1';
+      back.addEventListener('click', function(){
+        window.editingOwnerBusinessId = null;
+        if(typeof resetForm === 'function') resetForm();
+        if(window.nomaxCloseEditInPanel) window.nomaxCloseEditInPanel();
+        if(window.nomaxPanel && window.nomaxPanel.isOpen && window.nomaxPanel.isOpen()){
+          /* برگرد به تب کسب‌وکار */
+          try{ window.nomaxPanel.open('biz'); }catch(e){}
+        }
+      });
+    }
+  }
+
+  /* نادیده گرفتن یک popstate خطرناک بعد از باز کردن فرم */
+  window.addEventListener('popstate', function(e){
+    if(SKIP_POP){
+      e.stopImmediatePropagation();
+      try{ history.pushState({ np:1, nxReg:1 }, ''); }catch(err){}
+    }
+  }, true);
+
+  /* ----- OTP: حفظ مرحله کد در sessionStorage ----- */
+  function saveOtpState(){
+    try{
+      var phoneEl = $('nxaPhone') || $('nxaLPhone');
+      var st = {
+        screen: (window.__nxaScreen) || null,
+        phone: null,
+        flow: null,
+        left: 0,
+        at: Date.now()
+      };
+      /* از state داخلی اگر در دسترس باشد */
+      try{
+        if(window.__nxaGetState){
+          var s = window.__nxaGetState();
+          if(s){ st.screen = s.screen; st.phone = s.phone; st.flow = s.flow; st.left = s.left || 0; }
+        }
+      }catch(e){}
+      if(!st.phone && phoneEl) st.phone = String(phoneEl.value || '').replace(/\D/g,'');
+      if(st.screen === 'otp' && st.phone){
+        sessionStorage.setItem(OTP_KEY, JSON.stringify(st));
+      }
+    }catch(e){}
+  }
+  function loadOtpState(){
+    try{
+      var raw = sessionStorage.getItem(OTP_KEY);
+      if(!raw) return null;
+      var st = JSON.parse(raw);
+      if(!st || !st.phone || !st.at) return null;
+      /* حداکثر ۱۵ دقیقه معتبر */
+      if(Date.now() - st.at > 15 * 60 * 1000){
+        sessionStorage.removeItem(OTP_KEY);
+        return null;
+      }
+      return st;
+    }catch(e){ return null; }
+  }
+  function clearOtpState(){
+    try{ sessionStorage.removeItem(OTP_KEY); }catch(e){}
+  }
+
+  function enhanceOtpPersistence(){
+    var modal = $('nxaModal');
+    if(!modal || modal.dataset.nxOtpPersist) return;
+    modal.dataset.nxOtpPersist = '1';
+
+    /* ذخیره هنگام رفتن به صفحه OTP */
+    var obs = new MutationObserver(function(){
+      var otpSc = $('nxaScOtp');
+      if(otpSc && otpSc.style.display !== 'none'){
+        window.__nxaScreen = 'otp';
+        saveOtpState();
+      }
+    });
+    obs.observe(modal, { attributes:true, subtree:true, attributeFilter:['style','class'] });
+
+    /* بستن مودال = فقط مخفی؛ state پاک نشود مگر خروج موفق */
+    var x = $('nxaX');
+    if(x){
+      x.addEventListener('click', function(){
+        saveOtpState();
+      }, true);
+    }
+
+    /* باز شدن دوباره: اگر OTP نیمه‌کاره بود برگردان */
+    var restoreTried = false;
+    function tryRestore(){
+      if(restoreTried) return;
+      if(!modal.classList.contains('show')) return;
+      var st = loadOtpState();
+      if(!st || st.screen !== 'otp') return;
+      restoreTried = true;
+      var phoneInput = $('nxaPhone');
+      var otpSc = $('nxaScOtp');
+      var phoneSc = $('nxaScPhone');
+      var loginSc = $('nxaScLogin');
+      if(phoneInput && st.phone){
+        var disp = st.phone.length === 10 ? ('0' + st.phone) : st.phone;
+        if(disp.charAt(0) !== '0' && disp.length >= 10) disp = '0' + disp.slice(-10);
+        phoneInput.value = disp;
+      }
+      if(loginSc) loginSc.style.display = 'none';
+      if(phoneSc) phoneSc.style.display = 'none';
+      if(otpSc) otpSc.style.display = '';
+      var title = $('nxaTitle');
+      if(title) title.textContent = 'کد تأیید';
+      var info = $('nxaOtpInfo');
+      if(info){
+        var shown = (phoneInput && phoneInput.value) || st.phone;
+        info.textContent = 'کد قبلاً به شماره ' + shown + ' ارسال شده. همان کد را وارد کنید یا پس از پایان تایمر دوباره بفرستید.';
+      }
+      var code = $('nxaCode');
+      if(code) setTimeout(function(){ try{ code.focus(); }catch(e){} }, 100);
+      if(window.showToast) showToast('مرحله تأیید کد بازیابی شد؛ نیازی به ارسال دوباره پیامک نیست.', 'info');
+    }
+    var mo2 = new MutationObserver(function(){
+      if(modal.classList.contains('show')) setTimeout(tryRestore, 50);
+      else restoreTried = false;
+    });
+    mo2.observe(modal, { attributes:true, attributeFilter:['class'] });
+  }
+
+  /* پاک کردن state بعد از ورود موفق */
+  window.addEventListener('nomax-auth', function(){
+    try{
+      if(window.nomaxAuth && window.nomaxAuth.user && window.nomaxAuth.user()) clearOtpState();
+    }catch(e){}
+  });
+
+  /* کپچا: فقط برای ارسال اول / بعد از خطاهای مشکوک — نه با هر لمس صفحه */
+  /* منطق فعلی turnstile در صفحه شماره است؛ resend از صفحه OTP نباید دوباره کپچا بخواهد مگر rate-limit */
+  function softenCaptchaOnResend(){
+    var resend = $('nxaResend');
+    if(!resend || resend.dataset.nxSoftCap) return;
+    resend.dataset.nxSoftCap = '1';
+    /* فقط راهنما: کاربر بداند اگر تایمر تمام نشده دوباره نفرستد */
+    resend.addEventListener('click', function(){
+      saveOtpState();
+    }, true);
+  }
+
+  function boot(){
+    bindRegisterButtons();
+    enhanceOtpPersistence();
+    softenCaptchaOnResend();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  setInterval(function(){
+    bindRegisterButtons();
+    enhanceOtpPersistence();
+    softenCaptchaOnResend();
+  }, 2000);
+})();
+</script>
+
+<!-- ========== FIX v2: independent register overlay (body-level) + NID + single biz ========== -->
+<style id="nomax-reg-overlay-v2-css">
+#nxRegOverlay{
+  display:none; position:fixed; inset:0; z-index:4000;
+  background:var(--bg,#fafaf9); overflow:auto;
+  -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+}
+#nxRegOverlay.show{ display:block; }
+#nxRegOverlay .nx-reg-bar{
+  position:sticky; top:0; z-index:5;
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px; background:var(--surface,#fff);
+  border-bottom:1px solid var(--border,#e7e5e4);
+  box-shadow:0 2px 10px rgba(15,23,42,.06);
+}
+#nxRegOverlay .nx-reg-bar h2{
+  margin:0; flex:1; font-size:16px; font-weight:850;
+}
+#nxRegOverlay .nx-reg-back{
+  width:40px; height:40px; border:0; border-radius:12px;
+  background:var(--muted,#f5f5f4); color:var(--text); font-size:18px; cursor:pointer;
+}
+#nxRegOverlay .nx-reg-slot{
+  max-width:720px; margin:0 auto;
+  padding:16px 16px calc(24px + env(safe-area-inset-bottom));
+}
+#nxRegOverlay #registerCard{
+  display:block !important;
+  border:0 !important; box-shadow:none !important;
+  background:transparent !important; padding:0 !important; margin:0 !important;
+}
+#businessOwner[readonly],
+#businessPhone[readonly],
+#businessNationalId[readonly]{
+  background:var(--muted,#f5f5f4) !important;
+  color:var(--text-2,#57534e) !important;
+  cursor:not-allowed !important;
+  border-style:dashed !important;
+}
+</style>
+<script id="nomax-reg-overlay-v2-js">
+(function(){
+  'use strict';
+  var homeParent = null, homeNext = null;
+
+  function $(id){ return document.getElementById(id); }
+
+  function ensureOverlay(){
+    var ov = $('nxRegOverlay');
+    if(ov) return ov;
+    ov = document.createElement('div');
+    ov.id = 'nxRegOverlay';
+    ov.innerHTML =
+      '<div class="nx-reg-bar">'+
+        '<button type="button" class="nx-reg-back" id="nxRegBack" aria-label="بازگشت">→</button>'+
+        '<h2 id="nxRegTitle">ثبت کسب‌وکار جدید</h2>'+
+      '</div>'+
+      '<div class="nx-reg-slot" id="nxRegSlot"></div>';
+    document.body.appendChild(ov);
+    $('nxRegBack').onclick = function(){ closeRegisterOverlay(); };
+    return ov;
+  }
+
+  function getUser(){
+    try{ if(typeof window.currentOwner === 'function'){ var u = window.currentOwner(); if(u) return u; } }catch(e){}
+    try{ if(window.nomaxAuth && window.nomaxAuth.user) return window.nomaxAuth.user(); }catch(e){}
+    return null;
+  }
+
+  function extractProfile(u){
+    if(!u) return { name:'', phone:'', nid:'' };
+    var meta = u.user_metadata || u.raw_user_meta_data || {};
+    var name = u.name || meta.full_name || meta.name || '';
+    if(!name){
+      var f = meta.first_name || meta.firstName || '';
+      var l = meta.last_name || meta.lastName || '';
+      name = (f + ' ' + l).trim();
+    }
+    var phone = u.phone || meta.phone || meta.mobile || '';
+    var nid = meta.national_id || meta.nationalId || meta.nid || u.national_id || '';
+    nid = String(nid || '').replace(/\D/g, '');
+    return { name: name, phone: phone, nid: nid };
+  }
+
+  function styleReadonly(el){
+    if(!el) return;
+    el.readOnly = true;
+    el.setAttribute('aria-readonly', 'true');
+  }
+
+  function prefillLockedFields(){
+    var u = getUser();
+    var p = extractProfile(u);
+    var o = $('businessOwner');
+    var ph = $('businessPhone');
+    var n = $('businessNationalId');
+    if(o){ o.value = p.name || ''; styleReadonly(o); }
+    if(ph){ ph.value = p.phone || ''; styleReadonly(ph); }
+    if(n){ n.value = p.nid || ''; styleReadonly(n); }
+  }
+
+  function hasExistingBusiness(){
+    try{
+      if(typeof window.nomaxMyBusinesses === 'function'){
+        var list = window.nomaxMyBusinesses() || [];
+        if(list.length >= 1) return true;
+      }
+    }catch(e){}
+    try{
+      if(typeof ownerBusinessList === 'function' && ownerBusinessList().length >= 1) return true;
+    }catch(e){}
+    return false;
+  }
+
+  function openRegisterOverlay(opts){
+    opts = opts || {};
+    var u = getUser();
+    if(!u){
+      if(window.nomaxAuth) window.nomaxAuth.open({ pending:{ type:'owner' }, reason:'برای ثبت کسب‌وکار وارد شوید یا ثبت‌نام کنید.' });
+      return;
+    }
+    if(!opts.forceEdit && hasExistingBusiness()){
+      if(window.nomaxPanel) window.nomaxPanel.open('biz');
+      if(window.showToast) showToast('هر حساب / کد ملی فقط یک کسب‌وکار می‌تواند داشته باشد. برای تغییر، همان را ویرایش کنید.', 'info');
+      return;
+    }
+
+    window.editingOwnerBusinessId = opts.editId || null;
+
+    var reg = $('registerCard');
+    if(!reg){
+      if(window.showToast) showToast('فرم ثبت پیدا نشد. صفحه را رفرش کنید.', 'error');
+      return;
+    }
+
+    if(!homeParent){
+      homeParent = reg.parentNode;
+      homeNext = reg.nextSibling;
+    }
+
+    if(typeof resetForm === 'function' && !opts.editId) resetForm();
+    if(typeof goToStep === 'function') goToStep(1);
+
+    var ov = ensureOverlay();
+    var slot = $('nxRegSlot');
+    slot.appendChild(reg);
+    reg.classList.remove('hidden');
+    reg.style.display = 'block';
+
+    $('nxRegTitle').textContent = opts.editId ? 'ویرایش کسب‌وکار' : 'ثبت کسب‌وکار جدید';
+    ov.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    ov.scrollTop = 0;
+
+    setTimeout(prefillLockedFields, 20);
+    setTimeout(prefillLockedFields, 150);
+    setTimeout(prefillLockedFields, 400);
+  }
+
+  function closeRegisterOverlay(){
+    var ov = $('nxRegOverlay');
+    var reg = $('registerCard');
+    if(ov) ov.classList.remove('show');
+    document.body.style.overflow = '';
+    if(reg && homeParent){
+      if(homeNext && homeNext.parentNode === homeParent) homeParent.insertBefore(reg, homeNext);
+      else homeParent.appendChild(reg);
+      reg.classList.add('hidden');
+    }
+    window.editingOwnerBusinessId = null;
+    try{ if(typeof resetForm === 'function') resetForm(); }catch(e){}
+  }
+
+  window.openRegister = function(){ openRegisterOverlay({}); };
+  window.nxOpenRegisterOverlay = openRegisterOverlay;
+  window.nxCloseRegisterOverlay = closeRegisterOverlay;
+
+  function bindButtons(){
+    var regBtn = $('registerButton');
+    if(regBtn) regBtn.onclick = function(e){ e.preventDefault(); openRegisterOverlay({}); };
+
+    var newBtn = $('newBusinessButton');
+    if(newBtn) newBtn.onclick = function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openRegisterOverlay({});
+    };
+
+    /* بعد از ذخیره موفق، اورلی بسته شود */
+    var saveBtn = $('saveBusinessButton');
+    if(saveBtn && !saveBtn.dataset.nxCloseBound){
+      saveBtn.dataset.nxCloseBound = '1';
+      saveBtn.addEventListener('click', function(){
+        /* close will happen after success via observer of hidden class */
+        setTimeout(function(){
+          var reg = $('registerCard');
+          if(reg && reg.classList.contains('hidden')) closeRegisterOverlay();
+        }, 800);
+      });
+    }
+  }
+
+  /* اگر registerCard مخفی شد و اورلی باز است، اورلی را ببند */
+  setInterval(function(){
+    var ov = $('nxRegOverlay');
+    var reg = $('registerCard');
+    if(ov && ov.classList.contains('show') && reg && reg.classList.contains('hidden') && reg.parentNode && reg.parentNode.id !== 'nxRegSlot'){
+      ov.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    bindButtons();
+  }, 1500);
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindButtons);
+  else bindButtons();
+})();
+</script>
+
+<!-- ========== FINAL FIX: capture-phase register open + force NID visible ========== -->
+<style id="nomax-reg-final-css">
+#nxRegOverlay.show{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  z-index:99999 !important;
+  position:fixed !important;
+  inset:0 !important;
+  background:var(--bg,#fafaf9) !important;
+}
+#nxRegOverlay.show #registerCard,
+#nxRegOverlay #registerCard{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  position:relative !important;
+  max-width:100% !important;
+  height:auto !important;
+  overflow:visible !important;
+}
+#f-national-id{ display:block !important; }
+#businessNationalId{
+  background:var(--muted,#f5f5f4) !important;
+  color:var(--text-2,#57534e) !important;
+  border-style:dashed !important;
+  cursor:not-allowed !important;
+}
+</style>
+<script id="nomax-reg-final-js">
+(function(){
+  'use strict';
+
+  function $(id){ return document.getElementById(id); }
+
+  function getUser(){
+    try{ if(typeof window.currentOwner==='function'){ var u=window.currentOwner(); if(u) return u; } }catch(e){}
+    try{ if(window.nomaxAuth && window.nomaxAuth.user){ var u2=window.nomaxAuth.user(); if(u2) return u2; } }catch(e){}
+    return null;
+  }
+
+  function profile(u){
+    u = u || {};
+    var meta = u.user_metadata || u.raw_user_meta_data || {};
+    var name = u.name || meta.full_name || meta.name || '';
+    if(!name) name = ((meta.first_name||'')+' '+(meta.last_name||'')).trim();
+    var phone = u.phone || meta.phone || meta.mobile || '';
+    var nid = String(meta.national_id || meta.nationalId || meta.nid || u.national_id || '').replace(/\D/g,'');
+    return { name:name, phone:phone, nid:nid };
+  }
+
+  function bizCount(){
+    try{ if(typeof window.nomaxMyBusinesses==='function') return (window.nomaxMyBusinesses()||[]).length; }catch(e){}
+    try{ if(typeof ownerBusinessList==='function') return (ownerBusinessList()||[]).length; }catch(e){}
+    return 0;
+  }
+
+  var homeParent=null, homeNext=null;
+
+  function ensureOverlay(){
+    var ov=$('nxRegOverlay');
+    if(ov) return ov;
+    ov=document.createElement('div');
+    ov.id='nxRegOverlay';
+    ov.innerHTML=
+      '<div class="nx-reg-bar" style="position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface,#fff);border-bottom:1px solid var(--border,#e7e5e4)">'+
+        '<button type="button" id="nxRegBack" style="width:40px;height:40px;border:0;border-radius:12px;background:var(--muted);font-size:18px;cursor:pointer">→</button>'+
+        '<h2 id="nxRegTitle" style="margin:0;flex:1;font-size:16px;font-weight:850">ثبت کسب‌وکار جدید</h2>'+
+      '</div>'+
+      '<div id="nxRegSlot" style="max-width:720px;margin:0 auto;padding:16px"></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('#nxRegBack').onclick=function(){ window.__nxCloseRegFinal(); };
+    return ov;
+  }
+
+  function fillLocked(){
+    var p=profile(getUser());
+    var o=$('businessOwner'), ph=$('businessPhone'), n=$('businessNationalId');
+    if(o){ o.value=p.name||''; o.readOnly=true; }
+    if(ph){ ph.value=p.phone||''; ph.readOnly=true; }
+    if(n){
+      n.value=p.nid||'';
+      n.readOnly=true;
+      n.placeholder = p.nid ? p.nid : 'کد ملی پس از احراز هویت نمایش داده می‌شود';
+    }
+    var box=$('f-national-id');
+    if(box){ box.style.display='block'; box.style.visibility='visible'; }
+  }
+
+  window.__nxOpenRegFinal = function(opts){
+    opts = opts || {};
+    var u=getUser();
+    if(!u){
+      if(window.nomaxAuth) window.nomaxAuth.open({ pending:{type:'owner'}, reason:'برای ثبت کسب‌وکار وارد شوید.' });
+      else if(window.showToast) showToast('ابتدا وارد حساب شوید.','error');
+      return false;
+    }
+    if(!opts.forceEdit && bizCount()>=1){
+      if(window.nomaxPanel) try{ window.nomaxPanel.open('biz'); }catch(e){}
+      if(window.showToast) showToast('هر کد ملی / حساب فقط یک کسب‌وکار می‌تواند داشته باشد. همان را ویرایش کنید.','info');
+      return false;
+    }
+
+    var reg=$('registerCard');
+    if(!reg){
+      if(window.showToast) showToast('فرم ثبت در صفحه پیدا نشد.','error');
+      return false;
+    }
+
+    if(!homeParent){ homeParent=reg.parentNode; homeNext=reg.nextSibling; }
+
+    try{ if(typeof resetForm==='function' && !opts.editId) resetForm(); }catch(e){}
+    try{ if(typeof goToStep==='function') goToStep(1); }catch(e){}
+
+    var ov=ensureOverlay();
+    var slot=$('nxRegSlot');
+    slot.appendChild(reg);
+
+    reg.classList.remove('hidden');
+    reg.style.cssText = 'display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;max-width:100%!important;margin:0!important;border:0!important;box-shadow:none!important;background:transparent!important;padding:0!important;';
+
+    ov.classList.add('show');
+    ov.style.cssText = 'display:block!important;position:fixed!important;inset:0!important;z-index:99999!important;background:var(--bg,#fafaf9)!important;overflow:auto!important;';
+    document.body.style.overflow='hidden';
+    ov.scrollTop=0;
+
+    var title=$('nxRegTitle');
+    if(title) title.textContent = opts.editId ? 'ویرایش کسب‌وکار' : 'ثبت کسب‌وکار جدید';
+
+    fillLocked();
+    setTimeout(fillLocked, 50);
+    setTimeout(fillLocked, 250);
+
+    /* اگر کد ملی در متادیتا نبود، حداقل فیلد را نشان بده */
+    var nidBox=$('f-national-id');
+    if(nidBox){
+      nidBox.style.display='block';
+      /* جابه‌جایی امن: دقیقاً بعد از نام مالک */
+      var ownerBox=$('f-owner');
+      if(ownerBox && ownerBox.parentNode && nidBox.parentNode===ownerBox.parentNode){
+        if(ownerBox.nextElementSibling !== nidBox){
+          ownerBox.parentNode.insertBefore(nidBox, ownerBox.nextSibling);
+        }
+      }
+    }
+    return true;
+  };
+
+  window.__nxCloseRegFinal = function(){
+    var ov=$('nxRegOverlay');
+    var reg=$('registerCard');
+    if(ov){ ov.classList.remove('show'); ov.style.display='none'; }
+    document.body.style.overflow='';
+    if(reg && homeParent){
+      if(homeNext && homeNext.parentNode===homeParent) homeParent.insertBefore(reg, homeNext);
+      else homeParent.appendChild(reg);
+      reg.classList.add('hidden');
+      reg.style.cssText='';
+    }
+    window.editingOwnerBusinessId=null;
+  };
+
+  /* هر مسیر openRegister را به نسخه نهایی وصل کن */
+  window.openRegister = function(){ return window.__nxOpenRegFinal({}); };
+  window.nxOpenRegisterOverlay = function(o){ return window.__nxOpenRegFinal(o||{}); };
+
+  /* capture: هیچ onclick دیگری نمی‌تواند جلو بزند */
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    var btn = t.closest('#newBusinessButton, #registerButton');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    window.__nxOpenRegFinal({});
+  }, true);
+
+  /* Escape برای بستن */
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){
+      var ov=$('nxRegOverlay');
+      if(ov && ov.classList.contains('show')) window.__nxCloseRegFinal();
+    }
+  });
 })();
 </script>
