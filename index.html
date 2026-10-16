@@ -13401,10 +13401,11 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
   };
   window.nxPhoneForShare = function(p){ return window.nxIsGuest() ? window.nxMaskPhone(p) : p; };
   window.nxLockCard = function(html){
-    return html.replace(/<a\b([^>]*?)\bhref="(?:tel:|sms:|https:\/\/wa\.me\/)[^"]*"([^>]*)>/g, function(m, a, b){
+    return html.replace(/<a\b([^>]*?)\bhref="(?:tel:|sms:|https:\/\/wa\.me\/|https:\/\/instagram\.com\/)[^"]*"([^>]*)>/g, function(m, a, b){
       var tag = a + ' href="#" ' + b, kind = 'phone';
       if(/call-btn/.test(tag)) kind = 'call';
       else if(/whatsapp-btn|sms-btn/.test(tag)) kind = 'msg';
+      else if(/insta-btn/.test(tag)) kind = 'insta';
       tag = /class="/.test(tag) ? tag.replace('class="', 'class="nx-gate ') : tag + ' class="nx-gate"';
       return '<a ' + tag + ' data-lock="' + kind + '">';
     });
@@ -13429,6 +13430,7 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
     call:"برای تماس با کسب‌وکار وارد شوید یا ثبت‌نام کنید.",
     phone:"برای دیدن شماره کامل وارد شوید یا ثبت‌نام کنید.",
     msg:"برای ارسال واتساپ یا پیامک وارد شوید یا ثبت‌نام کنید.",
+    insta:"برای دیدن صفحه اینستاگرام وارد شوید یا ثبت‌نام کنید.",
     review:"برای ثبت نظر وارد شوید یا ثبت‌نام کنید."
   };
   document.addEventListener("click", function(e){
