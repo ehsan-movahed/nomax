@@ -2830,7 +2830,12 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
     
       <div class="field" id="f-address">
         <label>آدرس</label>
-        <textarea id="businessAddress" placeholder="آدرس کسب‌وکار"></textarea>
+        <div id="addressCityPrefix" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;align-items:center">
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--primary-50);color:var(--primary-700);border:1px solid var(--primary-100);font-size:12.5px;font-weight:800">📍 خوزستان، بهبهان</span>
+          <span style="font-size:12px;color:var(--text-3);line-height:1.7">این بخش ثابت است؛ فقط جزئیات خیابان و پلاک را بنویسید.</span>
+        </div>
+        <textarea id="businessAddress" placeholder="مثلاً: خیابان شهید نحوی، بعد از قنادی فارس"></textarea>
+        <div class="hint">نیازی به نوشتن «بهبهان» نیست. برای مسیریابی دقیق‌تر، موقعیت روی نقشه را هم ثبت کنید.</div>
       </div>
 
       <div class="field" id="f-location">
@@ -7789,21 +7794,56 @@ function getTimeAgo(ts){
     }, 1800);
   }
   
-  function handleMap(event, address){
-    event.preventDefault();
+  function nxNormalizeStreetAddress(addr){
+    var s = String(addr || "").trim();
+    if(!s) return "";
+    /* حذف تکرار شهر/استان از متن کاربر تا در کوئری نقشه قاطی نشود */
+    s = s.replace(/[،,]+/g, "،");
+    s = s.replace(/\s+/g, " ").trim();
+    s = s.replace(/^(استان\s*)?خوزستان\s*[،,]?\s*/i, "");
+    s = s.replace(/^بهبهان\s*[،,]?\s*/i, "");
+    s = s.replace(/[،,]\s*(استان\s*)?خوزستان\s*$/i, "");
+    s = s.replace(/[،,]\s*بهبهان\s*$/i, "");
+    s = s.replace(/\s*بهبهان\s*/gi, " ");
+    s = s.replace(/\s*خوزستان\s*/gi, " ");
+    s = s.replace(/[،,]\s*[،,]+/g, "،");
+    s = s.replace(/^\s*[،,]\s*|[،,]\s*$/g, "");
+    s = s.replace(/\s+/g, " ").trim();
+    return s;
+  }
+  function nxBuildMapQuery(address, lat, lng){
+    if(Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))){
+      return { kind:"coords", query: Number(lat) + "," + Number(lng), label: Number(lat).toFixed(5) + ", " + Number(lng).toFixed(5) };
+    }
+    var street = nxNormalizeStreetAddress(address);
+    /* ترتیب درست برای موتورهای نقشه: استان ← شهر ← جزئیات */
+    var q = street ? ("خوزستان، بهبهان، " + street) : "خوزستان، بهبهان";
+    return { kind:"text", query: q, label: q };
+  }
+  function handleMap(event, address, lat, lng){
+    if(event && event.preventDefault) event.preventDefault();
+    /* پشتیبانی از حالت قدیمی __coords__ */
     var coordMatch = /^__coords__\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)$/.exec(String(address||""));
-    var fullAddr = coordMatch ? (coordMatch[1] + "," + coordMatch[2]) : (address + "، بهبهان، خوزستان");
-    var encoded = encodeURIComponent(fullAddr);
+    if(coordMatch){ lat = coordMatch[1]; lng = coordMatch[2]; address = ""; }
+    var built = nxBuildMapQuery(address, lat, lng);
+    var encoded = encodeURIComponent(built.query);
     var ua = navigator.userAgent || "";
     var isAndroid = /android/i.test(ua);
     var isIOS = /iphone|ipad|ipod/i.test(ua);
-  
-    if(isAndroid){ showMapChooser(fullAddr, encoded); return; }
+    if(isAndroid){ showMapChooser(built.label, encoded); return; }
     var url;
-    if(isIOS) url = "https://maps.apple.com/?q=" + encoded;
-    else url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+    if(built.kind === "coords"){
+      if(isIOS) url = "https://maps.apple.com/?ll=" + built.query + "&q=" + encodeURIComponent("موقعیت کسب‌وکار");
+      else url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+    } else {
+      if(isIOS) url = "https://maps.apple.com/?q=" + encoded;
+      else url = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+    }
     window.open(url, "_blank", "noopener");
   }
+  window.handleMap = handleMap;
+  window.nxBuildMapQuery = nxBuildMapQuery;
+  window.nxNormalizeStreetAddress = nxNormalizeStreetAddress;
   
   function showMapChooser(fullAddr, encoded){
     var old = document.getElementById("mapChooser");
@@ -8777,7 +8817,7 @@ function wrapAdmin(fnName){
       }
 
       actionsHtml +=
-        '<a class="action-btn map-btn" href="geo:0,0?q=' + encodeURIComponent(b.address + '، بهبهان') + '" target="_blank" rel="noopener" title="مسیریابی" onclick="handleMap(event, \'' + esc(b.address).replace(/'/g,"\\'") + '\')">' +
+        '<a class="action-btn map-btn" href="geo:0,0?q=' + encodeURIComponent((window.nxBuildMapQuery?window.nxBuildMapQuery(b.address, b.location&&b.location.lat, b.location&&b.location.lng).query:(b.address||'')+', بهبهان')) + '" target="_blank" rel="noopener" title="مسیریابی" onclick="handleMap(event, \'' + esc(b.address||'').replace(/'/g,"\\'") + '\', ' + (b.location&&Number.isFinite(Number(b.location.lat))?Number(b.location.lat):'null') + ', ' + (b.location&&Number.isFinite(Number(b.location.lng))?Number(b.location.lng):'null') + ')">' +
           '<svg viewBox="0 0 24 24" fill="currentColor" style="width:22px;height:22px;display:block;flex-shrink:0"><path d="M12 2.5c-.4 0-.8.2-1 .6L4.6 18.4c-.3.7.4 1.4 1.1 1.1l5.8-2.6c.3-.1.7-.1 1 0l5.8 2.6c.7.3 1.4-.4 1.1-1.1L13 3.1c-.2-.4-.6-.6-1-.6z"/></svg>' +
         '</a>';
 
@@ -10482,7 +10522,7 @@ updateStats();
     var rating = b ? getBusinessRating(b.id) : {count:0, avg:0};
     var k = "o"+o.id, isOpen = openKeys[k] === true || (openKeys[k] === undefined && !!o.selected);
     var callA = (b && b.phone) ? '<a class="call-btn nx-offer-action" data-offer-action="call" style="text-decoration:none" href="tel:'+esc(cleanPhone(b.phone))+'">☎ تماس</a>' : "";
-    var mapA = (b && b.address) ? '<a class="action-btn map-btn nx-offer-action" data-offer-action="map" style="text-decoration:none" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((b.address||"")+"، بهبهان")+'" target="_blank" rel="noopener">🧭 مسیر</a>' : "";
+    var mapA = (b && b.address) ? '<a class="action-btn map-btn nx-offer-action" data-offer-action="map" style="text-decoration:none" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((window.nxBuildMapQuery?window.nxBuildMapQuery(b.address, b.location&&b.location.lat, b.location&&b.location.lng).query:(b.address||"")+", بهبهان"))+'" target="_blank" rel="noopener">🧭 مسیر</a>' : "";
     var bizName=b?esc(b.name):"کسب‌وکار", bizLoc=b?esc(b.address||"مکان ثبت نشده"):"مکان ثبت نشده";
     return '<details class="nx-acc nx-offer-card'+(o.selected?' offer-chosen':'')+'" data-k="'+esc(k)+'"><summary class="nx-offer-summary" data-biz-detail="'+esc(String(o.business_id))+'">'+
       (rank?'<span class="nx-rank">'+toFa(rank)+'</span>':'')+'<span class="nx-offer-main"><strong>🏪 '+bizName+'</strong><small>📍 '+bizLoc+'</small></span>'+
@@ -10594,7 +10634,7 @@ h += offers.map(function(o,i){
             (penOf(o.business_id)>0?'<div class="nx-warn" style="display:inline-block">⚠️ سابقه‌ی عدم پاسخ‌گویی</div>':'')+
             '<div class="snp-btns">'+
               (b&&b.phone?'<a class="snp-call" href="tel:'+esc(cleanPhone(b.phone))+'">☎ تماس</a>':'')+
-              (b&&b.address?'<a class="snp-map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((b.address||"")+"، بهبهان")+'">🧭 مسیر</a>':'')+
+              (b&&b.address?'<a class="snp-map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((window.nxBuildMapQuery?window.nxBuildMapQuery(b.address, b.location&&b.location.lat, b.location&&b.location.lng).query:(b.address||"")+", بهبهان"))+'">🧭 مسیر</a>':'')+
               '<button type="button" class="snp-pick" data-pick="'+esc(o.id)+'">✓ انتخاب این پیشنهاد</button>'+
             '</div></div></details>';
       }).join("");
@@ -12277,7 +12317,7 @@ $("nxaLPass").value=""; $("nxaP1").value=""; $("nxaP2").value=""; $("nxaCode").v
     var rating=getBusinessRating(b.id)||{avg:0,count:0};
     var loc=b.location&&Number.isFinite(Number(b.location.lat))&&Number.isFinite(Number(b.location.lng))
       ? '<a class="action-btn map-btn" style="text-decoration:none;min-height:44px" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(String(b.location.lat)+","+String(b.location.lng))+'">🧭 مسیر</a>' :
-      (b.address?'<a class="action-btn map-btn" style="text-decoration:none;min-height:44px" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(String(b.address)+"، بهبهان")+'">🧭 مسیر</a>':'');
+      (b.address?'<a class="action-btn map-btn" style="text-decoration:none;min-height:44px" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((window.nxBuildMapQuery?window.nxBuildMapQuery(b.address, b.location&&b.location.lat, b.location&&b.location.lng).query:String(b.address||"")+", بهبهان"))+'">🧭 مسیر</a>':'');
     var phone=b.phone?'<a class="call-btn" style="text-decoration:none;min-height:44px" href="tel:'+escx(cleanPhone(b.phone))+'">☎ تماس</a>':'';
     var tags=Array.isArray(b.tags)?b.tags.slice(0,12).map(function(t){return '<span class="tag-mini">'+escx(t)+'</span>';}).join(''):'';
     var html='<div class="modal-overlay show" id="nxOfferBizModal"><div class="modal" style="max-width:720px;width:min(94vw,720px);max-height:90vh;overflow:auto"><button type="button" class="modal-close" id="nxOfferBizClose">×</button>'+
