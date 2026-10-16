@@ -18460,3 +18460,449 @@ button.primary,
   });
 })();
 </script>
+
+<!-- ========== NOMAX v5: clean accordion header + popular cards rating placement ========== -->
+<style id="nomax-acc-popular-v5">
+/* Remove chevron + phone from accordion summary (space for title) */
+details.biz-accordion > summary.biz-acc-summary .biz-acc-chevron,
+details.biz-accordion > summary.biz-acc-summary .biz-acc-qcall,
+details.biz-accordion > summary .biz-quick-call,
+details.biz-accordion > summary a.biz-acc-qcall{
+  display: none !important;
+}
+details.biz-accordion > summary.biz-acc-summary{
+  gap: 10px !important;
+  min-height: 68px !important;
+  padding: 11px 14px !important;
+}
+.biz-acc-name{
+  font-size: 14.5px !important;
+  line-height: 1.5 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+  max-width: 100% !important;
+}
+.biz-acc-name .license-badge,
+.biz-acc-name .license-badge-icon{
+  display: inline-flex !important;
+  vertical-align: middle !important;
+}
+.biz-acc-main{ gap: 4px !important; }
+.biz-acc-meta{
+  flex-wrap: nowrap !important;
+  overflow: hidden !important;
+}
+.biz-acc-meta .biz-acc-addr{
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+/* ----- Popular / top mini cards: no rating on photo ----- */
+.nx-mini-image .nx-ava-pill,
+.nx-mini-image .nx-mini-pill,
+.nx-mini-image .nx-rating-pill,
+.nx-mini-biz .nx-mini-pill{
+  display: none !important;
+}
+.nx-mini-biz{
+  border-radius: 18px !important;
+  border: 1px solid var(--border, #e7e5e4) !important;
+  box-shadow: 0 4px 16px rgba(15,23,42,.05) !important;
+  background: var(--surface, #fff) !important;
+  overflow: hidden !important;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
+}
+.nx-mini-biz:hover{
+  border-color: #99f6e4 !important;
+  box-shadow: 0 10px 26px rgba(13,148,136,.12) !important;
+  transform: translateY(-2px) !important;
+}
+.nx-mini-image{
+  height: 100px !important;
+  background: linear-gradient(145deg, #e8f7f4, #f5f5f4) !important;
+  position: relative !important;
+}
+.nx-mini-body{
+  padding: 10px 11px 12px !important;
+}
+.nx-mini-name{
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  margin-bottom: 6px !important;
+  line-height: 1.45 !important;
+}
+.nx-mini-meta{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+  min-height: 20px !important;
+  font-size: 11.5px !important;
+}
+.nx-mini-meta .nx-mini-stars{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  font-weight: 850 !important;
+  color: #b45309 !important;
+  direction: ltr !important;
+}
+.nx-mini-meta .nx-mini-stars .s{ color: #f59e0b !important; }
+.nx-mini-meta .nx-mini-count{
+  margin-right: auto !important;
+  color: var(--text-3, #a8a29e) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+}
+.nx-mini-meta .nx-mini-new{
+  color: var(--primary-700, #0f766e) !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  background: rgba(13,148,136,.1) !important;
+  border-radius: 100px !important;
+  padding: 2px 8px !important;
+}
+.nx-mini-action{
+  margin-top: 0 !important;
+  min-height: 36px !important;
+  border-radius: 11px !important;
+  font-weight: 850 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+@media(max-width:480px){
+  .nx-mini-image{ height: 88px !important; }
+}
+</style>
+
+<script id="nomax-acc-popular-v5-js">
+(function(){
+  'use strict';
+
+  function faNum(n){
+    if(typeof toFa === 'function') return toFa(String(n));
+    return String(n).replace(/\d/g, function(d){ return '۰۱۲۳۴۵۶۷۸۹'[d]; });
+  }
+
+  /* Strip chevron + phone from accordion headers */
+  function cleanAccordionHeaders(){
+    document.querySelectorAll('details.biz-accordion').forEach(function(det){
+      det.querySelectorAll('.biz-acc-chevron, .biz-acc-qcall, summary > a.biz-acc-qcall, summary .biz-quick-call').forEach(function(el){
+        try{ el.remove(); }catch(e){}
+      });
+    });
+  }
+
+  /* Rebuild mini-card meta: stars left-ish, review count bottom-right */
+  function polishMiniCards(){
+    document.querySelectorAll('.nx-mini-biz').forEach(function(card){
+      /* remove any rating pill left on image */
+      card.querySelectorAll('.nx-mini-image .nx-ava-pill, .nx-mini-image .nx-mini-pill').forEach(function(p){
+        try{ p.remove(); }catch(e){}
+      });
+
+      var meta = card.querySelector('.nx-mini-meta');
+      if(!meta || meta.dataset.nxV5) return;
+      meta.dataset.nxV5 = '1';
+
+      var id = card.getAttribute('data-nx-biz');
+      var avg = 0, count = 0;
+      try{
+        if(id && typeof getBusinessRating === 'function'){
+          var r = getBusinessRating(id);
+          if(r){ avg = Number(r.avg) || 0; count = Number(r.count) || 0; }
+        }
+      }catch(e){}
+
+      if(count > 0 && avg > 0){
+        meta.innerHTML =
+          '<span class="nx-mini-stars" aria-label="امتیاز '+faNum(avg.toFixed(1))+'"><span class="s">★</span> '+faNum(avg.toFixed(1))+'</span>'+
+          '<span class="nx-mini-count">'+faNum(count)+' نظر</span>';
+      } else {
+        meta.innerHTML = '<span class="nx-mini-new">جدید</span>';
+      }
+    });
+  }
+
+  /* Prevent future accordion patch from re-adding chevron/phone:
+     override by observing and stripping */
+  function boot(){
+    cleanAccordionHeaders();
+    polishMiniCards();
+    var root = document.getElementById('results') || document.body;
+    var home = document.getElementById('nxHomeDiscover') || document.body;
+    var mo = new MutationObserver(function(){
+      cleanAccordionHeaders();
+      polishMiniCards();
+    });
+    try{
+      mo.observe(root, { childList: true, subtree: true });
+      mo.observe(home, { childList: true, subtree: true });
+    }catch(e){}
+    setInterval(function(){
+      cleanAccordionHeaders();
+      polishMiniCards();
+    }, 2000);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+
+<!-- ========== RESTORE + KEEP: map z-index, distance, settings, accordion clean, popular ========== -->
+<style id="nomax-restore-critical">
+#nxMapModal{
+  z-index: 200000 !important;
+  position: fixed !important;
+  background: rgba(15,23,42,.55) !important;
+  backdrop-filter: blur(8px) !important;
+  align-items: flex-end !important;
+  padding: 0 !important;
+}
+#nxMapModal.show{ display: flex !important; }
+.nx-map-sheet{
+  width: 100% !important;
+  max-width: min(560px, 100%) !important;
+  margin: 0 auto !important;
+  max-height: min(94vh, 780px) !important;
+  border-radius: 24px 24px 0 0 !important;
+  box-shadow: 0 -12px 48px rgba(0,0,0,.28) !important;
+}
+@media(min-width:640px){
+  #nxMapModal{ align-items: center !important; padding: 16px !important; }
+  .nx-map-sheet{ border-radius: 24px !important; max-height: min(88vh, 720px) !important; }
+}
+#nxMapCanvas{ height: min(52vh, 400px) !important; border-radius: 18px !important; margin: 0 12px !important; }
+.nx-map-actions button{ min-height: 50px !important; border-radius: 16px !important; font-weight: 900 !important; }
+.nx-map-confirm{
+  background: linear-gradient(135deg,#0d9488,#0f766e) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 22px rgba(13,148,136,.3) !important;
+}
+.nx-pulse-marker{ width: 56px; height: 56px; margin-left: -28px; margin-top: -28px; position: relative; }
+.nx-pulse-marker .nx-core{
+  position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px;
+  border-radius: 50%; background: #0d9488; border: 3.5px solid #fff;
+  box-shadow: 0 3px 12px rgba(13,148,136,.5); z-index: 3;
+}
+.nx-pulse-marker .nx-ring{
+  position: absolute; left: 50%; top: 50%; border-radius: 50%;
+  border: 2px solid rgba(13,148,136,.45); transform: translate(-50%,-50%);
+  animation: nxPulseRing 2.2s ease-out infinite; pointer-events: none;
+}
+.nx-pulse-marker .nx-ring.r1{ width: 32px; height: 32px; }
+.nx-pulse-marker .nx-ring.r2{ width: 48px; height: 48px; animation-delay: .4s; }
+.nx-pulse-marker .nx-ring.r3{ width: 64px; height: 64px; animation-delay: .8s; }
+@keyframes nxPulseRing{
+  0%{ opacity: .85; transform: translate(-50%,-50%) scale(.55); }
+  100%{ opacity: 0; transform: translate(-50%,-50%) scale(1.35); }
+}
+.nx-leaflet-pulse{ background: transparent !important; border: 0 !important; }
+.nx-dist-badge{
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11.5px; font-weight: 850; color: #0f766e;
+  background: rgba(13,148,136,.1); border: 1px solid rgba(13,148,136,.22);
+  border-radius: 100px; padding: 3px 9px; white-space: nowrap;
+}
+#npAccount .nx-prof{
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  overflow: hidden; box-shadow: 0 4px 20px rgba(15,23,42,.06); margin-bottom: 14px;
+}
+#npAccount .nx-prof-banner{
+  height: 72px; background: linear-gradient(135deg,#0f766e,#14b8a6 55%,#0d9488);
+}
+#npAccount .nx-prof-body{ padding: 0 16px 16px; margin-top: -28px; position: relative; }
+#npAccount .nx-prof-ava{
+  width: 64px; height: 64px; border-radius: 18px;
+  background: linear-gradient(135deg,#0d9488,#0f766e); color: #fff;
+  font-size: 26px; font-weight: 900; display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--surface); box-shadow: 0 6px 16px rgba(13,148,136,.3);
+}
+#npAccount .nx-prof-name{ margin-top: 12px; font-size: 17px; font-weight: 900; }
+#npAccount .nx-prof-phone{
+  margin-top: 4px; font-size: 14.5px; font-weight: 800; color: var(--primary-700);
+  direction: ltr; text-align: right;
+}
+#npAccount .nx-prof-meta{ margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+#npAccount .nx-prof-row{
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px;
+  background: var(--muted); border: 1px solid var(--border); font-size: 13px;
+}
+#npAccount .nx-prof-row .ic{
+  width: 34px; height: 34px; border-radius: 10px; background: var(--surface);
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  border: 1px solid var(--border); flex-shrink: 0;
+}
+#npAccount .nx-prof-row .lbl{ font-size: 11px; color: var(--text-3); font-weight: 700; }
+#npAccount .nx-prof-row .val{ font-weight: 750; direction: ltr; text-align: right; word-break: break-all; }
+</style>
+<script id="nomax-restore-critical-js">
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function toFaDigits(s){
+    if(typeof toFa==='function') return toFa(String(s));
+    return String(s==null?'':s).replace(/\d/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'[d];});
+  }
+  function parseLoc(raw){
+    if(!raw) return null;
+    if(typeof raw==='string'){ try{ raw=JSON.parse(raw); }catch(e){ return null; } }
+    var lat, lng, acc;
+    if(Array.isArray(raw) && raw.length>=2){
+      var a=Number(raw[0]), b=Number(raw[1]);
+      if(Math.abs(a)<=90 && Math.abs(b)<=180 && Math.abs(b)>Math.abs(a)){ lat=a; lng=b; }
+      else { lng=a; lat=b; }
+    } else if(typeof raw==='object'){
+      lat=Number(raw.lat!=null?raw.lat:(raw.latitude!=null?raw.latitude:NaN));
+      lng=Number(raw.lng!=null?raw.lng:(raw.lon!=null?raw.lon:(raw.longitude!=null?raw.longitude:NaN)));
+      acc=raw.accuracy!=null?Number(raw.accuracy):null;
+      if(isFinite(lat)&&isFinite(lng)&&lat>40&&lng<40){ var t=lat; lat=lng; lng=t; }
+    }
+    if(!isFinite(lat)||!isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180||(lat===0&&lng===0)) return null;
+    return { lat:lat, lng:lng, accuracy: isFinite(acc)?acc:null };
+  }
+  function distMeters(a,b){
+    if(!a||!b) return null;
+    var R=6371008.8, toR=Math.PI/180;
+    var φ1=a.lat*toR, φ2=b.lat*toR, Δφ=(b.lat-a.lat)*toR, Δλ=(b.lng-a.lng)*toR;
+    var s=Math.sin(Δφ/2)*Math.sin(Δφ/2)+Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)*Math.sin(Δλ/2);
+    return 2*R*Math.asin(Math.min(1,Math.sqrt(s)));
+  }
+  function formatDist(meters, userAcc){
+    if(meters==null||!isFinite(meters)) return '';
+    var m=Math.max(0,meters);
+    var approx=(userAcc!=null&&isFinite(userAcc)&&userAcc>80);
+    var prefix=approx?'حدود ':'';
+    if(m<1000){
+      var rounded=m<100?Math.round(m/5)*5:Math.round(m/10)*10;
+      if(rounded<5) rounded=Math.round(m);
+      return prefix+toFaDigits(rounded)+' متر';
+    }
+    var km=m/1000;
+    if(km<10) return prefix+toFaDigits(km.toFixed(1))+' کیلومتر';
+    return prefix+toFaDigits(Math.round(km))+' کیلومتر';
+  }
+  function installDist(){
+    window.nxParseLoc=parseLoc;
+    window.nxDistMeters=function(b){
+      var u=window.nxUserLoc?parseLoc(window.nxUserLoc):null;
+      if(!u||!b) return null;
+      var bl=parseLoc(b.location||b);
+      return bl?distMeters(u,bl):null;
+    };
+    window.nxDistKm=function(b){ var m=window.nxDistMeters(b); return m==null?null:m/1000; };
+    window.nxDistLabel=function(dKm){
+      if(dKm==null||dKm===undefined) return '';
+      var acc=window.nxUserLoc&&window.nxUserLoc.accuracy!=null?Number(window.nxUserLoc.accuracy):null;
+      return formatDist(Number(dKm)*1000, acc);
+    };
+    window.nxKm=function(a,b){
+      var pa=parseLoc(a), pb=parseLoc(b);
+      return (pa&&pb)?distMeters(pa,pb)/1000:null;
+    };
+    window.nxDistTag=function(b){
+      if(typeof nxActiveTab==='undefined'||nxActiveTab!=='nearest') return '';
+      var m=window.nxDistMeters(b);
+      if(m==null) return '';
+      return ' <span class="nx-dist-badge">📍 '+formatDist(m, window.nxUserLoc&&window.nxUserLoc.accuracy)+'</span>';
+    };
+  }
+  function elevateMap(){
+    var m=$('nxMapModal');
+    if(!m) return;
+    if(m.parentNode!==document.body) document.body.appendChild(m);
+    m.style.zIndex='200000';
+    m.style.position='fixed';
+  }
+  function hookMap(){
+    if(typeof window.nxOpenMapPicker!=='function'||window.__nxMapRestored) return;
+    window.__nxMapRestored=true;
+    var _o=window.nxOpenMapPicker;
+    window.nxOpenMapPicker=function(){
+      var r=_o.apply(this,arguments);
+      setTimeout(elevateMap,20);
+      setTimeout(function(){ try{ if(window.__nxLeafletMap) window.__nxLeafletMap.invalidateSize(true);}catch(e){} },150);
+      setTimeout(function(){ try{ if(window.__nxLeafletMap) window.__nxLeafletMap.invalidateSize(true);}catch(e){} },400);
+      return r;
+    };
+  }
+  function pulseMarkers(){
+    if(typeof L==='undefined'||!L.marker||L.marker.__nxPulse) return;
+    var _m=L.marker;
+    L.marker=function(latlng,options){
+      options=options||{};
+      if(!options.icon){
+        try{
+          options.icon=L.divIcon({
+            className:'nx-leaflet-pulse',
+            html:'<div class="nx-pulse-marker"><span class="nx-ring r1"></span><span class="nx-ring r2"></span><span class="nx-ring r3"></span><span class="nx-core"></span></div>',
+            iconSize:[56,56], iconAnchor:[28,28]
+          });
+        }catch(e){}
+      }
+      return _m.call(L,latlng,options);
+    };
+    L.marker.__nxPulse=true;
+  }
+  function getUser(){
+    try{ if(typeof window.currentOwner==='function'){ var u=window.currentOwner(); if(u) return u; } }catch(e){}
+    try{ if(window.nomaxAuth&&window.nomaxAuth.user) return window.nomaxAuth.user(); }catch(e){}
+    return null;
+  }
+  function renderSettings(){
+    var a=$('npAccount'), ac=$('npActions');
+    if(!a) return;
+    var u=getUser();
+    if(!u){ a.innerHTML=''; if(ac) ac.innerHTML=''; return; }
+    var meta=u.user_metadata||{}, name=u.name||meta.full_name||meta.name||(u.email||'').split('@')[0]||'کاربر';
+    var phone=String(u.phone||meta.phone||meta.mobile||'').replace(/\D/g,'');
+    if(phone.length===10&&phone.charAt(0)==='9') phone='0'+phone;
+    var nid=String(meta.national_id||meta.nationalId||meta.nid||u.national_id||'').replace(/\D/g,'');
+    var verified=!!(u.app_metadata&&u.app_metadata.id_verified)||!!meta.id_verified;
+    var admin=false; try{ if(window.nomaxAuth&&window.nomaxAuth.admin) admin=!!window.nomaxAuth.admin(); }catch(e){}
+    var phoneShow=phone?toFaDigits(phone):'ثبت نشده';
+    var nidShow=nid?toFaDigits(nid):'پس از احراز هویت نمایش داده می‌شود';
+    a.innerHTML='<div class="nx-prof"><div class="nx-prof-banner"></div><div class="nx-prof-body">'+
+      '<div class="nx-prof-ava">'+esc((name||'؟').charAt(0))+'</div>'+
+      '<div class="nx-prof-name">'+esc(name)+(verified?' <span style="font-size:11px;color:#047857;font-weight:800">✓ تأیید شده</span>':'')+'</div>'+
+      '<div class="nx-prof-phone">'+(phone?'<a href="tel:'+esc(phone)+'" style="color:inherit;text-decoration:none" dir="ltr">'+esc(phoneShow)+'</a>':'<span style="color:var(--text-3)">شماره ثبت نشده</span>')+'</div>'+
+      '<div class="nx-prof-meta">'+
+        '<div class="nx-prof-row"><span class="ic">📱</span><div><div class="lbl">شماره موبایل</div><div class="val" dir="ltr">'+esc(phoneShow)+'</div></div></div>'+
+        (u.email?'<div class="nx-prof-row"><span class="ic">✉️</span><div><div class="lbl">ایمیل</div><div class="val">'+esc(u.email)+'</div></div></div>':'')+
+        '<div class="nx-prof-row"><span class="ic">🪪</span><div><div class="lbl">کد ملی</div><div class="val" dir="ltr">'+esc(nidShow)+'</div></div></div>'+
+      '</div></div></div>';
+    if(ac){
+      ac.innerHTML=(admin?'<button type="button" class="np-act menu-btn" id="npAdmin">🛡 پنل مدیریت</button>':'')+
+        '<button type="button" class="np-act menu-btn danger" id="npOut" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca">🚪 خروج از حساب</button>';
+      var ad=$('npAdmin'); if(ad) ad.onclick=function(){ try{ if(window.nomaxPanel) window.nomaxPanel.close(); }catch(e){} if(window.openAdminPanel) openAdminPanel(); };
+      var out=$('npOut'); if(out) out.onclick=function(){ try{ if(window.nomaxPanel) window.nomaxPanel.close(); }catch(e){} if(window.nomaxAuth) nomaxAuth.signOut(); };
+    }
+  }
+  function watchSettings(){
+    document.addEventListener('click',function(e){
+      if(e.target&&e.target.closest&&e.target.closest('[data-tab="settings"]')) setTimeout(renderSettings,50);
+    },true);
+    setInterval(function(){
+      var pane=$('npSettings');
+      if(pane&&pane.classList.contains('active')&&!$('npAccount')?.querySelector('.nx-prof')) renderSettings();
+    },1500);
+  }
+  function boot(){
+    installDist();
+    elevateMap();
+    hookMap();
+    pulseMarkers();
+    watchSettings();
+    setInterval(function(){ elevateMap(); hookMap(); pulseMarkers(); },2500);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+})();
+</script>
