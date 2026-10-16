@@ -13190,7 +13190,9 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
         'already_owner_of_another': 'هر حساب فقط می‌تواند یک کسب‌وکار داشته باشد. برای تغییر، با پشتیبانی تماس بگیر.',
         'user_rate_limited': 'شما در ۲۴ ساعت گذشته یک درخواست مالکیت فرستاده‌اید. فردا دوباره تلاش کنید.',
         'business_rate_limited': 'برای این کسب‌وکار در ۲۴ ساعت گذشته چند بار درخواست ارسال شده. کمی بعد تلاش کنید.',
-        'rate_limited': 'تعداد درخواست‌های تو زیاد است. کمی بعد دوباره تلاش کن.'
+        'rate_limited': 'تعداد درخواست‌های تو زیاد است. کمی بعد دوباره تلاش کن.',
+        'landline_manual_review': 'شماره‌ی این کسب‌وکار ثابت است و کد پیامکی نمی‌گیرد. با پشتیبانی تماس بگیر.',
+        'business_not_approved': 'این کسب‌وکار هنوز تأیید نشده است.'
       };
       msg(reasons[d.reason] || 'امکان ثبت درخواست نیست.');
       btn.style.display = 'none';
@@ -13286,16 +13288,27 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
         
         msg('در حال ارسال کد...');
         try{
-          var r = await fetch(SUPABASE_URL + '/functions/v1/request-otp', {
+          var sess = await window.__nomaxSupabaseClient.auth.getSession();
+          var tok = sess && sess.data && sess.data.session ? sess.data.session.access_token : '';
+          if(!tok){ msg('ابتدا وارد حساب شو.'); return; }
+          var r = await fetch(SUPABASE_URL + '/functions/v1/send-claim-otp', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
-            body: JSON.stringify({ phone: state.phoneRaw })
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_KEY,
+              'Authorization': 'Bearer ' + tok
+            },
+            body: JSON.stringify({ business_id: state.businessId })
           });
-          // شماره‌ی واقعی را باید از یک منبع دیگر بگیریم — از state.business_phone_raw استفاده می‌کنیم
-          // اما raw در پاسخ create_ownership_request هم هست. اینجا از state نگه می‌داریم.
           var d = await r.json();
           if(!r.ok || d.error){
-            msg(d.error || 'ارسال کد ناموفق بود.'); return;
+            var sendErr = {
+              'login_required': 'ابتدا وارد حساب شو.',
+              'no_pending_request': 'درخواستت منقضی شده. دوباره از اول شروع کن.',
+              'too_many_sends': 'تعداد ارسال کد برای این درخواست تمام شد. بعداً دوباره تلاش کن.',
+              'wait_60_seconds': 'کمی صبر کن؛ ۶۰ ثانیه بین دو ارسال فاصله لازم است.'
+            };
+            msg(sendErr[d.error] || 'ارسال کد ناموفق بود.'); return;
           }
           msg('کد به شماره‌ی ' + state.phoneMasked + ' فرستاده شد.', true);
           step2();
@@ -13327,7 +13340,9 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
               'expired': 'کد منقضی شده. دوباره تلاش کن.',
               'wrong_or_expired_code': 'کد اشتباه است یا منقضی شده.',
               'has_owner_now': 'این کسب‌وکار همین حالا مالک پیدا کرد.',
-              'already_owner_of_another': 'هر حساب فقط یک کسب‌وکار می‌تواند داشته باشد.'
+              'already_owner_of_another': 'هر حساب فقط یک کسب‌وکار می‌تواند داشته باشد.',
+              'too_many_attempts': 'تعداد تلاش‌های اشتباه تمام شد. دوباره از اول شروع کن.',
+              'business_not_approved': 'این کسب‌وکار هنوز تأیید نشده است.'
             };
             msg(reasons[d.reason] || 'تأیید انجام نشد.');
             return;
