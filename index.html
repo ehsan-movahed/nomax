@@ -4763,6 +4763,7 @@ function migrateOldBusinesses(){
   var editingReviewId = null;
   
   function openReviewModal(businessId){
+    if(window.nxIsGuest && window.nxIsGuest()){ window.nxRequireLogin('برای ثبت نظر وارد شوید یا ثبت‌نام کنید.'); return; }
     var b = getBusinessById(businessId);
     if(!b) return;
   
@@ -5750,7 +5751,7 @@ function scoreBusiness(b, q){
     qDigits = cleanPhone(document.getElementById("searchInput") ? document.getElementById("searchInput").value : q);
   }
   var phoneDigits = cleanPhone(b.phone || "");
-  if(qDigits && phoneDigits){
+  if(qDigits && phoneDigits && !(window.nxIsGuest && window.nxIsGuest())){
     if(phoneDigits === qDigits) score += 140;
     else if(qDigits.length >= 4 && phoneDigits.indexOf(qDigits) !== -1) score += 120;
     else if(qDigits.length >= 7 && qDigits.indexOf(phoneDigits) !== -1) score += 100;
@@ -7620,7 +7621,7 @@ function getTimeAgo(ts){
     var b = getBusinessById(id);
     if(!b) return;
   
-    var text = "📍 " + b.name + "\n🏷️ " + b.type + "\n📞 " + b.phone + "\n🗺️ " + b.address + "\n\n🔎 پیدا شده در نومکس";
+    var text = "📍 " + b.name + "\n🏷️ " + b.type + "\n📞 " + (window.nxPhoneForShare?window.nxPhoneForShare(b.phone):b.phone) + "\n🗺️ " + b.address + "\n\n🔎 پیدا شده در نومکس";
   
     if(navigator.share){
       navigator.share({ title: b.name, text: text }).catch(function(err){});
@@ -7727,12 +7728,12 @@ function getTimeAgo(ts){
     var b = getBusinessById(businessId);
     if(!b) return;
     currentQRBusinessId = businessId;
-    var qrText = "🏪 " + b.name + "\n🏷️ " + b.type + "\n📞 " + b.phone + "\n📍 " + b.address + "\n━━━━━━━━━━━━━\n🔎 نومکس";
+    var qrText = "🏪 " + b.name + "\n🏷️ " + b.type + "\n📞 " + (window.nxPhoneForShare?window.nxPhoneForShare(b.phone):b.phone) + "\n📍 " + b.address + "\n━━━━━━━━━━━━━\n🔎 نومکس";
     var encoded = encodeURIComponent(qrText);
     var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=" + encoded;
     document.getElementById("qrImage").src = qrUrl;
     document.getElementById("qrName").textContent = b.name;
-    document.getElementById("qrInfo").textContent = b.type + " • " + b.phone;
+    document.getElementById("qrInfo").textContent = b.type + " • " + (window.nxPhoneForShare?window.nxPhoneForShare(b.phone):b.phone);
     document.getElementById("qrModal").classList.add("show");
   }
   function closeQRModal(){
@@ -7743,7 +7744,7 @@ function getTimeAgo(ts){
     if(!currentQRBusinessId) return;
     var b = getBusinessById(currentQRBusinessId);
     if(!b) return;
-    var qrText = "🏪 " + b.name + "\n🏷️ " + b.type + "\n📞 " + b.phone + "\n📍 " + b.address + "\n━━━━━━━━━━━━━\n🔎 نومکس";
+    var qrText = "🏪 " + b.name + "\n🏷️ " + b.type + "\n📞 " + (window.nxPhoneForShare?window.nxPhoneForShare(b.phone):b.phone) + "\n📍 " + b.address + "\n━━━━━━━━━━━━━\n🔎 نومکس";
     var encoded = encodeURIComponent(qrText);
     var bigUrl = "https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=20&data=" + encoded;
     window.open(bigUrl, "_blank", "noopener,noreferrer");
@@ -8635,8 +8636,9 @@ function wrapAdmin(fnName){
       if(b.verified) badgesHtml+='<span class="verified-badge">✓ تأیید شده</span>';
       badgesHtml+=licenseBadgeHTML(b);
       var actionsHtml = "";
+      var __guest = !!(window.nxIsGuest && window.nxIsGuest());
 
-      if(isMobilePhone(b.phone)){
+      if(__guest ? /^09/.test(cleanPhone(b.phone)) : isMobilePhone(b.phone)){
         actionsHtml +=
           '<a class="action-btn whatsapp-btn" href="https://wa.me/' + cleanPhone(b.phone).replace(/^0/, '98') + '" target="_blank" rel="noopener" title="واتساپ">' +
             '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:22px;height:22px;display:block;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>' +
@@ -8673,7 +8675,7 @@ function wrapAdmin(fnName){
           '<svg viewBox="0 0 24 24" fill="currentColor" style="width:22px;height:22px;display:block;flex-shrink:0"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM13 13h2v2h-2zM15 15h2v2h-2zM13 17h2v2h-2zM17 13h2v2h-2zM19 15h2v2h-2zM17 17h2v2h-2zM19 19h2v2h-2zM15 19h2v2h-2zM13 21h2v2h-2z"/></svg>' +
         '</button>';
 
-      return '<div class="business" style="animation-delay:'+(Math.min(j,8)*0.04)+'s">'+
+      var __html = '<div class="business" style="animation-delay:'+(Math.min(j,8)*0.04)+'s">'+
         '<div class="business-inner">'+
         '<div class="business-head">'+(window.nxRatedAvatar ? window.nxRatedAvatar(b, 64) : avatarHTML(b))+
         '<div class="business-head-text"><h3>'+highlight(b.name,query)+'</h3>'+
@@ -8681,7 +8683,7 @@ function wrapAdmin(fnName){
         '</div></div>'+
         '<div class="business-info">'+
           '<div class="row">📍 <span>'+esc2(b.address||'بهبهان')+'</span>'+nxDistTag(b)+'</div>'+
-          '<div class="row">☎ <a href="tel:'+cleanPhone(b.phone)+'">'+toFa(esc2(b.phone))+'</a></div>'+
+          '<div class="row">☎ <a href="tel:'+cleanPhone(b.phone)+'">'+(__guest ? '<span dir="ltr" style="unicode-bidi:isolate;direction:ltr;display:inline-block">'+toFa(esc2(window.nxMaskPhone(b.phone)))+'</span>' : toFa(esc2(b.phone)))+'</a></div>'+
           '<div class="row">👤 مالک: <span>'+esc2(b.owner||b.ownerName||'—')+'</span></div>'+
         '</div>'+
         (b.about?'<div class="business-about">'+esc2(b.about)+'</div>':'')+(b.discount?'<div class="business-discount">🎁 '+esc2(b.discount)+'</div>':'')+
@@ -8692,6 +8694,7 @@ function wrapAdmin(fnName){
         '</div>'+
         ratingRowHTML(b)+
         '</div>'+'</div>';
+      return __guest ? window.nxLockCard(__html) : __html;
   }
   window.nxBusinessCardHTML = nxCardHTML;
 
@@ -11425,7 +11428,8 @@ main.innerHTML = '<strong class="biz-acc-name">'+esc(title)+'</strong>' +
         var bo = businesses.filter(function(x){ return String(x.id) === String(bizId); })[0];
         if(bo){ var av = document.createElement("span"); av.className = "biz-acc-ava"; av.innerHTML = window.nxRatedAvatar(bo, 44); sum.insertBefore(av, main); }
       }
-      if(tel){var c=document.createElement("a");c.className="biz-quick-call";c.href=tel.getAttribute("href");c.textContent="☎";c.title="تماس سریع";c.addEventListener("click",function(e){e.stopPropagation()});sum.appendChild(c);}
+      if(tel){var c=document.createElement("a");c.className="biz-quick-call";c.href=tel.getAttribute("href");c.innerHTML=(window.NX_PHONE_SVG||"☎");c.title="تماس سریع";c.addEventListener("click",function(e){e.stopPropagation()});sum.appendChild(c);}
+      if(!tel && window.nxIsGuest && window.nxIsGuest()){var lc=document.createElement("button");lc.type="button";lc.className="biz-quick-call nx-gate";lc.setAttribute("data-lock","call");lc.innerHTML=(window.NX_PHONE_SVG||"☎");lc.title="تماس سریع";lc.addEventListener("click",function(e){e.stopPropagation();});sum.appendChild(lc);}
       var isOwnBiz=false;
 try{
   var myBiz=(window.nomaxMyBusinesses&&window.nomaxMyBusinesses())||[];
@@ -13378,6 +13382,118 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
       window.nxOpenOwnershipClaim = open;
     })();
     </script>
+<script>
+/* ===== حالت مهمان + آکاردئون تک‌بازشو ===== */
+(function(){
+  window.NX_PHONE_SVG='<svg class="nx-hc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>';
+  var st=document.createElement("style");st.textContent=".biz-accordion>summary .biz-quick-call{width:34px!important;height:34px!important;flex:0 0 34px!important;border-radius:11px!important;background:var(--c-soft,rgba(20,184,166,.12))!important;color:var(--c,var(--primary-600))!important;box-shadow:inset 0 0 0 1px var(--c-soft,rgba(20,184,166,.18))!important;display:inline-flex!important;align-items:center;justify-content:center;padding:0!important;border:0;cursor:pointer;transition:background .18s,color .18s,transform .18s}.biz-accordion>summary .biz-quick-call:hover{background:var(--c,var(--primary-500))!important;color:#fff!important}.biz-accordion>summary .biz-quick-call:active{transform:scale(.94)}.biz-quick-call .nx-hc{width:17px;height:17px;display:block;stroke-width:1.5} .nx-gate,.nx-gate:focus,.nx-gate:focus-visible,.nx-gate:active{outline:none!important;-webkit-tap-highlight-color:transparent}";document.head.appendChild(st);
+  function user(){ try{ return window.nomaxAuth && window.nomaxAuth.user && window.nomaxAuth.user(); }catch(e){ return null; } }
+  window.nxIsGuest = function(){ return !user(); };
+  function en(p){
+    return String(p||"").replace(/[۰-۹]/g,function(d){return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);}).replace(/[٠-٩]/g,function(d){return "٠١٢٣٤٥٦٧٨٩".indexOf(d);}).replace(/[^\d+]/g,"");
+  }
+  /* فقط چهار رقم اول (پیش‌شماره) دیده می‌شود، بقیه ماسک است */
+  window.nxMaskPhone = function(p){
+    if(String(p||"").indexOf("•") !== -1) return String(p);
+    var s = en(p); if(!s) return "—";
+    var keep = Math.min(4, Math.max(0, s.length-4));
+    return s.slice(0,keep) + new Array(s.length-keep+1).join("•");
+  };
+  window.nxPhoneForShare = function(p){ return window.nxIsGuest() ? window.nxMaskPhone(p) : p; };
+  window.nxLockCard = function(html){
+    return html.replace(/<a\b([^>]*?)\bhref="(?:tel:|sms:|https:\/\/wa\.me\/)[^"]*"([^>]*)>/g, function(m, a, b){
+      var tag = a + ' href="#" ' + b, kind = 'phone';
+      if(/call-btn/.test(tag)) kind = 'call';
+      else if(/whatsapp-btn|sms-btn/.test(tag)) kind = 'msg';
+      tag = /class="/.test(tag) ? tag.replace('class="', 'class="nx-gate ') : tag + ' class="nx-gate"';
+      return '<a ' + tag + ' data-lock="' + kind + '">';
+    });
+  };
+  var pending = null;
+  window.nxRequireLogin = function(reason, el){
+    var id = null, inSheet = false;
+    try{
+      var host = el && el.closest && el.closest("details.biz-accordion, #nxBizSheet, .business");
+      if(host){
+        inSheet = !!host.closest("#nxBizSheet");
+        var sb = host.querySelector('button[onclick^="shareBusiness("]');
+        var m = sb && /shareBusiness\(([^,]+),/.exec(sb.getAttribute("onclick") || "");
+        if(m) id = m[1].replace(/['"\s]/g, "");
+      }
+    }catch(_){}
+    pending = { id:id, sheet:inSheet };
+    if(inSheet && window.nxCloseBusinessSheet) window.nxCloseBusinessSheet();
+    if(window.nomaxAuth && window.nomaxAuth.open) window.nomaxAuth.open({ reason: reason || "برای استفاده از این امکان وارد شوید یا ثبت‌نام کنید." });
+  };
+  var MSG = {
+    call:"برای تماس با کسب‌وکار وارد شوید یا ثبت‌نام کنید.",
+    phone:"برای دیدن شماره کامل وارد شوید یا ثبت‌نام کنید.",
+    msg:"برای ارسال واتساپ یا پیامک وارد شوید یا ثبت‌نام کنید.",
+    review:"برای ثبت نظر وارد شوید یا ثبت‌نام کنید."
+  };
+  document.addEventListener("click", function(e){
+    var el = e.target.closest && e.target.closest(".nx-gate");
+    if(!el) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    window.nxRequireLogin(MSG[el.getAttribute("data-lock")], el);
+  }, true);
+  /* کلیک روی ردیف امتیاز برای مهمان */
+  document.addEventListener("click", function(e){
+    var r = e.target.closest && e.target.closest(".rating-row");
+    if(!r || !window.nxIsGuest()) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    window.nxRequireLogin(MSG.review, r);
+  }, true);
+
+  /* آکاردئون: با باز شدن یکی، بقیه بسته می‌شوند */
+  document.addEventListener("toggle", function(e){
+    var d = e.target;
+    if(!d || !d.matches || !d.matches("details.biz-accordion") || !d.open) return;
+    var scope = d.parentNode;
+    if(!scope) return;
+    var closedAbove = false;
+    scope.querySelectorAll("details.biz-accordion[open]").forEach(function(o){
+      if(o !== d){ o.open = false; }
+    });
+    try{ d.scrollIntoView({block:"nearest", behavior:"smooth"}); }catch(_){}
+  }, true);
+
+  /* پلیس‌هولدر جستجو: برای مهمان بدون «شماره تماس» */
+  function fixPlaceholder(){
+    var i = document.getElementById("searchInput"); if(!i) return;
+    if(!i.dataset.nxPh) i.dataset.nxPh = i.getAttribute("placeholder") || "";
+    i.setAttribute("placeholder", window.nxIsGuest() ? "نام یا خدمت مورد نیاز..." : i.dataset.nxPh);
+  }
+  window.addEventListener("nomax-auth", fixPlaceholder);
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", fixPlaceholder); else fixPlaceholder();
+  setTimeout(fixPlaceholder, 1500);
+
+  /* بعد از ورود/خروج، نتایج دوباره ساخته شود تا دکمه‌ها درست شوند */
+  function rerender(){
+    try{
+      var rc = document.getElementById("resultsCard");
+      if(rc && !rc.classList.contains("hidden") && typeof window.searchBusinesses === "function") window.searchBusinesses();
+    }catch(e){}
+  }
+  var t;
+  window.addEventListener("nomax-auth", function(){
+    clearTimeout(t);
+    t = setTimeout(function(){
+      if(window.nxIsGuest()){ rerender(); return; }
+      var p = pending; pending = null;
+      var tries = 0;
+      (function wait(){
+        var list = window.businesses || [];
+        var b = p && p.id ? list.filter(function(x){ return String(x.id) === String(p.id); })[0] : null;
+        var ready = !p || !p.id || (b && String(b.phone || "").indexOf("•") === -1);
+        if(!ready && tries++ < 30){ setTimeout(wait, 300); return; }
+        rerender();
+        if(p && p.sheet && b && typeof window.nxOpenBusinessSheet === "function") window.nxOpenBusinessSheet(b);
+      })();
+    }, 250);
+  });
+})();
+</script>
 </body>
   </html>
 <style id="nomax-location-arrow-fix">
