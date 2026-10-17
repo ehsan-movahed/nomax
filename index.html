@@ -5914,6 +5914,16 @@ function scoreBusiness(b, q){
         sb.from("search_logs").insert({ query: String(q).slice(0, 100), result_count: 0 }).then(function(res){ /* best-effort */ }, function(){});
       }catch(e){}
     }
+        try{
+      if(q && typeof window.nxLogSearch === "function"){
+        var lc = activeCategoryId || (window.nxTopicOf ? window.nxTopicOf(q) : "") || "", ls = activeSubcategoryId || "";
+        if(!ls && lc){
+          var gs = guessSubcategory(q, lc);
+          ls = gs ? (typeof gs === "object" ? (gs.id || gs.subcategoryId || "") : gs) : "";
+        }
+        window.nxLogSearch(q, found.length, lc, ls);
+      }
+    }catch(e){}
     renderResults(found, q);
     card.classList.remove("hidden");
     card.removeAttribute("aria-hidden");
@@ -13670,6 +13680,107 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
       })();
     }, 250);
   });
+})();
+</script>
+<style>
+.mkt-seg{display:flex;gap:6px;margin:8px 0}
+.mkt-seg button{flex:1;padding:8px 6px;border-radius:12px;border:1px solid var(--primary-100,#cfe);background:var(--surface,#fff);font:inherit;font-size:12.5px;font-weight:700}
+.mkt-seg button.on{background:var(--primary-50,#e8f7f3);border-color:var(--primary-600,#0f766e)}
+.mkt-row{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--primary-100,#cfe);padding:10px 12px;margin:8px 0;background:var(--surface,#fff)}
+.mkt-bar{position:absolute;inset:0 auto 0 0;background:var(--primary-50,#e8f7f3);z-index:0}
+.mkt-in{position:relative;z-index:1;display:flex;align-items:center;gap:10px}
+.mkt-rank{font-weight:900;min-width:22px}
+.mkt-q{flex:1;font-weight:800;font-size:14px}
+.mkt-n{font-size:11.5px;opacity:.75;text-align:left;white-space:nowrap}
+.mkt-opp{position:relative;z-index:1;display:inline-block;margin-top:4px;font-size:11px;padding:2px 8px;border-radius:999px;background:#fff3d6;color:#8a5a00;font-weight:700}
+.mkt-empty{padding:18px;text-align:center;font-size:13px;opacity:.8}
+</style>
+<script>
+(function(){
+  'use strict';
+  var sbc = function(){ return window.__nomaxSupabaseClient; };
+  var fa = function(n){ return String(n).replace(/\d/g,function(d){ return '۰۱۲۳۴۵۶۷۸۹'.charAt(d); }); };
+  var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var scope = 'sub', days = 30, btn = null;
+
+  /* --- لاگ جستجو (با تأخیر و حذف تکراری) --- */
+  var lt = null, seen = {};
+  window.nxLogSearch = function(q, count, cat, sub){
+    if(!q || q.length < 2) return;
+    clearTimeout(lt);
+    lt = setTimeout(function(){
+      var k = q + '|' + cat + '|' + sub; if(seen[k]) return; seen[k] = 1;
+      var g = null; try{ g = localStorage.getItem('behbahan_uid'); }catch(e){}
+      var s = sbc(); if(!s) return;
+      s.from('market_searches').insert({ query:q.slice(0,100), category_id:cat||null, subcategory_id:sub||null, result_count:count, guest_id:g }).then(function(){}, function(){});
+    }, 1500);
+  };
+
+  /* لاگ عمومی اتفاقات. نمونه: nxLog('review_added','business','12',{stars:5}) */
+  window.nxLog = function(action, refType, refId, meta){
+    var s = sbc(); if(!s) return;
+    var g = null; try{ g = localStorage.getItem('behbahan_uid'); }catch(e){}
+    s.from('nx_activity_log').insert({ action:action, ref_type:refType||null, ref_id:refId==null?null:String(refId), meta:meta||{}, guest_id:g }).then(function(){}, function(){});
+  };
+
+  function myBiz(){ try{ return (window.nomaxMyBusinesses && window.nomaxMyBusinesses()) || []; }catch(e){ return []; } }
+  function label(){
+    var b = myBiz()[0]; if(!b) return '';
+    try{
+      var c = getCategoryById(getBusinessCategoryId(b)), s = getSubcategoryById(getBusinessCategoryId(b), getBusinessSubcategoryId(b));
+      return (c ? c.name : '') + (s ? ' › ' + s.name : '');
+    }catch(e){ return ''; }
+  }
+
+  async function load(){
+    var box = document.getElementById('mktBody'); if(!box) return;
+    box.innerHTML = '<div class="mkt-empty">در حال بارگذاری…</div>';
+    var r = await sbc().rpc('get_owner_market_top', { p_days:days, p_limit:5, p_scope:scope });
+    if(r.error){ console.warn(r.error); box.innerHTML = '<div class="mkt-empty">تحلیل بازار فعلاً در دسترس نیست.</div>'; return; }
+    var rows = r.data || [];
+    if(!rows.length){ box.innerHTML = '<div class="mkt-empty">هنوز داده‌ی کافی برای دستهٔ شما جمع نشده است. با افزایش جستجوها اینجا پر می‌شود.</div>'; return; }
+    var max = Math.max.apply(null, rows.map(function(x){ return Number(x.searches); }));
+    box.innerHTML = rows.map(function(x,i){
+      var w = Math.max(8, Math.round(Number(x.searches)/max*100));
+      return '<div class="mkt-row"><div class="mkt-bar" style="width:'+w+'%"></div><div class="mkt-in">'+
+        '<span class="mkt-rank">'+fa(i+1)+'</span><span class="mkt-q">'+esc(x.query)+'</span>'+
+        '<span class="mkt-n">'+fa(x.searches)+' جستجو<br>'+fa(x.people)+' نفر</span></div>'+
+        (Number(x.zero_results) > 0 ? '<span class="mkt-opp">فرصت: '+fa(x.zero_results)+' بار نتیجه‌ای پیدا نشد</span>' : '')+'</div>';
+    }).join('');
+  }
+
+  function paint(){
+    var p = document.getElementById('npMarket'); if(!p) return;
+    p.innerHTML = '<div class="np-h">📈 تحلیل بازار</div>'+
+      '<p style="font-size:12.5px;opacity:.8;margin:0 0 4px">پرجستجوترین عبارت‌های مرتبط با <b>'+esc(label()||'کسب‌وکار شما')+'</b> (کاربران و مهمان‌ها، بدون نمایش هویت).</p>'+
+      '<div class="mkt-seg" data-g="scope"><button data-v="sub" class="'+(scope==='sub'?'on':'')+'">زیردستهٔ من</button><button data-v="cat" class="'+(scope==='cat'?'on':'')+'">کل دسته</button></div>'+
+      '<div class="mkt-seg" data-g="days"><button data-v="7" class="'+(days===7?'on':'')+'">۷ روز</button><button data-v="30" class="'+(days===30?'on':'')+'">۳۰ روز</button><button data-v="90" class="'+(days===90?'on':'')+'">۹۰ روز</button></div>'+
+      '<div id="mktBody"></div>';
+    load();
+  }
+
+  function ensure(){
+    var panel = document.getElementById('nomaxPanel');
+    if(!panel){ setTimeout(ensure, 400); return; }
+    var nav = panel.querySelector('.np-tabs'), body = panel.querySelector('.np-body');
+    if(!nav || !body || nav.querySelector('[data-tab=market]')) return;
+    btn = document.createElement('button'); btn.type = 'button'; btn.setAttribute('role','tab'); btn.setAttribute('data-tab','market');
+    btn.innerHTML = '<span class="ic">📈</span><span>تحلیل بازار</span>'; btn.style.display = 'none';
+    btn.onclick = function(){ if(window.nomaxPanel) window.nomaxPanel.open('market'); paint(); };
+    nav.insertBefore(btn, nav.querySelector('[data-tab=settings]') || null);
+    var p = document.createElement('section'); p.className = 'np-pane'; p.setAttribute('data-pane','market'); p.id = 'npMarket';
+    body.appendChild(p);
+    p.addEventListener('click', function(e){
+      var b = e.target.closest && e.target.closest('.mkt-seg button'); if(!b) return;
+      var g = b.parentNode.getAttribute('data-g');
+      if(g === 'scope') scope = b.dataset.v; else days = Number(b.dataset.v);
+      paint();
+    });
+    var sync = function(){ btn.style.display = myBiz().length ? '' : 'none'; };
+    new MutationObserver(sync).observe(panel, { attributes:true, attributeFilter:['class'] });
+    sync();
+  }
+  ensure();
 })();
 </script>
 </body>
