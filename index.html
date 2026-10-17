@@ -13933,6 +13933,7 @@ window.nxCaptcha = (function(){
 
   /* ---- دیدنی (صفحهٔ دریافت شماره) ---- */
   var visWid = null, visEl = null, visTok = null, visAt = 0, visWaiters = [];
+  var needReset = false, wasHidden = false;
   function flush(t){ var w = visWaiters; visWaiters = []; w.forEach(function(f){ f(t); }); }
   function visibleActive(){
     return !!(visEl && document.body.contains(visEl) && visWid !== null && visEl.offsetParent !== null);
@@ -13955,7 +13956,15 @@ window.nxCaptcha = (function(){
   }
   setInterval(function(){
     var el = document.getElementById('nxaTurnstile');
-    if(el && el.offsetParent !== null && !(visEl === el && visWid !== null)) mountVisible();
+    if(!el) return;
+    var shown = el.offsetParent !== null;
+    if(!shown){ wasHidden = true; return; }
+    if(!(visEl === el && visWid !== null)){ mountVisible(); return; }
+    /* ویجت فقط وقتی دوباره صفحهٔ شماره نمایش داده شد، تازه می‌شود */
+    if(needReset && wasHidden){
+      try{ window.turnstile.reset(visWid); }catch(e){}
+      needReset = false; wasHidden = false;
+    }
   }, 700);
 
   /* ---- API ---- */
@@ -13967,12 +13976,16 @@ window.nxCaptcha = (function(){
 
   function get(){
     if(visibleActive()){
+      /* اگر توکن قبلی مصرف شده و کاربر هنوز همین‌جاست (مثلاً ارسال شکست خورد)، تازه کن */
+      if(needReset){
+        try{ window.turnstile.reset(visWid); }catch(e){}
+        needReset = false; wasHidden = false; visTok = null;
+      }
       return new Promise(function(resolve){
         var done = false;
         function take(t){
           if(done) return; done = true;
-          visTok = null;
-          try{ window.turnstile.reset(visWid); }catch(e){}
+          visTok = null; needReset = true; wasHidden = false;
           resolve(t || null);
         }
         if(visTok && Date.now() - visAt < TTL){ take(visTok); return; }
