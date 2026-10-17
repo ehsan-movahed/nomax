@@ -12,6 +12,38 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<style>
+  html{ background:#fafaf9; }
+  /* تا آماده‌شدن صفحهٔ جدید، فقط صفحهٔ شروع دیده می‌شود */
+  html:not(.nx-ready) body > *:not(#nxSplash){ visibility:hidden !important; }
+  #nxSplash{
+    position:fixed; inset:0; z-index:2147483600;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px;
+    background:#fafaf9; color:#0f766e;
+    font:800 28px/1.4 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  }
+  #nxSplash small{ font:500 13px/1.4 system-ui,Tahoma,sans-serif; color:#64748b; }
+  html.nx-ready #nxSplash{ display:none !important; }
+</style>
+<script>
+(function(){
+  var h = document.documentElement, loaded = false, mo = null, finished = false;
+  function ready(){
+    if(finished) return; finished = true;
+    h.classList.add('nx-ready');
+    try{ if(mo) mo.disconnect(); }catch(e){}
+  }
+  function check(){
+    /* آماده = کل فایل (همهٔ استایل‌ها و اسکریپت‌ها) لود شده + شبکهٔ دسته‌ها ساخته شده */
+    if(loaded && document.querySelector('.nx-cat-grid')) ready();
+  }
+  window.addEventListener('load', function(){ loaded = true; check(); setTimeout(check, 150); setTimeout(check, 600); });
+  mo = new MutationObserver(check);
+  mo.observe(h, { childList:true, subtree:true });
+  /* ایمنی: اگر هر مشکلی پیش آمد، بعد از ۷ ثانیه به هر حال سایت نمایش داده شود */
+  setTimeout(ready, 7000);
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
 <title>نومکس</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -2455,7 +2487,7 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
 </style>
 </head>
 <body>
-
+<div id="nxSplash"><span>نومکس</span><small>در حال آماده‌سازی…</small></div>
 
 <!-- ============ MOBILE NOTIFY PROMPT ============ -->
 <div class="notif-prompt" id="notifPrompt" aria-modal="true" role="dialog">
