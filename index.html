@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://cdn.jsdelivr.net; connect-src 'self' https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://cdn.jsdelivr.net; connect-src 'self' data: https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(), usb=()">
@@ -12119,14 +12119,15 @@ async function sendOtp(){
   var b=fromOtp?$("nxaResend"):$("nxaSend"); setBusy(b,true,"در حال ارسال…");
   try{
     var phoneWithZero = "0" + p;
-var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/request-otp", {
-  method: "POST",
-  headers: { 
-    "Content-Type": "application/json",
-    "apikey": "sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF"
-  },
-  body: JSON.stringify({ phone: phoneWithZero, captchaToken: capTok })
-});
+    var capTok = await window.nxCaptcha.get();
+    var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/request-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": "sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF"
+      },
+      body: JSON.stringify({ phone: phoneWithZero, captchaToken: capTok })
+    });
     var data = await res.json();
     if(!res.ok || data.error){
       throw new Error(data.error || "ارسال پیامک ناموفق بود");
@@ -12141,7 +12142,6 @@ var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/req
     msg(e.message || friendly(e,"send"));
   }finally{ setBusy(b,false); if(!fromOtp) b.textContent="دریافت کد تأیید"; else tick(); }
 }
-  /* ---- تأیید کد ---- */
 async function verify(){
   if(S.busy || S.otpLocked) return;
   var code=latin($("nxaCode").value).replace(/\D/g,"");
