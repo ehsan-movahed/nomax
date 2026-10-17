@@ -12,7 +12,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
 <title>نومکس</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://pqydooffsqhvrmswzpfa.supabase.co" crossorigin>
@@ -12232,7 +12232,15 @@ async function saveProfile(){
     if(!S.registered){ setShNote(false,false); await showVerified(name); }
     await finish(S.registered?"رمز جدید ثبت شد ✓":"ثبت‌نام انجام شد؛ خوش آمدید ✓");
     setTimeout(function(){ var dn=$("nxaScDone"); if(dn) dn.remove(); }, 500);
-  }catch(e){ msg(e.message || "خطا در ثبت"); }
+  }catch(e){
+    var em = String((e && e.message) || "");
+    if(/profiles_national_id_uq|national_id/i.test(em) && /duplicate|unique|already|exists|تکراری/i.test(em)){
+      em = "این کد ملی قبلاً در نومکس ثبت شده است. اگر قبلاً ثبت‌نام کرده‌اید، با شماره موبایل و رمز وارد شوید.";
+    }else if(/duplicate key|unique constraint/i.test(em)){
+      em = "این اطلاعات قبلاً ثبت شده است. اگر قبلاً ثبت‌نام کرده‌اید، وارد شوید.";
+    }
+    msg(em || "خطا در ثبت");
+  }
   finally{ setBusy(b,false,S.registered?"ثبت رمز جدید":"احراز هویت و ثبت‌نام"); if(!S.registered) setShNote(true,false); }
 }
 
@@ -18264,7 +18272,7 @@ button.primary,
     var n = $('businessNationalId');
     if(o){ o.value = p.name || ''; styleReadonly(o); }
     if(ph){ ph.value = p.phone || ''; styleReadonly(ph); }
-    if(n){ n.value = p.nid || ''; styleReadonly(n); }
+    if(n){ if(p.nid) n.value = p.nid; styleReadonly(n); }
   }
 
   function hasExistingBusiness(){
@@ -18458,14 +18466,30 @@ button.primary,
     ov.querySelector('#nxRegBack').onclick=function(){ window.__nxCloseRegFinal(); };
     return ov;
   }
+  var __nidCache = '';
+  async function loadNid(){
+    try{
+      var sbx = window.__nomaxSupabaseClient; if(!sbx) return '';
+      var s = await sbx.auth.getSession();
+      var usr = s && s.data && s.data.session && s.data.session.user; if(!usr) return '';
+      var meta = usr.user_metadata || {};
+      var nid = String(meta.national_id || meta.nationalId || meta.nid || '').replace(/\D/g,'');
+      if(!nid){
+        var r = await sbx.rpc('get_my_national_id');
+        if(r && !r.error && r.data) nid = String(r.data).replace(/\D/g,'');
+      }
+      return nid;
+    }catch(e){ return ''; }
+  }
 
+  function fillLocked(){
   function fillLocked(){
     var p=profile(getUser());
     var o=$('businessOwner'), ph=$('businessPhone'), n=$('businessNationalId');
     if(o){ o.value=p.name||''; o.readOnly=true; }
     if(ph){ ph.value=p.phone||''; ph.readOnly=true; }
     if(n){
-      n.value=p.nid||'';
+      n.value=p.nid||__nidCache||'';
       n.readOnly=true;
       n.placeholder = p.nid ? p.nid : 'کد ملی پس از احراز هویت نمایش داده می‌شود';
     }
@@ -18516,6 +18540,7 @@ button.primary,
     fillLocked();
     setTimeout(fillLocked, 50);
     setTimeout(fillLocked, 250);
+    loadNid().then(function(v){ if(v){ __nidCache=v; fillLocked(); } });
 
     /* اگر کد ملی در متادیتا نبود، حداقل فیلد را نشان بده */
     var nidBox=$('f-national-id');
@@ -18586,6 +18611,12 @@ button.primary,
 #nxMapModal.show{ display: flex !important; visibility: visible !important; opacity: 1 !important; }
 #nxRegOverlay, #nxRegOverlay.show{ z-index: 4000 !important; }
 #nomaxPanel.np.open{ z-index: 3500 !important; }
+@media (max-width: 820px){
+  input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),
+  select, textarea{ font-size:16px !important; }
+  #nomaxPanel:has(input:focus, textarea:focus, select:focus) .np-tabs{ display:none; }
+}
+#requestModal{ z-index: 3600 !important; }
 
 /* 2) Accordion: hide only chevron / extra stroke phone — KEEP solid biz-quick-call */
 details.biz-accordion > summary .biz-acc-chevron,
