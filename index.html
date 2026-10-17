@@ -18473,16 +18473,17 @@ button.primary,
       var s = await sbx.auth.getSession();
       var usr = s && s.data && s.data.session && s.data.session.user; if(!usr) return '';
       var meta = usr.user_metadata || {};
-      var nid = String(meta.national_id || meta.nationalId || meta.nid || '').replace(/\D/g,'');
-      if(!nid){
+      var nid = '';
+      try{
         var r = await sbx.rpc('get_my_national_id');
         if(r && !r.error && r.data) nid = String(r.data).replace(/\D/g,'');
-      }
+      }catch(e){}
+      /* متادیتا فقط جایگزین نمایشی است؛ قابل اعتماد نیست */
+      if(!nid) nid = String(meta.national_id || meta.nationalId || meta.nid || '').replace(/\D/g,'');
       return nid;
     }catch(e){ return ''; }
   }
 
-  function fillLocked(){
   function fillLocked(){
     var p=profile(getUser());
     var o=$('businessOwner'), ph=$('businessPhone'), n=$('businessNationalId');
@@ -18522,6 +18523,7 @@ button.primary,
     try{ if(typeof resetForm==='function' && !opts.editId) resetForm(); }catch(e){}
     try{ if(typeof goToStep==='function') goToStep(1); }catch(e){}
 
+    window.editingOwnerBusinessId = opts.editId || null;
     var ov=ensureOverlay();
     var slot=$('nxRegSlot');
     slot.appendChild(reg);
@@ -18560,7 +18562,7 @@ button.primary,
   window.__nxCloseRegFinal = function(){
     var ov=$('nxRegOverlay');
     var reg=$('registerCard');
-    if(ov){ ov.classList.remove('show'); ov.style.display='none'; }
+    if(ov){ ov.classList.remove('show'); ov.style.cssText='display:none!important'; }
     document.body.style.overflow='';
     if(reg && homeParent){
       if(homeNext && homeNext.parentNode===homeParent) homeParent.insertBefore(reg, homeNext);
@@ -18573,6 +18575,21 @@ button.primary,
 
   /* هر مسیر openRegister را به نسخه نهایی وصل کن */
   window.openRegister = function(){ return window.__nxOpenRegFinal({}); };
+
+  /* مسیرهای قدیمی بستن هم به نسخه نهایی وصل شوند */
+  window.nxCloseRegisterOverlay = window.__nxCloseRegFinal;
+
+  /* وقتی برنامه بعد از ذخیره registerCard را hidden کرد، اورلی هم درست بسته شود */
+  (function(){
+    var rc = $('registerCard');
+    if(!rc || !window.MutationObserver) return;
+    new MutationObserver(function(){
+      var ov = $('nxRegOverlay');
+      if(ov && ov.classList.contains('show') && rc.classList.contains('hidden')){
+        window.__nxCloseRegFinal();
+      }
+    }).observe(rc, { attributes:true, attributeFilter:['class'] });
+  })();
   window.nxOpenRegisterOverlay = function(o){ return window.__nxOpenRegFinal(o||{}); };
 
   /* capture: هیچ onclick دیگری نمی‌تواند جلو بزند */
