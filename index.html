@@ -13857,9 +13857,15 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
 })();
 </script>
 <script>
-/* کپچای Cloudflare Turnstile — نمایش فقط در صورت لزوم (Managed + interaction-only) */
+/* Cloudflare Turnstile
+   - صفحهٔ دریافت شماره: کادر «تأیید امنیتی» دیدنی، بین شماره و دکمه (داخل #nxaTurnstile)
+   - صفحهٔ ورود با رمز: نامرئی و از قبل (هنگام تایپ) */
 window.nxCaptcha = (function(){
-  var KEY = '0x4AAAAAAFZRA7hlcTzwxsqw', wid = null, box = null;
+  var KEY = '0x4AAAAAAFZRA7hlcTzwxsqw';
+  var TTL = 240000; /* توکن ۵ دقیقه معتبر است */
+
+  /* ---- نامرئی ---- */
+  var hidWid = null, box = null, cached = null, cachedAt = 0, inflight = null;
   function ensureBox(){
     if(box) return box;
     box = document.createElement('div');
@@ -13868,27 +13874,102 @@ window.nxCaptcha = (function(){
     document.body.appendChild(box);
     return box;
   }
-  function get(){
-    return new Promise(function(resolve){
-      if(!window.turnstile){ resolve(null); return; }
+  function fetchHidden(){
+    if(inflight) return inflight;
+    inflight = new Promise(function(resolve){
+      if(!window.turnstile){ inflight = null; resolve(null); return; }
       var done = false, tm;
-      function fin(t){ if(done) return; done = true; clearTimeout(tm); resolve(t || null); }
+      function fin(t){
+        if(done) return; done = true; clearTimeout(tm); inflight = null;
+        if(t){ cached = t; cachedAt = Date.now(); }
+        resolve(t || null);
+      }
       tm = setTimeout(function(){ fin(null); }, 20000);
       try{
         var b = ensureBox();
-        if(wid !== null){ try{ window.turnstile.remove(wid); }catch(e){} wid = null; b.innerHTML = ''; }
-        wid = window.turnstile.render(b, {
-          sitekey: KEY,
-          appearance: 'interaction-only',
-          language: 'fa',
+        if(hidWid !== null){ try{ window.turnstile.remove(hidWid); }catch(e){} hidWid = null; b.innerHTML = ''; }
+        hidWid = window.turnstile.render(b, {
+          sitekey: KEY, appearance: 'interaction-only', language: 'fa',
           callback: fin,
           'error-callback': function(){ fin(null); },
           'timeout-callback': function(){ fin(null); }
         });
       }catch(e){ fin(null); }
     });
+    return inflight;
   }
-  return { get: get };
+
+  /* ---- دیدنی (صفحهٔ دریافت شماره) ---- */
+  var visWid = null, visEl = null, visTok = null, visAt = 0, visWaiters = [];
+  function flush(t){ var w = visWaiters; visWaiters = []; w.forEach(function(f){ f(t); }); }
+  function visibleActive(){
+    return !!(visEl && document.body.contains(visEl) && visWid !== null && visEl.offsetParent !== null);
+  }
+  function mountVisible(){
+    var el = document.getElementById('nxaTurnstile');
+    if(!el || !window.turnstile || el.offsetParent === null) return;
+    if(visEl === el && visWid !== null) return;
+    if(visWid !== null){ try{ window.turnstile.remove(visWid); }catch(e){} visWid = null; }
+    visEl = el; visTok = null; el.innerHTML = '';
+    try{
+      visWid = window.turnstile.render(el, {
+        sitekey: KEY, appearance: 'always', language: 'fa', theme: 'auto',
+        callback: function(t){ visTok = t; visAt = Date.now(); flush(t); },
+        'expired-callback': function(){ visTok = null; },
+        'timeout-callback': function(){ visTok = null; },
+        'error-callback': function(){ visTok = null; flush(null); }
+      });
+    }catch(e){ visWid = null; }
+  }
+  setInterval(function(){
+    var el = document.getElementById('nxaTurnstile');
+    if(el && el.offsetParent !== null && !(visEl === el && visWid !== null)) mountVisible();
+  }, 700);
+
+  /* ---- API ---- */
+  function prefetch(){
+    if(visibleActive()) return;
+    if(cached && Date.now() - cachedAt < TTL) return;
+    fetchHidden();
+  }
+
+  function get(){
+    if(visibleActive()){
+      return new Promise(function(resolve){
+        var done = false;
+        function take(t){
+          if(done) return; done = true;
+          visTok = null;
+          try{ window.turnstile.reset(visWid); }catch(e){}
+          resolve(t || null);
+        }
+        if(visTok && Date.now() - visAt < TTL){ take(visTok); return; }
+        var tm = setTimeout(function(){ if(!done){ done = true; resolve(null); } }, 15000);
+        visWaiters.push(function(t){ if(done) return; clearTimeout(tm); take(t); });
+      });
+    }
+    if(cached && Date.now() - cachedAt < TTL){
+      var t = cached; cached = null;
+      setTimeout(prefetch, 300);
+      return Promise.resolve(t);
+    }
+    var p = fetchHidden();
+    return new Promise(function(resolve){
+      var tm = setTimeout(function(){ resolve(null); }, 8000);
+      p.then(function(tok){
+        clearTimeout(tm);
+        if(tok){ cached = null; setTimeout(prefetch, 300); }
+        resolve(tok);
+      });
+    });
+  }
+
+  document.addEventListener('focusin', function(e){
+    var id = e.target && e.target.id;
+    if(id === 'nxaLPhone' || id === 'nxaLPass') prefetch();
+  });
+
+  return { get: get, prefetch: prefetch };
 })();
 </script>
 </body>
