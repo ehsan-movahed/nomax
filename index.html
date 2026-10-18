@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://cdn.jsdelivr.net; connect-src 'self' data: https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://cdn.jsdelivr.net; connect-src 'self' data: https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; media-src 'self' blob: data: https://pqydooffsqhvrmswzpfa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(), usb=()">
@@ -46,6 +46,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual">
 <title>نومکس</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-5.8 0-10.5 4.5-10.5 10.2 0 7.6 8.2 14.2 9.7 15.4.5.4 1.1.4 1.6 0 1.5-1.2 9.7-7.8 9.7-15.4C26.5 7 21.8 2.5 16 2.5Z' fill='%230d9488'/%3E%3Ccircle cx='16' cy='12.5' r='5.2' fill='%23fff'/%3E%3Cpath d='M13.6 12.6l1.7 1.7 3.3-3.5' stroke='%23f59e0b' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://pqydooffsqhvrmswzpfa.supabase.co" crossorigin>
 <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
@@ -2584,9 +2585,11 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
   </button>
   <button class="theme-toggle acct-btn" id="accountBtn" type="button" aria-label="حساب کاربری" title="ورود / ثبت‌نام"></button>
   <div class="logo-mark">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-      <circle cx="12" cy="10" r="3"/>
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <defs><linearGradient id="nxLogoG" x1="6" y1="2" x2="26" y2="30" gradientUnits="userSpaceOnUse"><stop stop-color="#14b8a6"/><stop offset="1" stop-color="#0f766e"/></linearGradient></defs>
+      <path d="M16 2.5c-5.8 0-10.5 4.5-10.5 10.2 0 7.6 8.2 14.2 9.7 15.4.5.4 1.1.4 1.6 0 1.5-1.2 9.7-7.8 9.7-15.4C26.5 7 21.8 2.5 16 2.5Z" fill="url(#nxLogoG)" stroke="none"/>
+      <circle cx="16" cy="12.5" r="5.2" fill="#fff" stroke="none"/>
+      <path d="M13.6 12.6l1.7 1.7 3.3-3.5" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </div>
   <h1>نومکس</h1>
@@ -3155,9 +3158,11 @@ a.nx-chip{color:var(--primary-700);background:var(--primary-50)}
       <button type="button" class="admin-sub-tab active" data-sub="businesses">🏪 کسب‌وکارها</button>
       <button type="button" class="admin-sub-tab" data-sub="reviews">💬 نظرات</button>
       <button type="button" class="admin-sub-tab" data-sub="requests">📨 درخواست‌ها</button>
+      <button type="button" class="admin-sub-tab" data-sub="ads">📢 تبلیغات</button>
     </div>
 
     <div id="adminRequestsList" style="display:none"><div id="adminRequestsBox"></div></div>
+    <div id="adminAdsList" style="display:none"><div id="adminAdsBox"></div></div>
 
     <div id="adminReviewsList" style="display:none">
       <div class="admin-tabs" id="adminTabs">
@@ -11734,7 +11739,11 @@ if(!isOwnBiz){
     e.stopPropagation();
     if(typeof window.nxOpenOwnershipClaim === 'function') window.nxOpenOwnershipClaim(biz.id, biz.name || '');
   });
-  sum.appendChild(claimBtn);
+  claimBtn.classList.add('biz-claim-body');
+  claimBtn.textContent = '🙋 این کسب‌وکار مال من است';
+  var __rr = inner.querySelector ? inner.querySelector('.rating-row') : null;
+  if(__rr && __rr.parentNode) __rr.parentNode.insertBefore(claimBtn, __rr.nextSibling);
+  else inner.appendChild(claimBtn);
 })();
 
 details.appendChild(sum);
@@ -12016,7 +12025,8 @@ card.replaceWith(details);
       /* دریافت شماره */
       '<div id="nxaScPhone" style="display:none">'+
         '<div class="nxa-f"><label>شماره موبایل</label><input id="nxaPhone" type="tel" class="ltr" inputmode="numeric" autocomplete="tel" placeholder="09123456789" maxlength="14"><div class="nxa-hint">یک کد ۶ رقمی برای این شماره پیامک می‌شود.</div></div>'+
-        '<div id="nxaTurnstile" style="margin:8px 0 12px;display:flex;justify-content:center"></div>'+
+        
+        '<div class="nxa-f" id="nxaImageCaptchaBox"><label for="nxaCaptchaAnswer">کد امنیتی تصویر را وارد کنید</label><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><img id="nxaCaptchaImage" alt="تصویر کپچا" width="220" height="80" style="object-fit:contain"><button type="button" class="nxa-link" id="nxaCaptchaRefresh">تصویر جدید</button></div><input id="nxaCaptchaAnswer" type="text" class="ltr" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="کد شش‌رقمی" style="margin-top:8px"><div id="nxaCaptchaError" class="nxa-hint" aria-live="polite"></div></div>'+
         '<label class="nxa-chk" id="nxaTermsRow"><input type="checkbox" id="nxaTerms"><span>قوانین و حریم خصوصی نومکس را می‌پذیرم. <a href="#" id="nxaTermsLink" style="color:var(--primary-700);font-weight:700">مطالعه</a></span></label>'+
         '<button type="button" class="nxa-btn" id="nxaSend">دریافت کد تأیید</button>'+
         '<button type="button" class="nxa-link" id="nxaBackLogin">قبلاً ثبت‌نام کرده‌ام؛ ورود با رمز</button>'+
@@ -12052,6 +12062,9 @@ card.replaceWith(details);
     $("nxaBackLogin").onclick=function(){ go("login"); $("nxaLPhone").value=$("nxaPhone").value; };
     
     $("nxaSend").onclick=sendOtp;
+    
+    $("nxaCaptchaRefresh").onclick = loadImageCaptcha;
+
     $("nxaPhone").addEventListener("keydown",function(e){ if(e.key==="Enter") sendOtp(); });
     $("nxaTermsLink").onclick=function(e){ e.preventDefault(); if(window.openTermsModal) window.openTermsModal({buttonText:"بستن"}); };
     $("nxaVerify").onclick=verify;
@@ -12071,6 +12084,9 @@ card.replaceWith(details);
     ["Login","Phone","Otp","Profile"].forEach(function(n){ $("nxaSc"+n).style.display=(n.toLowerCase()===sc)?"":"none"; });
     var titles={login:"ورود به نومکس",phone:S.flow==="reset"?"بازیابی رمز عبور":(S.flow==="link"?"تأیید شماره‌ی موبایل":"ثبت‌نام در نومکس"),otp:"کد تأیید",profile:S.registered?"تعیین رمز عبور جدید":"تکمیل ثبت‌نام"};
     $("nxaTitle").textContent=titles[sc];
+    
+    if (sc === "phone") loadImageCaptcha();
+
     $("nxaTermsRow").style.display=(S.flow==="signup")?"":"none";
     $("nxaBackLogin").style.display=(S.flow==="link")?"none":"";
     setTimeout(function(){ var f={login:"nxaLPhone",phone:"nxaPhone",otp:"nxaCode",profile:S.registered?"nxaP1":"nxaName"}[sc]; var el=$(f); if(el) el.focus(); },80);
@@ -12142,23 +12158,88 @@ card.replaceWith(details);
     }catch(e){ resolve(null); }
   });
 }
+
+var imageCaptchaId = null;
+
+async function loadImageCaptcha() {
+  var image = document.getElementById("nxaCaptchaImage");
+  var answer = document.getElementById("nxaCaptchaAnswer");
+  var errorBox = document.getElementById("nxaCaptchaError");
+
+  if (!image || !answer || !errorBox) return;
+
+  imageCaptchaId = null;
+  image.removeAttribute("src");
+  answer.value = "";
+  errorBox.textContent = "";
+
+  try {
+    var response = await fetch(
+      "https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/captcha-challenge",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": "sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF"
+        },
+        body: JSON.stringify({})
+      }
+    );
+
+    var data = await response.json();
+
+    if (!response.ok || data.success !== true ||
+        !data.captchaId || !data.image) {
+      throw new Error("دریافت تصویر کپچا ناموفق بود.");
+    }
+
+    imageCaptchaId = data.captchaId;
+    image.src = data.image;
+  } catch (e) {
+    imageCaptchaId = null;
+    errorBox.textContent =
+      "تصویر امنیتی بارگذاری نشد. دوباره تلاش کنید.";
+    console.error("captcha-challenge:", e);
+  }
+}
+
 async function sendOtp(){
   if(S.busy) return;
   var fromOtp=(S.screen==="otp");
+    var captchaAnswer = $("nxaCaptchaAnswer").value.trim();
+
+  if (!fromOtp) {
+    if (!imageCaptchaId) {
+      msg("لطفاً ابتدا تصویر امنیتی را بارگذاری کنید.");
+      await loadImageCaptcha();
+      return;
+    }
+
+    if (!/^\d{6}$/.test(captchaAnswer)) {
+      msg("کد امنیتی تصویر را به‌صورت ۶ رقم وارد کنید.");
+      $("nxaCaptchaAnswer").focus();
+      return;
+    }
+  }
   var p=fromOtp?S.phone:norm($("nxaPhone").value);
   if(!p){ msg("شماره موبایل را درست وارد کنید (مثل ۰۹۱۲۳۴۵۶۷۸۹)."); return; }
   if(S.flow==="signup" && !fromOtp && !$("nxaTerms").checked){ msg("برای ثبت‌نام، پذیرش قوانین الزامی است."); return; }
   var b=fromOtp?$("nxaResend"):$("nxaSend"); setBusy(b,true,"در حال ارسال…");
   try{
     var phoneWithZero = "0" + p;
-    var capTok = await window.nxCaptcha.get();
+    var capTok = null;
     var res = await fetch("https://pqydooffsqhvrmswzpfa.supabase.co/functions/v1/request-otp", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "apikey": "sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF"
       },
-      body: JSON.stringify({ phone: phoneWithZero, captchaToken: capTok })
+      body: JSON.stringify({
+  phone: phoneWithZero,
+  captchaToken: capTok,
+  captchaId: imageCaptchaId,
+  captchaAnswer: captchaAnswer
+})
     });
     var data = await res.json();
     if(!res.ok || data.error){
@@ -12172,6 +12253,10 @@ async function sendOtp(){
     go("otp"); startTimer();
   }catch(e){
     msg(e.message || friendly(e,"send"));
+
+    if (!fromOtp && S.screen === "phone") {
+      await loadImageCaptcha();
+    }
   }finally{ setBusy(b,false); if(!fromOtp) b.textContent="دریافت کد تأیید"; else tick(); }
 }
 async function verify(){
@@ -13243,7 +13328,7 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
 
   window.nxOrderLayout = function(){
     var c = ensureChrome(); if(!c) return;
-    var ids = ['nxSearchTop','nxLocRow','nxHomeTop','nxFeaturedHero','nxQuoteHeroTop','nxHomeDiscover','nxSearchCard','resultsCard'];
+    var ids = ['nxSearchTop','nxLocRow','nxHomeTop','nxAdRow','nxFeaturedHero','nxQuoteHeroTop','nxHomeDiscover','nxAdPair','nxSearchCard','resultsCard'];
     var order = ids.map($).filter(Boolean);
     var ref = Array.prototype.slice.call(c.children).filter(function(el){ return order.indexOf(el) < 0; })[0] || null;
     var cur = Array.prototype.slice.call(c.children).filter(function(el){ return order.indexOf(el) >= 0; });
@@ -14016,6 +14101,656 @@ window.nxCaptcha = (function(){
 
   return { get: get, prefetch: prefetch };
 })();
+</script>
+<style id="nx-v14-polish">
+/* =====================================================================
+   NOMAX v14 — اصلاحات ظاهری (بدون تغییر در منطق، فرانت‌اند و بک‌اند)
+   ===================================================================== */
+
+/* ---------- ۱) کپچا: دکمهٔ سبز کلودفلر مخفی (ویجت کار می‌کند ولی دیده نمی‌شود) ---------- */
+#nxCaptchaBox{
+  position:fixed !important; left:-10000px !important; top:0 !important; bottom:auto !important;
+  transform:none !important; width:300px !important; height:70px !important;
+  opacity:0 !important; pointer-events:none !important; z-index:-1 !important; overflow:hidden !important;
+}
+#authCaptcha, #nxaTurnstile{ display:none !important; }
+
+/* ---------- ۲) کپچا: ظاهر جدید کد تصویری ---------- */
+#nxaImageCaptchaBox{
+  background:linear-gradient(180deg,var(--primary-50,#f0fdfa) 0%,var(--surface,#fff) 100%);
+  border:1.5px solid var(--primary-100,#ccfbf1);
+  border-radius:18px; padding:14px; margin-bottom:14px;
+  box-shadow:0 4px 14px rgba(13,148,136,.07);
+}
+#nxaImageCaptchaBox > label{
+  display:flex !important; align-items:center; gap:7px;
+  font-size:12.5px !important; font-weight:800 !important;
+  color:var(--primary-700,#0f766e) !important; margin-bottom:10px !important;
+}
+#nxaImageCaptchaBox > label::before{ content:"🛡️"; font-size:15px; }
+#nxaImageCaptchaBox > div:first-of-type{
+  display:flex !important; flex-wrap:nowrap !important; align-items:center !important;
+  justify-content:space-between; gap:10px !important;
+}
+#nxaCaptchaImage{
+  flex:1 1 0; min-width:120px; width:100%; max-width:220px; height:auto !important;
+  aspect-ratio:11/4; object-fit:contain;
+  background:#fff; border-radius:14px; padding:4px;
+  border:1.5px dashed var(--primary-200,#99f6e4);
+  box-shadow:inset 0 1px 4px rgba(15,23,42,.06);
+}
+#nxaCaptchaRefresh{
+  flex:0 0 auto; width:auto !important; margin-top:0 !important; display:inline-flex !important; align-items:center; gap:5px;
+  padding:9px 13px !important; border-radius:999px !important;
+  border:1px solid var(--primary-200,#99f6e4) !important;
+  background:var(--surface,#fff) !important;
+  color:var(--primary-700,#0f766e) !important;
+  font-size:12px !important; font-weight:800 !important; cursor:pointer; text-decoration:none !important;
+  white-space:nowrap; transition:background .2s, transform .15s;
+}
+#nxaCaptchaRefresh::before{ content:"⟳"; font-size:16px; line-height:1; }
+#nxaCaptchaRefresh:hover{ background:var(--primary-50,#f0fdfa) !important; }
+#nxaCaptchaRefresh:active{ transform:scale(.96); }
+#nxaCaptchaAnswer{
+  text-align:center !important; direction:ltr; letter-spacing:.5em; text-indent:.5em;
+  font-size:20px !important; font-weight:800 !important;
+  border-radius:14px !important; margin-top:10px !important;
+}
+#nxaCaptchaAnswer::placeholder{ letter-spacing:0; text-indent:0; font-size:13px; font-weight:600; }
+#nxaCaptchaError:empty{ display:none; }
+@media (max-width:380px){
+  #nxaImageCaptchaBox > div:first-of-type{ flex-wrap:wrap !important; justify-content:center; }
+  #nxaCaptchaImage{ max-width:100%; }
+}
+
+/* ---------- ۳) دسکتاپ: صفحهٔ جستجو هم‌تراز و وسط‌چین ---------- */
+@media (min-width:700px){
+  body.nx-search-mode #nxSearchTop,
+  body.nx-search-mode #nxLocRow,
+  body.nx-search-mode #nxSearchCard,
+  body.nx-search-mode #resultsCard{
+    width:100%; max-width:720px; box-sizing:border-box;
+    margin-left:auto !important; margin-right:auto !important;
+  }
+  body.nx-search-mode #nxSearchTop{ padding-inline:2px; }
+  body.nx-search-mode #nxLocRow{ padding-inline:6px; }
+  body.nx-search-mode #resultsCard{ padding-inline:18px; }
+  body.nx-search-mode .nx-suggest{ max-width:100%; }
+}
+
+/* ---------- ۴) دکمهٔ «مالک؟» در بدنهٔ آکاردئون (زیر بخش نظرات) ---------- */
+details.biz-accordion .biz-acc-claim.biz-claim-body{
+  width:100% !important; height:auto !important; min-height:46px !important; flex:none !important;
+  margin:10px 0 0 !important; padding:10px 14px !important;
+  border-radius:14px !important; border:1.5px dashed var(--primary-400,#2dd4bf) !important;
+  background:transparent !important; color:var(--primary-700,#0f766e) !important;
+  font-size:13.5px !important; font-weight:800 !important; line-height:1.4;
+  display:flex !important; align-items:center; justify-content:center; gap:6px; cursor:pointer;
+}
+details.biz-accordion .biz-acc-claim.biz-claim-body::after{ content:none !important; }
+details.biz-accordion .biz-acc-claim.biz-claim-body:hover{ background:var(--primary-50,#f0fdfa) !important; }
+details.biz-accordion .biz-acc-claim.biz-claim-body:focus-visible{ outline:2px solid var(--primary-600,#0d9488); outline-offset:2px; }
+
+/* ---------- ۵) اینستاگرام غیرفعال ---------- */
+.action-btn.insta-empty{ opacity:.5; filter:grayscale(1); cursor:not-allowed !important; pointer-events:none; }
+.action-btn.insta-empty::after{ color:var(--text-3,#94a3b8) !important; }
+
+/* ---------- ۶) باکس‌های تبلیغاتی ---------- */
+.nx-ad-slot{ position:relative; margin:14px auto; width:100%; max-width:1080px; direction:rtl; }
+.nx-ad-slot[hidden]{ display:none !important; }
+.nx-ad-frame{
+  position:relative; width:100%; aspect-ratio:16/5; overflow:hidden;
+  border-radius:20px; background:var(--muted,#f5f5f4);
+  border:1px solid var(--border,#e7e5e4); box-shadow:0 6px 20px rgba(15,23,42,.08);
+}
+.nx-ad-item{ position:absolute; inset:0; opacity:0; visibility:hidden; transition:opacity .5s ease; }
+.nx-ad-item.on{ opacity:1; visibility:visible; z-index:1; }
+.nx-ad-item > a, .nx-ad-item > div.nx-ad-media{ position:absolute; inset:0; display:block; }
+.nx-ad-item img, .nx-ad-item video{ width:100%; height:100%; object-fit:cover; display:block; border:0; }
+.nx-ad-swf{ position:absolute; inset:0; background:#000; }
+.nx-ad-swf > *{ width:100% !important; height:100% !important; }
+.nx-ad-fallback{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff; background:#334155; }
+.nx-ad-tag{
+  position:absolute; top:10px; left:10px; z-index:3; pointer-events:none;
+  font-size:10.5px; font-weight:800; padding:3px 9px; border-radius:999px;
+  background:rgba(15,23,42,.55); color:#fff; backdrop-filter:blur(4px);
+}
+.nx-ad-dots{ position:absolute; bottom:8px; left:0; right:0; z-index:3; display:flex; justify-content:center; gap:6px; }
+.nx-ad-dots button{
+  width:8px; height:8px; padding:0; border:0; border-radius:50%;
+  background:rgba(255,255,255,.55); box-shadow:0 0 0 1px rgba(15,23,42,.25); cursor:pointer;
+}
+.nx-ad-dots button.on{ background:#fff; width:20px; border-radius:99px; }
+@media (max-width:640px){
+  .nx-ad-slot{ margin:12px auto; }
+  .nx-ad-frame{ aspect-ratio:16/8; border-radius:16px; }
+}
+
+/* ---------- ۷) پنل مدیر: تب تبلیغات ---------- */
+#adminSubTabs{ display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:4px; }
+#adminSubTabs::-webkit-scrollbar{ display:none; }
+#adminSubTabs .admin-sub-tab{ flex:0 0 auto; white-space:nowrap; }
+.nxad-note{
+  font-size:12.5px; line-height:1.9; color:var(--text-2); background:var(--primary-50,#f0fdfa);
+  border:1px solid var(--primary-100,#ccfbf1); border-radius:14px; padding:11px 14px; margin-bottom:14px;
+}
+.nxad-form{
+  display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px; margin-bottom:16px;
+  background:var(--surface); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow-sm);
+}
+.nxad-form .full{ grid-column:1 / -1; }
+.nxad-form label{ display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--text-2); }
+.nxad-form input[type=text], .nxad-form input[type=url], .nxad-form select{
+  width:100%; box-sizing:border-box; padding:11px 12px; border:1.5px solid var(--border);
+  border-radius:12px; background:var(--surface); color:var(--text); font:inherit; font-size:14px;
+}
+.nxad-form input:focus, .nxad-form select:focus{ outline:none; border-color:var(--primary-500); }
+.nxad-file{
+  display:flex; align-items:center; justify-content:center; gap:8px; text-align:center;
+  padding:18px 12px; border:2px dashed var(--primary-200,#99f6e4); border-radius:14px;
+  background:var(--primary-50,#f0fdfa); color:var(--primary-700,#0f766e); font-weight:800; font-size:13px; cursor:pointer;
+}
+.nxad-file input{ display:none; }
+.nxad-prev{ margin-top:8px; font-size:12px; color:var(--text-3); word-break:break-all; }
+.nxad-btn{
+  border:0; border-radius:12px; padding:12px 18px; font:inherit; font-size:14px; font-weight:800;
+  background:var(--primary-600,#0d9488); color:#fff; cursor:pointer; transition:transform .15s, opacity .2s;
+}
+.nxad-btn:disabled{ opacity:.55; cursor:wait; }
+.nxad-btn:active{ transform:scale(.97); }
+.nxad-btn.ghost{ background:var(--muted); color:var(--text-2); }
+.nxad-btn.danger{ background:#fef2f2; color:#b91c1c; }
+.nxad-btn.sm{ padding:8px 12px; font-size:12px; border-radius:10px; }
+.nxad-list{ display:flex; flex-direction:column; gap:10px; }
+.nxad-row{
+  display:flex; align-items:center; gap:12px; padding:10px; background:var(--surface);
+  border:1px solid var(--border); border-radius:16px;
+}
+.nxad-row.off{ opacity:.6; }
+.nxad-thumb{
+  flex:0 0 96px; height:54px; border-radius:10px; overflow:hidden; background:var(--muted);
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.nxad-thumb img, .nxad-thumb video{ width:100%; height:100%; object-fit:cover; }
+.nxad-meta{ flex:1; min-width:0; }
+.nxad-meta b{ display:block; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nxad-meta span{ font-size:11.5px; color:var(--text-3); }
+.nxad-acts{ display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+.nxad-empty{ text-align:center; padding:26px 10px; color:var(--text-3); font-size:13px; }
+@media (max-width:560px){
+  .nxad-form{ grid-template-columns:1fr; padding:13px; }
+  .nxad-row{ flex-wrap:wrap; }
+  .nxad-thumb{ flex-basis:84px; height:48px; }
+  .nxad-acts{ width:100%; justify-content:flex-start; }
+}
+
+/* ---------- ۸) پنل‌ها: خوانایی بهتر و شلوغی کمتر ---------- */
+#adminCard .admin-stats-box, #ownerCard .admin-stats-box{ margin-bottom:16px; }
+#adminCard .biz-manage-row, #ownerCard .biz-manage-row{
+  border-radius:16px; border:1px solid var(--border); background:var(--surface);
+  box-shadow:var(--shadow-sm); margin-bottom:10px;
+}
+#adminCard .admin-filters{ display:flex; flex-wrap:nowrap; overflow-x:auto; gap:8px; padding-bottom:6px; scrollbar-width:none; }
+#adminCard .admin-filters::-webkit-scrollbar{ display:none; }
+#adminCard .admin-filter-chip{ flex:0 0 auto; white-space:nowrap; }
+#adminCard .section-title, #ownerCard .section-title{ margin-bottom:14px; }
+
+/* ---------- ۹) لوگو و رنگ ---------- */
+.header .logo-mark{
+  background:linear-gradient(145deg,#ffffff 0%,#e6fbf7 100%) !important;
+  box-shadow:0 4px 14px rgba(15,118,110,.22), inset 0 0 0 1px rgba(255,255,255,.7) !important;
+  border-radius:14px; display:flex; align-items:center; justify-content:center;
+}
+.header .logo-mark svg{ display:block; }
+
+/* ---------- ۱۰) سازگاری با گوشی ---------- */
+html, body{ max-width:100%; }
+body{ overflow-x:clip; }
+img, video, canvas{ max-width:100%; }
+.nxa-sheet{ max-width:100%; box-sizing:border-box; }
+@media (max-width:420px){
+  details.biz-accordion .business-actions{ grid-template-columns:repeat(auto-fit,minmax(52px,1fr)) !important; gap:6px !important; }
+  details.biz-accordion .business-actions .action-btn{ min-height:54px !important; }
+  .nx-cat-grid{ gap:14px 4px !important; }
+  .nx-cat-name{ font-size:11.5px; }
+}
+@media (hover:none){
+  .action-btn, .nx-cat-tile, .nx-pop-chip{ min-height:44px; }
+}
+
+/* دسکتاپ: چیپ‌های «محبوب‌ترین‌ها» بریده نشوند */
+@media (min-width:700px){ .nx-pop-row{ flex-wrap:wrap; overflow:visible; } }
+/* لوگوی هدر کمی بزرگ‌تر */
+.header .logo-mark svg{ width:26px; height:26px; }
+
+/* =====================================================================
+   v14.1 — دکمه‌های بدنهٔ آکاردئون: یک خط، فقط آیکون، رسپانسیو
+   ===================================================================== */
+details.biz-accordion .business-actions,
+.nx-bsheet-body .business-actions{
+  display:flex !important; flex-wrap:nowrap !important; gap:6px !important;
+  grid-template-columns:none !important; align-items:stretch; width:100%;
+}
+details.biz-accordion .business-actions .action-btn,
+.nx-bsheet-body .business-actions .action-btn{
+  flex:1 1 0 !important; min-width:0 !important; width:auto !important;
+  height:42px !important; min-height:42px !important; padding:0 !important;
+  border-radius:12px !important; gap:0 !important;
+  display:flex !important; flex-direction:row !important; align-items:center; justify-content:center;
+  box-shadow:none !important;
+}
+details.biz-accordion .business-actions .action-btn::after,
+.nx-bsheet-body .business-actions .action-btn::after{ content:none !important; display:none !important; }
+details.biz-accordion .business-actions .action-btn svg,
+.nx-bsheet-body .business-actions .action-btn svg{ width:19px !important; height:19px !important; }
+details.biz-accordion .business-actions .insta-empty{ display:flex !important; }
+
+/* ---------- دکمهٔ تماس هدر آکاردئون: ملایم و هم‌اندازهٔ دکمهٔ یادداشت ---------- */
+details.biz-accordion > summary .biz-quick-call{
+  width:32px !important; height:32px !important; flex:0 0 32px !important;
+  border-radius:10px !important; padding:0 !important;
+  background:transparent !important; color:var(--primary-700,#0f766e) !important;
+  border:1px solid var(--border,#e7e5e4) !important; box-shadow:none !important;
+  display:grid !important; place-items:center; font-size:16px !important;
+  transition:background .18s, border-color .18s;
+}
+details.biz-accordion > summary .biz-quick-call:hover,
+details.biz-accordion > summary .biz-quick-call:active{
+  background:var(--primary-50,#f0fdfa) !important; border-color:var(--primary-200,#99f6e4) !important;
+}
+details.biz-accordion > summary .biz-quick-call svg{ width:16px; height:16px; }
+
+/* ---------- کپچا: اعداد و باکس خوانا‌تر ---------- */
+#nxaCaptchaImage{
+  max-width:240px; min-height:76px; image-rendering:auto;
+  filter:contrast(1.12) saturate(1.1);
+  background:
+    repeating-linear-gradient(45deg,#f8fafc 0 8px,#f1f5f9 8px 16px);
+  border:2px solid var(--primary-200,#99f6e4); border-style:solid;
+  box-shadow:0 3px 10px rgba(13,148,136,.12);
+}
+#nxaCaptchaAnswer{
+  height:56px; font-size:26px !important; font-weight:900 !important;
+  letter-spacing:.6em; text-indent:.6em; font-variant-numeric:tabular-nums;
+  border:2px solid var(--primary-200,#99f6e4) !important;
+  background:var(--surface,#fff) !important; color:var(--primary-800,#115e59) !important;
+  box-shadow:inset 0 2px 4px rgba(15,23,42,.04);
+}
+#nxaCaptchaAnswer:focus{
+  border-color:var(--primary-500,#14b8a6) !important;
+  box-shadow:0 0 0 4px rgba(20,184,166,.15) !important;
+}
+
+</style>
+<script id="nx-v14-ads">
+/* NOMAX v14 — باکس‌های تبلیغاتی (تصویر / GIF / ویدیو / فلش SWF)
+   ذخیره‌سازی: همان جدول موجود nomax_site_settings با کلید site_ads (بدون تغییر بک‌اند)
+   فایل‌ها: همان باکت موجود biz-public */
+(function(){
+  'use strict';
+  var KEY = 'site_ads', MAX_ADS = 16, BUCKET = 'biz-public';
+  var SUPA = 'https://pqydooffsqhvrmswzpfa.supabase.co/';
+  var ads = [];
+  var timers = {};
+  var SLOT_LABEL = { a:'بنر افقی راست (۳۲۰×۱۰۰)', b:'بنر افقی چپ (۳۲۰×۱۰۰)', c:'کناره راست (۱۰۰×۴۰۰)', d:'کناره چپ (۱۰۰×۴۰۰)' };
+  var SLOT_ID = { a:'nxAdA', b:'nxAdB', c:'nxAdC', d:'nxAdD' };
+  function slotId(s){ return SLOT_ID[s] || 'nxAdA'; }
+  function rowEl(){
+    var p = document.getElementById('nxAdRow'); if(p) return p;
+    var c = document.querySelector('.container'); if(!c) return null;
+    p = document.createElement('div'); p.id = 'nxAdRow'; p.className = 'nx-ad-row'; p.hidden = true;
+    c.appendChild(p); return p;
+  }
+  function pairEl(){
+    var p = document.getElementById('nxAdPair'); if(p) return p;
+    var c = document.querySelector('.container'); if(!c) return null;
+    p = document.createElement('div'); p.id = 'nxAdPair'; p.className = 'nx-ad-pair'; p.hidden = true;
+    c.appendChild(p); return p;
+  }
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function toast(m, k){ if(typeof window.showToast === 'function') window.showToast(m, k || 'success'); else alert(m); }
+  function hasSb(){ return typeof sb !== 'undefined' && !!sb; }
+
+  /* ---------- اعتبارسنجی ---------- */
+  function safeSrc(u){
+    u = String(u || '');
+    if(u.indexOf(SUPA) === 0) return u;
+    if(/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(u)) return u;
+    return '';
+  }
+  function safeLink(u){
+    u = String(u || '').trim();
+    return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : '';
+  }
+  function parseVal(v){
+    try{ if(typeof v === 'string') v = JSON.parse(v); if(typeof v === 'string') v = JSON.parse(v); }catch(e){ return []; }
+    return Array.isArray(v) ? v : [];
+  }
+  function kindOf(file){
+    var n = (file.name || '').toLowerCase(), t = file.type || '';
+    if(/\.swf$/.test(n) || t === 'application/x-shockwave-flash') return 'swf';
+    if(/^video\//.test(t) || /\.(mp4|webm)$/.test(n)) return 'video';
+    if(/^image\//.test(t)) return 'image';
+    return '';
+  }
+
+  /* ---------- بارگذاری و ذخیره ---------- */
+  async function load(){
+    try{
+      if(!hasSb()) return;
+      var r = await sb.from('nomax_site_settings').select('setting_value').eq('setting_key', KEY).maybeSingle();
+      if(r.error) throw r.error;
+      ads = r.data ? parseVal(r.data.setting_value) : [];
+    }catch(e){ console.warn('ads load', e); }
+    renderSlots();
+  }
+  async function save(list){
+    if(!hasSb()) throw new Error('اتصال پایگاه داده آماده نیست.');
+    if(typeof window.isAdmin !== 'function' || !(await window.isAdmin(true))) throw new Error('فقط مدیر سایت می‌تواند تبلیغات را تغییر دهد.');
+    var res = await sb.from('nomax_site_settings')
+      .upsert({ setting_key:KEY, setting_value:JSON.stringify(list), updated_at:new Date().toISOString() }, { onConflict:'setting_key' })
+      .select('setting_key').single();
+    if(res.error) throw res.error;
+    ads = list;
+    renderSlots(); renderAdmin();
+  }
+
+  /* ---------- Ruffle (پخش فلش) ---------- */
+  var rufflePromise = null;
+  function loadRuffle(){
+    if(window.RufflePlayer && window.RufflePlayer.newest) return Promise.resolve();
+    if(rufflePromise) return rufflePromise;
+    rufflePromise = new Promise(function(res, rej){
+      window.RufflePlayer = window.RufflePlayer || {};
+      window.RufflePlayer.config = { publicPath:'https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle/', autoplay:'on', unmuteOverlay:'hidden', splashScreen:false, letterbox:'on', contextMenu:'off' };
+      var sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle/ruffle.js';
+      sc.onload = res; sc.onerror = function(){ rufflePromise = null; rej(new Error('ruffle')); };
+      document.head.appendChild(sc);
+    });
+    return rufflePromise;
+  }
+  function mountSwf(box){
+    if(!box || box.getAttribute('data-done')) return;
+    box.setAttribute('data-done', '1');
+    var src = box.getAttribute('data-src');
+    loadRuffle().then(function(){
+      var p = window.RufflePlayer.newest().createPlayer();
+      p.style.width = '100%'; p.style.height = '100%';
+      box.appendChild(p);
+      p.load(src);
+    }).catch(function(){
+      box.innerHTML = '<div class="nx-ad-fallback">پخش فایل فلش ممکن نشد</div>';
+    });
+  }
+
+  /* ---------- نمایش عمومی ---------- */
+  function slotEl(id){
+    var e = $(id); if(e) return e;
+    var c = (id === 'nxAdC' || id === 'nxAdD') ? pairEl() : rowEl(); if(!c) return null;
+    e = document.createElement('section');
+    e.id = id; e.className = 'nx-ad-slot'; e.hidden = true;
+    e.setAttribute('aria-label', 'تبلیغات');
+    if((id === 'nxAdC' || id === 'nxAdA') && c.firstChild) c.insertBefore(e, c.firstChild); else c.appendChild(e);
+    return e;
+  }
+  function itemHTML(a, i){
+    var src = safeSrc(a.src), link = safeLink(a.link), inner = '';
+    if(!src) return '';
+    if(a.kind === 'video'){
+      inner = '<video src="' + esc(src) + '" muted loop playsinline preload="metadata" aria-label="' + esc(a.title || 'تبلیغ') + '"></video>';
+    }else if(a.kind === 'swf'){
+      inner = '<div class="nx-ad-swf" data-src="' + esc(src) + '"></div>';
+    }else{
+      inner = '<img src="' + esc(src) + '" alt="' + esc(a.title || 'تبلیغ') + '" loading="lazy" decoding="async">';
+    }
+    var wrap = (link && a.kind !== 'swf')
+      ? '<a href="' + esc(link) + '" target="_blank" rel="noopener noreferrer sponsored">' + inner + '</a>'
+      : '<div class="nx-ad-media">' + inner + '</div>';
+    /* برای فلش، لینک روی یک لایهٔ شفاف جدا قرار می‌گیرد تا بازی/انیمیشن کار کند */
+    return '<div class="nx-ad-item" data-i="' + i + '">' + wrap + '</div>';
+  }
+  function show(slot, idx){
+    var el = $(slotId(slot)); if(!el) return;
+    var items = el.querySelectorAll('.nx-ad-item'), dots = el.querySelectorAll('.nx-ad-dots button');
+    if(!items.length) return;
+    idx = (idx + items.length) % items.length;
+    el.setAttribute('data-cur', String(idx));
+    Array.prototype.forEach.call(items, function(it, k){
+      var on = k === idx;
+      it.classList.toggle('on', on);
+      var v = it.querySelector('video');
+      if(v){ if(on){ var pr = v.play(); if(pr && pr.catch) pr.catch(function(){}); } else { try{ v.pause(); }catch(e){} } }
+      if(on){ var sw = it.querySelector('.nx-ad-swf'); if(sw) mountSwf(sw); }
+    });
+    Array.prototype.forEach.call(dots, function(d, k){ d.classList.toggle('on', k === idx); });
+  }
+  function renderSlot(slot){
+    var el = slotEl(slotId(slot)); if(!el) return;
+    clearInterval(timers[slot]);
+    var list = ads.filter(function(a){ return a && a.active !== false && a.slot === slot && safeSrc(a.src); });
+    if(!list.length){ el.hidden = true; el.innerHTML = ''; return; }
+    var html = '<div class="nx-ad-frame">';
+    list.forEach(function(a, i){ html += itemHTML(a, i); });
+    html += '<span class="nx-ad-tag">تبلیغ</span>';
+    if(list.length > 1){
+      html += '<div class="nx-ad-dots">' + list.map(function(a, i){ return '<button type="button" aria-label="تبلیغ ' + (i + 1) + '" data-d="' + i + '"></button>'; }).join('') + '</div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+    el.hidden = false;
+    var cur = 0;
+    show(slot, 0);
+    if(list.length > 1){
+      el.querySelector('.nx-ad-dots').addEventListener('click', function(e){
+        var b = e.target.closest && e.target.closest('button[data-d]'); if(!b) return;
+        cur = Number(b.getAttribute('data-d')); show(slot, cur);
+      });
+      timers[slot] = setInterval(function(){
+        if(document.hidden || el.offsetParent === null) return;
+        cur = (Number(el.getAttribute('data-cur')) || 0) + 1; show(slot, cur);
+      }, 6500);
+    }
+  }
+  function renderSlots(){
+    renderSlot('a'); renderSlot('b'); renderSlot('c'); renderSlot('d');
+    var pr = document.getElementById('nxAdPair');
+    if(pr){ var ec = $('nxAdC'), ed = $('nxAdD'); pr.hidden = !!((!ec || ec.hidden) && (!ed || ed.hidden)); }
+    var rw = document.getElementById('nxAdRow');
+    if(rw){ var ea = $('nxAdA'), eb = $('nxAdB'); rw.hidden = !!((!ea || ea.hidden) && (!eb || eb.hidden)); }
+    if(typeof window.nxOrderLayout === 'function') try{ window.nxOrderLayout(); }catch(e){}
+  }
+
+  /* ---------- پنل مدیر ---------- */
+  var pending = null; /* فایل انتخاب‌شده */
+  function fmtSize(n){ return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB'; }
+  function thumb(a){
+    var src = safeSrc(a.src);
+    if(!src) return '❓';
+    if(a.kind === 'video') return '<video src="' + esc(src) + '" muted preload="metadata"></video>';
+    if(a.kind === 'swf') return '🎞️';
+    return '<img src="' + esc(src) + '" alt="">';
+  }
+  function renderAdmin(){
+    var box = $('adminAdsBox'); if(!box) return;
+    var rows = ads.length ? ads.map(function(a, i){
+      return '<div class="nxad-row' + (a.active === false ? ' off' : '') + '" data-id="' + esc(a.id) + '">' +
+        '<div class="nxad-thumb">' + thumb(a) + '</div>' +
+        '<div class="nxad-meta"><b>' + esc(a.title || 'بدون عنوان') + '</b><span>' + esc(SLOT_LABEL[a.slot] || '') + ' · ' + ({image:'تصویر',video:'ویدیو',swf:'فلش'}[a.kind] || '') + (a.active === false ? ' · غیرفعال' : '') + '</span></div>' +
+        '<div class="nxad-acts">' +
+          '<button type="button" class="nxad-btn ghost sm" data-act="up"' + (i === 0 ? ' disabled' : '') + ' aria-label="بالاتر">▲</button>' +
+          '<button type="button" class="nxad-btn ghost sm" data-act="down"' + (i === ads.length - 1 ? ' disabled' : '') + ' aria-label="پایین‌تر">▼</button>' +
+          '<button type="button" class="nxad-btn ghost sm" data-act="toggle">' + (a.active === false ? 'فعال‌سازی' : 'غیرفعال') + '</button>' +
+          '<button type="button" class="nxad-btn danger sm" data-act="del">حذف</button>' +
+        '</div></div>';
+    }).join('') : '<div class="nxad-empty">هنوز تبلیغی ثبت نشده است.</div>';
+
+    box.innerHTML =
+      '<div class="nxad-note">📢 باکس‌های تبلیغاتی صفحهٔ اصلی را از اینجا مدیریت کنید. چهار جایگاه داریم: دو بنر افقی ۳۲۰×۱۰۰ که کنار هم قرار می‌گیرند و جمع عرضشان به‌همراه فاصله برابر عرض تصویر شاخص است، و دو بنر عمودی ۱۰۰×۴۰۰ که در دسکتاپ ثابت در دو طرف سایت و در موبایل کنار هم در یک ردیف دیده می‌شوند (برای کیفیت بهتر فایل را دو برابر بسازید: ۶۴۰×۲۰۰ و ۲۰۰×۸۰۰). فرمت‌های مجاز: تصویر (JPG، PNG، WebP، GIF)، ویدیو (MP4، WebM) و فلش (SWF). حداکثر ' + MAX_ADS + ' تبلیغ. اگر در یک جایگاه چند تبلیغ فعال باشد، به‌صورت اسلاید نمایش داده می‌شوند. پخش SWF با شبیه‌ساز Ruffle انجام می‌شود (مرورگرها دیگر فلش را پشتیبانی نمی‌کنند).</div>' +
+      '<div class="nxad-form">' +
+        '<div class="full"><label for="nxadTitle">عنوان (فقط برای مدیر و متن جایگزین)</label><input id="nxadTitle" type="text" maxlength="60" placeholder="مثلاً: تخفیف ویژه پاییز"></div>' +
+        '<div><label for="nxadSlot">جایگاه نمایش</label><select id="nxadSlot"><option value="a">' + SLOT_LABEL.a + '</option><option value="b">' + SLOT_LABEL.b + '</option><option value="c">' + SLOT_LABEL.c + '</option><option value="d">' + SLOT_LABEL.d + '</option></select></div>' +
+        '<div><label for="nxadLink">لینک هنگام کلیک (اختیاری)</label><input id="nxadLink" type="url" dir="ltr" placeholder="https://..."></div>' +
+        '<div class="full"><label class="nxad-file" for="nxadFile"><span>📁 انتخاب فایل تبلیغ (تصویر / ویدیو / SWF)</span><input id="nxadFile" type="file" accept="image/*,video/mp4,video/webm,.swf,application/x-shockwave-flash"></label><div class="nxad-prev" id="nxadPrev">فایلی انتخاب نشده است.</div></div>' +
+        '<div class="full"><button type="button" class="nxad-btn" id="nxadAdd" style="width:100%">➕ افزودن تبلیغ</button></div>' +
+      '</div>' +
+      '<div class="nxad-list">' + rows + '</div>';
+
+    $('nxadFile').onchange = function(){
+      var f = this.files && this.files[0]; pending = null;
+      var pv = $('nxadPrev');
+      if(!f){ pv.textContent = 'فایلی انتخاب نشده است.'; return; }
+      var k = kindOf(f);
+      if(!k){ pv.textContent = 'این نوع فایل پشتیبانی نمی‌شود.'; this.value = ''; return; }
+      pending = { file:f, kind:k };
+      pv.textContent = f.name + ' — ' + fmtSize(f.size);
+    };
+    $('nxadAdd').onclick = addAd;
+    box.querySelector('.nxad-list').onclick = onListClick;
+  }
+
+  function downscale(file){
+    return new Promise(function(resolve){
+      if(file.type === 'image/gif' || file.size < 400 * 1024){ resolve(file); return; }
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function(){
+        try{
+          var w = img.naturalWidth, h = img.naturalHeight, m = 1600;
+          if(w > m){ h = Math.round(h * m / w); w = m; }
+          var c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          c.toBlob(function(b){ URL.revokeObjectURL(url); resolve(b && b.size < file.size ? new File([b], 'ad.jpg', { type:'image/jpeg' }) : file); }, 'image/jpeg', 0.86);
+        }catch(e){ URL.revokeObjectURL(url); resolve(file); }
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+  function toDataUrl(file){
+    return new Promise(function(res, rej){ var r = new FileReader(); r.onload = function(){ res(r.result); }; r.onerror = rej; r.readAsDataURL(file); });
+  }
+  async function upload(file, kind){
+    var s = await sb.auth.getSession();
+    var uid = s && s.data && s.data.session ? s.data.session.user.id : null;
+    if(!uid) throw new Error('ابتدا به‌عنوان مدیر وارد شوید.');
+    var ext = ((file.name || '').split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+    var ct = file.type || (kind === 'swf' ? 'application/x-shockwave-flash' : 'application/octet-stream');
+    var path = uid + '/ad-' + Date.now() + '.' + ext;
+    var up = await sb.storage.from(BUCKET).upload(path, file, { contentType:ct, upsert:false });
+    if(up.error) throw up.error;
+    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  async function addAd(){
+    var btn = $('nxadAdd');
+    if(!pending){ toast('ابتدا یک فایل انتخاب کنید.', 'error'); return; }
+    if(ads.length >= MAX_ADS){ toast('حداکثر ' + MAX_ADS + ' تبلیغ مجاز است.', 'error'); return; }
+    var link = $('nxadLink').value.trim();
+    if(link && !safeLink(link)){ toast('لینک باید با http:// یا https:// شروع شود.', 'error'); return; }
+    var limit = { image:3 * 1048576, video:8 * 1048576, swf:5 * 1048576 }[pending.kind];
+    if(pending.file.size > limit){ toast('حجم فایل بیش از حد مجاز است (' + fmtSize(limit) + ').', 'error'); return; }
+    btn.disabled = true; btn.textContent = 'در حال بارگذاری…';
+    try{
+      var file = pending.file, kind = pending.kind, url;
+      if(kind === 'image') file = await downscale(file);
+      try{
+        url = await upload(file, kind);
+      }catch(e){
+        console.warn('ad upload', e);
+        if(kind === 'image' && file.size <= 300 * 1024) url = await toDataUrl(file);
+        else throw new Error('بارگذاری فایل انجام نشد؛ دسترسی باکت یا نوع فایل مجاز را بررسی کنید.');
+      }
+      var item = {
+        id:'ad' + Date.now().toString(36),
+        title:($('nxadTitle').value.trim() || 'تبلیغ').slice(0, 60),
+        slot:(['a','b','c','d'].indexOf($('nxadSlot').value) > -1 ? $('nxadSlot').value : 'a'),
+        kind:kind, src:url, link:link, active:true
+      };
+      await save(ads.concat([item]));
+      pending = null;
+      toast('تبلیغ اضافه شد ✓', 'success');
+    }catch(e){
+      console.error(e);
+      toast((e && e.message) ? e.message : 'ذخیره انجام نشد.', 'error');
+      btn.disabled = false; btn.textContent = '➕ افزودن تبلیغ';
+    }
+  }
+
+  async function onListClick(e){
+    var b = e.target.closest && e.target.closest('button[data-act]'); if(!b || b.disabled) return;
+    var row = b.closest('.nxad-row'); if(!row) return;
+    var id = row.getAttribute('data-id'), act = b.getAttribute('data-act');
+    var i = ads.findIndex(function(a){ return a.id === id; }); if(i < 0) return;
+    var next = ads.slice();
+    if(act === 'up' && i > 0){ var t = next[i - 1]; next[i - 1] = next[i]; next[i] = t; }
+    else if(act === 'down' && i < next.length - 1){ var t2 = next[i + 1]; next[i + 1] = next[i]; next[i] = t2; }
+    else if(act === 'toggle'){ next[i] = Object.assign({}, next[i], { active: next[i].active === false }); }
+    else if(act === 'del'){
+      var ok = typeof window.nomaxConfirm === 'function' ? await window.nomaxConfirm('این تبلیغ حذف شود؟', { danger:true }) : confirm('این تبلیغ حذف شود؟');
+      if(!ok) return;
+      next.splice(i, 1);
+    }else return;
+    try{ await save(next); toast('انجام شد ✓', 'success'); }
+    catch(err){ console.error(err); toast((err && err.message) ? err.message : 'انجام نشد.', 'error'); }
+  }
+
+  /* ---------- اتصال تب «تبلیغات» ---------- */
+  function wireTabs(){
+    var tabs = document.querySelectorAll('#adminSubTabs .admin-sub-tab');
+    Array.prototype.forEach.call(tabs, function(tab){
+      tab.addEventListener('click', function(){
+        var isAds = this.getAttribute('data-sub') === 'ads';
+        var pane = $('adminAdsList'); if(pane) pane.style.display = isAds ? '' : 'none';
+        if(isAds) renderAdmin();
+      });
+    });
+  }
+
+  function boot(){
+    wireTabs();
+    slotEl('nxAdA'); slotEl('nxAdB'); slotEl('nxAdC'); slotEl('nxAdD');
+    if(typeof window.nxOrderLayout === 'function') try{ window.nxOrderLayout(); }catch(e){}
+    load();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.nxAds = { reload: load };
+})();
+
+/* NOMAX v14.1 — شمارندهٔ «ارسال دوباره» با زمان واقعی (بعد از بستن/بازکردن مودال ثابت نماند) */
+(function(){
+  'use strict';
+  var KEY = 'nx_otp_sent', iv = null;
+  function $(id){ return document.getElementById(id); }
+  function fa(n){ return String(n).replace(/\d/g, function(d){ return '۰۱۲۳۴۵۶۷۸۹'.charAt(Number(d)); }); }
+  function wire(){
+    var btn = $('nxaResend'), modal = $('nxaModal');
+    if(!btn || !modal || modal.getAttribute('data-nxotp')) return;
+    modal.setAttribute('data-nxotp', '1');
+    new MutationObserver(function(){
+      if((btn.textContent || '').indexOf('۶۰') > -1){ try{ sessionStorage.setItem(KEY, String(Date.now())); }catch(e){} }
+    }).observe(btn, { childList:true, characterData:true, subtree:true });
+    btn.addEventListener('click', function(){ clearInterval(iv); }, true);
+    new MutationObserver(function(){
+      if(!modal.classList.contains('show')){ clearInterval(iv); return; }
+      setTimeout(function(){
+        var otp = $('nxaScOtp');
+        if(!otp || otp.style.display === 'none') return;
+        var at = 0; try{ at = Number(sessionStorage.getItem(KEY)) || 0; }catch(e){}
+        clearInterval(iv);
+        function t(){
+          var left = 60 - Math.floor((Date.now() - at) / 1000);
+          if(left > 0){ btn.disabled = true; btn.textContent = 'ارسال دوباره تا ' + fa(left) + ' ثانیه دیگر'; }
+          else { btn.disabled = false; btn.textContent = 'ارسال دوباره'; clearInterval(iv); }
+        }
+        t(); iv = setInterval(t, 1000);
+      }, 120);
+    }).observe(modal, { attributes:true, attributeFilter:['class'] });
+  }
+  wire(); setInterval(wire, 1500);
+})();
+
 </script>
 </body>
   </html>
@@ -19165,8 +19900,8 @@ details.biz-accordion .business-actions .action-btn::after{
   color:var(--text-2,#475569);
 }
 details.biz-accordion .business-actions .action-btn.qr-btn:not([title])::after{ content:"کد QR"; }
-/* اینستاگرامِ ثبت‌نشده: دکمهٔ مرده نمایش داده نشود */
-details.biz-accordion .business-actions .insta-empty{ display:none !important; }
+/* اینستاگرامِ ثبت‌نشده: دکمهٔ غیرفعال (قابل‌مشاهده) */
+details.biz-accordion .business-actions .insta-empty{ display:flex !important; opacity:.5; filter:grayscale(1); cursor:not-allowed !important; pointer-events:none; }
 
 /* ===== ۴) کسب‌وکارهای برتر (کارت‌های صفحهٔ اصلی) ===== */
 .nx-mini-biz{ border-radius:20px; transition:transform .18s, box-shadow .18s; }
@@ -19182,3 +19917,318 @@ details.biz-accordion .business-actions .insta-empty{ display:none !important; }
 }
 .nx-mini-action{ font-weight:800; }
 </style>
+
+<!-- =====================================================================
+     Achareh-style visual skin (طراحی ظاهری شبیه آچاره)
+     فقط CSS + یک نوار پایین ظاهری. هیچ تغییری در بک‌اند/منطق/کدهای قبلی نیست.
+     برای برگشت به حالت قبل: همین بلوک (style#nx-achareh-skin، nav#nxAcNav و script#nx-achareh-nav) را حذف کنید.
+     ===================================================================== -->
+<style id="nx-achareh-skin">
+/* ---------- ۱) توکن‌های رنگ و شکل ---------- */
+:root{
+  --ac-teal:#00bfa5; --ac-teal-dark:#00a38c; --ac-teal-soft:#e6faf6;
+  --ac-yellow:#ffd36e; --ac-purple:#7c1bdb; --ac-ink:#1b4b5f;
+  --ac-gray:#ececf1; --ac-line:#e8e8ee;
+  --ac-hero-h:236px;
+
+  --primary-50:#e6faf6; --primary-100:#c9f3ea; --primary-200:#99e8d8;
+  --primary-400:#33d1b9; --primary-500:#00bfa5; --primary-600:#00bfa5;
+  --primary-700:#00a38c; --primary-800:#00806f;
+  --accent-50:#fff8e5; --accent-100:#ffefc2; --accent-400:#ffd36e;
+  --accent-500:#ffc34d; --accent-600:#f5a900; --accent-700:#b97d00;
+  --radius:14px; --radius-sm:10px; --radius-xs:8px;
+  --shadow-sm:0 1px 3px rgba(20,20,40,.05);
+  --shadow:0 4px 14px rgba(20,20,40,.07);
+  --shadow-lg:0 10px 30px rgba(20,20,40,.12);
+  --shadow-primary:0 6px 18px rgba(0,191,165,.28);
+  --nx7-brand:#00bfa5; --nx7-brand-dark:#00a38c; --nx7-soft:#e6faf6; --nx7-line:#e8e8ee;
+}
+:root:not([data-theme="dark"]){
+  --bg:#ffffff; --surface:#ffffff; --border:#e8e8ee; --muted:#f3f3f6;
+  --text:#1c1c21; --text-2:#55555f; --text-3:#9a9aa6;
+}
+html:not([data-theme="dark"]){ background:#fff; }
+html:not([data-theme="dark"]) #nxSplash{ background:#fff; color:var(--ac-teal); }
+body{ -webkit-font-smoothing:antialiased; }
+:root:not([data-theme="dark"]) body{ background:#fff; }
+
+/* ---------- ۲) هدر: سفید و ساده مثل آچاره ---------- */
+header.header{
+  min-height:60px!important; padding:8px 62px 8px 104px!important;
+  justify-content:flex-start!important; text-align:right!important;
+  background:var(--surface)!important; border-bottom:0!important; box-shadow:none!important;
+  position:sticky!important; top:0; z-index:60;
+}
+header.header .logo-mark{ background:transparent!important; border:0!important; width:30px!important; height:30px!important; min-width:30px!important }
+header.header h1{ color:var(--ac-teal)!important; font-weight:900!important; font-size:22px!important; letter-spacing:-.5px }
+header.header .header-menu-toggle,
+header.header .theme-toggle{
+  background:transparent!important; border:0!important; box-shadow:none!important;
+  color:var(--text)!important; width:40px!important; height:40px!important; border-radius:12px!important;
+}
+header.header .theme-toggle:not(.acct-btn){ color:var(--ac-teal)!important }
+header.header .header-menu-toggle:hover,
+header.header .theme-toggle:hover{ background:var(--ac-teal-soft)!important }
+
+/* ---------- ۳) هیرو سبز + نوار جستجوی سفید ---------- */
+.container{ padding-top:0!important }
+#nxHomeTop{
+  position:relative; margin:0 -16px 6px!important; padding:0 16px 8px;
+  display:flex; flex-direction:column;
+  background:linear-gradient(var(--ac-teal),var(--ac-teal)) top/100% var(--ac-hero-h) no-repeat;
+}
+#nxHomeTop::before{
+  content:"کسب‌وکار مورد نظرت رو\Aراحت پیدا کن!";
+  white-space:pre-line; display:block; height:150px; padding:30px 2px 0;
+  color:#fff; font-size:26px; font-weight:900; line-height:1.55; text-align:right;
+  background:
+    radial-gradient(circle at 12% 70%,rgba(255,255,255,.14) 0 34px,transparent 35px),
+    radial-gradient(circle at 24% 38%,rgba(255,255,255,.10) 0 16px,transparent 17px);
+}
+#nxHomeTop::after{
+  content:""; position:absolute; left:0; right:0; top:calc(var(--ac-hero-h) - 24px); height:24px;
+  background:var(--surface); clip-path:polygon(0 0,50% 62%,100% 0,100% 100%,0 100%); pointer-events:none;
+}
+.nx-fake-search{
+  position:relative; z-index:1; margin-bottom:calc(var(--ac-hero-h) - 150px - 52px)!important;
+  background:#fff!important; border-radius:12px!important; min-height:52px!important;
+  box-shadow:0 4px 14px rgba(0,0,0,.10); color:var(--text-2)!important; font-weight:700;
+}
+.nx-fake-search span{ color:var(--text)!important; font-weight:800!important; font-size:14px }
+.nx-fake-search svg{ color:var(--text-3)!important }
+.nx-fake-search::after{
+  content:"بهبهان"; flex:0 0 auto; padding-right:12px; margin-right:2px;
+  border-right:1px solid var(--ac-line); font-size:13px; font-weight:700; color:var(--text-2);
+}
+
+/* ---------- ۴) شبکهٔ دسته‌ها (کاشی‌های مربعی رنگی) ---------- */
+.nx-cat-grid{ gap:22px 8px!important; margin-top:6px!important; padding:0 2px }
+.nx-cat-grid::before{
+  content:"دسته‌بندی کسب‌وکارها"; grid-column:1/-1; text-align:center;
+  font-size:19px; font-weight:900; color:var(--text); margin:0 0 6px;
+}
+.nx-cat-ico{
+  width:min(78px,19vw)!important; height:min(78px,19vw)!important; border-radius:10px!important;
+  box-shadow:none!important; font-size:34px!important; filter:drop-shadow(0 1px 1px rgba(0,0,0,.18));
+}
+.nx-cat-tile:nth-child(8n+1) .nx-cat-ico{ background:#17e3a8!important }
+.nx-cat-tile:nth-child(8n+2) .nx-cat-ico{ background:#b8806f!important }
+.nx-cat-tile:nth-child(8n+3) .nx-cat-ico{ background:#ff8a33!important }
+.nx-cat-tile:nth-child(8n+4) .nx-cat-ico{ background:#0b6fb4!important }
+.nx-cat-tile:nth-child(8n+5) .nx-cat-ico{ background:#ffa800!important }
+.nx-cat-tile:nth-child(8n+6) .nx-cat-ico{ background:#c94a4a!important }
+.nx-cat-tile:nth-child(8n+7) .nx-cat-ico{ background:#0a2f5c!important }
+.nx-cat-tile:nth-child(8n+8) .nx-cat-ico{ background:#9a9aff!important }
+.nx-cat-tile .nx-cat-all{ background:#9a9aff!important }
+.nx-cat-name{ font-size:12.5px!important; font-weight:600!important; color:var(--text-2)!important }
+
+/* ---------- ۵) بخش‌ها و کارت‌های کسب‌وکار ---------- */
+.nx-home-section{ margin-top:30px }
+.nx-section-head{ align-items:center!important; margin-bottom:14px!important }
+.nx-section-title{ font-size:16px!important; font-weight:900!important; color:var(--text)!important }
+.nx-section-sub{ font-size:11.5px!important; color:var(--text-3)!important; font-weight:500!important }
+.nx-section-link{ color:var(--text-2)!important; font-weight:700!important; font-size:12.5px!important }
+.nx-section-link::after{ content:" ‹"; font-size:15px; color:var(--text-2) }
+.nx-business-strip{ gap:14px!important; padding:2px 2px 14px!important }
+.nx-mini-biz{
+  flex:0 0 min(78%,250px)!important; max-width:250px!important;
+  border-radius:14px!important; border:0!important; background:#fff!important;
+  box-shadow:0 2px 12px rgba(20,20,40,.10)!important; overflow:hidden; position:relative;
+}
+.nx-mini-image{ background:var(--muted)!important; border-radius:0!important }
+.nx-mini-body{ padding:12px 14px 0!important }
+.nx-mini-name{ font-size:14.5px!important; font-weight:900!important; min-height:0!important; margin-bottom:6px }
+.nx-mini-meta{ font-size:11.5px!important; color:var(--text-3)!important; padding-bottom:10px; border-bottom:1px solid var(--ac-line) }
+.nx-mini-action{
+  display:block; text-align:right; padding:12px 2px 14px!important; font-size:13.5px!important;
+  font-weight:800!important; color:var(--ac-teal)!important; background:transparent!important;
+}
+.nx-mini-verified{
+  top:0!important; right:auto!important; left:0!important; border-radius:0 0 12px 0!important;
+  background:var(--ac-purple)!important; color:#fff!important; padding:6px 11px!important;
+  font-size:11px!important; font-weight:800!important;
+}
+
+/* ---------- ۶) کارت‌ها، دکمه‌ها، فرم‌ها ---------- */
+.card{ border-radius:14px!important; border:1px solid var(--border)!important; box-shadow:var(--shadow-sm)!important }
+.search-box{ background:var(--ac-gray)!important; border:0!important; border-radius:12px!important; box-shadow:none!important }
+.search-box:focus-within{ box-shadow:0 0 0 2px var(--ac-teal)!important; background:#fff!important }
+.search-box button{ background:var(--ac-teal)!important; border-radius:10px!important }
+.search-box button:hover{ background:var(--ac-teal-dark)!important }
+body.nx-search-mode .search-box{ background:var(--ac-gray)!important }
+.nx-tab{ border-radius:10px!important; font-weight:700!important; background:var(--muted)!important; border-color:transparent!important }
+.nx-tab.active{ background:var(--ac-teal)!important; border-color:var(--ac-teal)!important; box-shadow:none!important; color:#fff!important }
+.nx-pop-chip{ border-radius:10px!important; background:var(--muted)!important; border-color:transparent!important }
+details.biz-accordion{ border-radius:14px!important; border:0!important; box-shadow:0 2px 12px rgba(20,20,40,.09)!important }
+details.biz-accordion[open]{ box-shadow:0 8px 26px rgba(20,20,40,.14)!important }
+.terms-accept,.notif-prompt-enable,.btn-approve{ background:var(--ac-teal)!important; border-radius:10px!important; color:#fff!important }
+.field input,.field textarea,.field select{ border-radius:10px!important }
+.field input:focus,.field textarea:focus,.field select:focus{ border-color:var(--ac-teal)!important; box-shadow:0 0 0 3px rgba(0,191,165,.15)!important }
+.modal,.quick-modal,.notif-prompt-card,.terms-card{ border-radius:18px!important }
+.toast{ border-radius:12px!important }
+
+/* ---------- ۷) نوار پایین شناور ---------- */
+#nxAcNav{
+  position:fixed; z-index:800; right:12px; left:12px; bottom:calc(10px + env(safe-area-inset-bottom));
+  max-width:560px; margin:0 auto; display:flex; justify-content:space-around; align-items:center;
+  padding:8px 6px; background:#fff; border-radius:16px; box-shadow:0 4px 22px rgba(20,20,40,.16);
+  direction:rtl; font-family:inherit;
+}
+#nxAcNav button{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; min-height:48px;
+  border:0; background:transparent; color:#4a4a55; font:inherit; font-size:11px; font-weight:600;
+  cursor:pointer; padding:4px 0; border-radius:12px; -webkit-tap-highlight-color:transparent;
+}
+#nxAcNav button svg{ width:24px; height:24px }
+#nxAcNav button.on{ color:var(--ac-teal); font-weight:800 }
+body.nx-search-mode #nxAcNav{ display:none }
+[data-theme="dark"] #nxAcNav{ background:#1e293b; box-shadow:0 4px 22px rgba(0,0,0,.5) }
+[data-theme="dark"] #nxAcNav button{ color:#cbd5e1 }
+[data-theme="dark"] #nxAcNav button.on{ color:#2dd4bf }
+
+/* ---------- ۸) حالت تاریک و دسکتاپ ---------- */
+[data-theme="dark"] .nx-mini-biz{ background:var(--surface)!important }
+[data-theme="dark"] .nx-fake-search{ background:var(--surface)!important }
+[data-theme="dark"] #nxHomeTop::after{ background:var(--bg) }
+[data-theme="dark"] .search-box{ background:var(--muted)!important }
+@media (min-width:820px){
+  #nxHomeTop{ margin:12px 0 6px!important; border-radius:18px; overflow:hidden }
+}
+@media (prefers-reduced-motion:reduce){ #nxAcNav button{ transition:none } }
+</style>
+
+<style id="nx-achareh-footer">
+/* فوتر سبز: آینهٔ برعکسِ هیرو (لبهٔ بالایی V وارونه) */
+.container{ padding-bottom:0!important }
+.container > .footer{
+  position:relative; margin:36px -16px 0!important; padding:58px 20px calc(112px + env(safe-area-inset-bottom))!important;
+  background:var(--ac-teal)!important; color:rgba(255,255,255,.92)!important;
+  font-size:14px!important; font-weight:700; text-align:center; line-height:1.9; overflow:hidden;
+}
+.container > .footer strong{ color:#fff!important; font-weight:900 }
+.container > .footer::before{
+  content:""; position:absolute; left:0; right:0; top:-1px; height:26px;
+  background:var(--surface); clip-path:polygon(0 0,100% 0,100% 100%,50% 36%,0 100%); pointer-events:none;
+}
+.container > .footer::after{
+  content:"نومکس · کسب‌وکارها و خدمات شهر، یک‌جا"; display:block; margin-top:6px;
+  font-size:12px; font-weight:500; color:rgba(255,255,255,.78);
+}
+[data-theme="dark"] .container > .footer::before{ background:var(--bg) }
+@media (min-width:820px){
+  .container > .footer{ margin:36px 0 96px!important; border-radius:18px; padding-bottom:40px!important }
+}
+</style>
+
+<style id="nx-achareh-ads-featured-nav">
+/* ===== ۴ جایگاه تبلیغاتی: دو بنر ۳۲۰×۱۰۰ و دو بنر ۱۶۰×۶۰۰ ===== */
+/* دو بنر افقی کنار هم: هر کدام نصفِ (عرض تصویر شاخص − فاصله)، پس جمع + فاصله = عرض تصویر شاخص */
+.nx-ad-row{ display:flex; justify-content:center; gap:8px; width:100%; max-width:1080px; margin:14px auto; direction:rtl }
+.nx-ad-row[hidden]{ display:none!important }
+.nx-ad-row .nx-ad-slot{ flex:0 1 calc((100% - 8px) / 2); min-width:0; max-width:none; margin:0!important; width:auto }
+.nx-ad-row .nx-ad-frame{ aspect-ratio:32/10!important; border-radius:10px!important; box-shadow:0 2px 10px rgba(20,20,40,.10)!important; border:0!important }
+.nx-ad-pair{ display:flex; justify-content:center; align-items:flex-start; gap:8px; margin:18px auto; max-width:208px; direction:rtl }
+.nx-ad-pair[hidden]{ display:none!important }
+.nx-ad-pair .nx-ad-slot{ flex:0 1 100px; min-width:0; width:auto; max-width:100px; margin:0!important }
+.nx-ad-pair .nx-ad-frame{ aspect-ratio:100/400!important; border-radius:10px!important; box-shadow:0 2px 10px rgba(20,20,40,.10)!important; border:0!important }
+.nx-ad-slot .nx-ad-tag{ top:6px!important; left:6px!important; font-size:9.5px!important; padding:2px 7px!important }
+
+/* ===== تصویر شاخص: کوچک‌تر + ماسک سبز همیشگی ===== */
+.nx-featured-photo{ height:clamp(96px,26vw,128px)!important; border-radius:14px!important; box-shadow:0 2px 12px rgba(20,20,40,.12)!important }
+.nx-featured-shade{ background:linear-gradient(0deg,rgba(0,128,111,.94) 0%,rgba(0,191,165,.72) 50%,rgba(0,191,165,.45) 100%)!important }
+.nx-featured-badge{ top:8px!important; right:8px!important; padding:4px 9px!important; font-size:10px!important }
+.nx-featured-caption{ right:12px!important; bottom:10px!important; left:92px!important }
+.nx-featured-caption small{ font-size:10px!important }
+.nx-featured-caption b{ font-size:15px!important }
+.nx-featured-open{ left:10px!important; bottom:10px!important; padding:7px 11px!important; font-size:11px!important; border-radius:10px!important; color:var(--ac-teal-dark)!important }
+.nx-featured-art{ font-size:52px!important; top:14%!important }
+#nxFeaturedHero{ margin:10px 0!important }
+
+/* ===== نوار پایین: ۵ دکمه + «استعلام قیمت» با رنگ متفاوت ===== */
+#nxAcNav button{ font-size:10.5px!important; white-space:nowrap; padding-left:0; padding-right:0 }
+#nxAcNav .ac-quote{ color:#e8710a!important; font-weight:800!important }
+#nxAcNav .ac-q-ic{
+  display:grid; place-items:center; width:36px; height:36px; margin-top:-18px; border-radius:12px;
+  background:linear-gradient(135deg,#ffb300,#ff7a1a); color:#fff; box-shadow:0 4px 12px rgba(255,122,26,.45);
+  border:3px solid #fff;
+}
+#nxAcNav .ac-q-ic svg{ width:20px; height:20px }
+[data-theme="dark"] #nxAcNav .ac-q-ic{ border-color:#1e293b }
+[data-theme="dark"] #nxAcNav .ac-quote{ color:#fdba74!important }
+</style>
+
+<style id="nx-achareh-rails">
+/* بنرهای عمودی در دو طرف سایت (دسکتاپ). اگر جا یا ارتفاع کافی نباشد، همان ردیف وسط صفحه دیده می‌شود. */
+html.nx-rails .container{ max-width:var(--nx-cmax,1080px)!important }
+html.nx-rails .nx-ad-pair{ display:contents }
+html.nx-rails #nxAdC,html.nx-rails #nxAdD{ position:fixed; top:84px; width:100px; max-width:100px; margin:0!important; z-index:20 }
+html.nx-rails #nxAdC{ left:var(--nx-rail-r) }
+html.nx-rails #nxAdD{ left:var(--nx-rail-l) }
+</style>
+<script id="nx-achareh-rails-js">
+(function(){
+  var root = document.documentElement;
+  function place(){
+    var w = root.clientWidth, h = window.innerHeight;
+    if(w >= 1000 && h >= 500){
+      var cmax = Math.min(1080, w - 2 * 124);
+      root.style.setProperty('--nx-cmax', cmax + 'px');
+      root.style.setProperty('--nx-rail-r', Math.round(w / 2 + cmax / 2 + 12) + 'px');
+      root.style.setProperty('--nx-rail-l', Math.round(w / 2 - cmax / 2 - 12 - 100) + 'px');
+      root.classList.add('nx-rails');
+    } else {
+      root.classList.remove('nx-rails');
+    }
+  }
+  place();
+  window.addEventListener('resize', place);
+  window.addEventListener('load', place);
+})();
+</script>
+
+<nav id="nxAcNav" aria-label="ناوبری اصلی">
+  <button type="button" data-ac="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-5H9v5H5a1 1 0 0 1-1-1z"/></svg>خانه</button>
+  <button type="button" data-ac="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>جستجو</button>
+  <button type="button" data-ac="cats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.6"/><rect x="14" y="4" width="6" height="6" rx="1.6"/><rect x="4" y="14" width="6" height="6" rx="1.6"/><rect x="14" y="14" width="6" height="6" rx="1.6"/></svg>دسته‌ها</button>
+  <button type="button" data-ac="quote" class="ac-quote"><span class="ac-q-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.500 12.500V4.500a1 1 0 0 1 1-1h8l8 8-9 9z"/><circle cx="8" cy="8" r="1.200" fill="currentColor"/></svg></span>استعلام قیمت</button>
+  <button type="button" data-ac="acct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.500 18.200c1.400-2.100 3.100-3 5.500-3s4.100.9 5.500 3"/></svg>حساب من</button>
+</nav>
+
+<script id="nx-achareh-nav">
+/* فقط کلیک را به قابلیت‌های موجود صفحه هدایت می‌کند؛ هیچ منطق یا داده‌ای تغییر نمی‌کند.
+   نکته: stopPropagation لازم است، چون کلیک روی نوار پایین به‌عنوان «کلیک بیرون از منو» حساب می‌شد و منو را بلافاصله می‌بست. */
+(function(){
+  var nav = document.getElementById('nxAcNav'); if(!nav) return;
+  function q(s){ return document.querySelector(s); }
+  function toggleCats(){
+    var p = document.getElementById('categoryMenuPanel');
+    if(p && p.classList.contains('open')){
+      var x = document.getElementById('categoryMenuCloseBtn');
+      if(x) x.click(); else p.classList.remove('open');
+      return;
+    }
+    if(typeof openCategoryMenu === 'function'){ openCategoryMenu(); return; }
+    var hb = document.getElementById('headerMenuToggle'), c = q('#nxSiteMenu [data-a="cats"]');
+    if(hb && c){ hb.click(); c.click(); }
+  }
+  function openQuote(){
+    if(typeof openRequestModal === 'function'){ openRequestModal(''); return; }
+    var hb = document.getElementById('headerMenuToggle'), r = q('#nxSiteMenu [data-a="request"]');
+    if(hb && r){ hb.click(); r.click(); }
+  }
+  nav.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-ac]'); if(!b) return;
+    e.stopPropagation();
+    var k = b.getAttribute('data-ac');
+    if(k === 'home'){
+      var x = q('.nx-stop-close');
+      if(x && document.body.classList.contains('nx-search-mode')) x.click();
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }
+    else if(k === 'search'){ var s = q('#nxFakeSearch'); if(s) s.click(); }
+    else if(k === 'cats') toggleCats();
+    else if(k === 'quote') openQuote();
+    else if(k === 'acct'){ var a = q('#accountBtn'); if(a) a.click(); }
+  });
+})();
+</script>
