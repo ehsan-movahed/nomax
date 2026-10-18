@@ -10472,6 +10472,38 @@ updateStats();
   function $(id){ return document.getElementById(id); }
   function user(){ return window.nomaxAuth ? window.nomaxAuth.user() : null; }
   function active(){ for(var i=0;i<list.length;i++) if(list[i].status === "open") return list[i]; return null; }
+
+  /* اعلان پایین صفحه مشتری؛ فقط UI و بدون تغییر دیتابیس/RPC */
+  var customerNoticeCount = 0, customerNoticeEl = null;
+  function ensureCustomerNotice(){
+    if(customerNoticeEl && document.body.contains(customerNoticeEl)) return customerNoticeEl;
+    if(!document.body) return null;
+    if(!document.getElementById("nomaxCustomerOfferNoticeStyle")){
+      var css = document.createElement("style"); css.id = "nomaxCustomerOfferNoticeStyle";
+      css.textContent = "#nomaxCustomerOfferNotice{position:fixed;z-index:120;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);width:min(460px,calc(100% - 28px));display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid var(--primary-100);border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 10px 34px rgba(15,23,42,.18);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,transform .2s ease,visibility .2s}#nomaxCustomerOfferNotice.nx-visible{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0)}#nomaxCustomerOfferNotice .nx-cn-icon{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:12px;background:var(--primary-50);color:var(--primary-700);font-size:19px}#nomaxCustomerOfferNotice .nx-cn-copy{min-width:0;flex:1;line-height:1.6}#nomaxCustomerOfferNotice .nx-cn-title{font-size:12.5px;font-weight:850}#nomaxCustomerOfferNotice .nx-cn-sub{font-size:11px;color:var(--text-3)}#nomaxCustomerOfferNotice .nx-cn-count{display:inline-flex;min-width:20px;height:20px;padding:0 5px;align-items:center;justify-content:center;border-radius:10px;background:#dc2626;color:#fff;font-size:11px;font-weight:900;margin-right:4px}#nomaxCustomerOfferNotice .nx-cn-open{flex:0 0 auto;border:0;border-radius:11px;background:var(--primary-600,var(--primary-500));color:#fff;padding:10px 12px;font:inherit;font-size:11.5px;font-weight:850;cursor:pointer}#nomaxCustomerOfferNotice .nx-cn-close{position:absolute;top:3px;left:5px;border:0;background:transparent;color:var(--text-3);font-size:17px;line-height:1;padding:3px;cursor:pointer}@media(max-width:420px){#nomaxCustomerOfferNotice{gap:8px;padding:9px 10px}#nomaxCustomerOfferNotice .nx-cn-icon{width:34px;height:34px;flex-basis:34px}#nomaxCustomerOfferNotice .nx-cn-open{padding:9px 10px}}";
+      document.head.appendChild(css);
+    }
+    customerNoticeEl = document.getElementById("nomaxCustomerOfferNotice");
+    if(!customerNoticeEl){
+      customerNoticeEl = document.createElement("div"); customerNoticeEl.id = "nomaxCustomerOfferNotice"; customerNoticeEl.setAttribute("role","status"); customerNoticeEl.setAttribute("aria-live","polite");
+      customerNoticeEl.innerHTML = '<button type="button" class="nx-cn-close" aria-label="بستن اعلان">×</button><div class="nx-cn-icon">✉</div><div class="nx-cn-copy"><div class="nx-cn-title">پیشنهاد جدید رسید <span class="nx-cn-count">۱</span></div><div class="nx-cn-sub">برای دیدن قیمت‌ها، پیشنهادها را باز کن.</div></div><button type="button" class="nx-cn-open">مشاهده</button>';
+      document.body.appendChild(customerNoticeEl);
+      customerNoticeEl.querySelector(".nx-cn-close").addEventListener("click", function(){ customerNoticeEl.classList.remove("nx-visible"); });
+      customerNoticeEl.querySelector(".nx-cn-open").addEventListener("click", function(){
+        customerNoticeEl.classList.remove("nx-visible"); customerNoticeCount = 0;
+        if(window.nomaxPanel) window.nomaxPanel.open("needs");
+        else { var c = $("myRequestCard"); if(c) c.scrollIntoView({behavior:"smooth",block:"start"}); }
+      });
+    }
+    return customerNoticeEl;
+  }
+  function showCustomerNotice(count){
+    var el = ensureCustomerNotice(); if(!el) return;
+    customerNoticeCount = Math.max(1, Number(count)||1);
+    var badge = el.querySelector(".nx-cn-count"); if(badge) badge.textContent = toFa(customerNoticeCount);
+    el.classList.add("nx-visible");
+  }
+  function hideCustomerNotice(){ if(customerNoticeEl) customerNoticeEl.classList.remove("nx-visible"); customerNoticeCount = 0; }
   var histOpen = false, histLimit = 10;
   var ST = { open:"باز", selected:"انتخاب شد", cancelled:"لغو شد", expired:"منقضی شد", closed:"بسته شد" };
 
@@ -10786,7 +10818,8 @@ h += offers.map(function(o,i){
       var act = active(), n = act ? (act.offers||[]).length : 0;
       if(silent === true && n > lastOffers){
         showToast("📬 پیشنهاد جدید برای درخواست شما رسید!", "success"); if(window.nomaxBeep) window.nomaxBeep();
-        try{ tryBrowserNotify("نومکس", "پیشنهاد جدید برای درخواست شما رسید"); }catch(e){}
+        showCustomerNotice(n - lastOffers);
+        try{ tryBrowserNotify("نومیک", "پیشنهاد جدید برای درخواست شما رسید"); }catch(e){}
       }
       lastOffers = n; renderMy();
       clearInterval(pollTid);
@@ -10804,10 +10837,11 @@ h += offers.map(function(o,i){
     var r = await sb.rpc("select_offer", { p_offer: id });
     if(r.error){ console.error(r.error); showToast(((r.error.message||"").indexOf("invalid_offer")>-1) ? "این درخواست دیگر فعال نیست (منقضی یا قبلاً بسته شده)." : "انتخاب انجام نشد؛ دوباره تلاش کنید.", "error"); await loadMy(); return; }
     if(window.nomaxNotify) window.nomaxNotify({ action:"selected", offer_id:id });
+    hideCustomerNotice();
     showToast("✓ پیشنهاد انتخاب شد. می‌توانی با کسب‌وکار تماس بگیری یا مسیر را ببینی.", "success");
     await loadMy();
   }
-  window.addEventListener("nomax-auth", function(){ lastOffers = 0; loadMy(); loadOwnerRequests(true); });
+  window.addEventListener("nomax-auth", function(){ lastOffers = 0; hideCustomerNotice(); loadMy(); loadOwnerRequests(true); });
 
   /* ---------- پنل مالک ---------- */
   var ownerReqs = [];
@@ -11838,7 +11872,7 @@ card.replaceWith(details);
   var menu=$("categoryMenuPanel");
   if(menu){
     menu.innerHTML='<div class="category-menu-head"><div class="cm-title"><span>☰</span>منوی نومکس</div><button type="button" class="cm-close" id="nomaxMenuClose">×</button></div><div class="nomax-main-menu">'+
-      '<button data-mm="about">ℹ️ درباره نومکس</button><button data-mm="help">❓ راهنما و سوالات متداول</button><button data-mm="terms">📜 قوانین و حریم خصوصی</button><button data-mm="request">📨 ثبت استعلام قیمت</button><button data-mm="business">🏪 ثبت کسب‌وکار</button><button data-mm="panel">👤 پنل من</button><button data-mm="contact">☎️ پشتیبانی و تماس با ما</button></div>';
+      '<button data-mm="about">ℹ️ درباره نومکس</button><button data-mm="help">❓ راهنما و سوالات متداول</button><button data-mm="terms">📜 قوانین و حریم خصوصی</button><button data-mm="business">🏪 ثبت کسب‌وکار</button><button data-mm="panel">👤 پنل من</button><button data-mm="contact">☎️ پشتیبانی و تماس با ما</button></div>';
     var ms=document.createElement("style");ms.textContent=".nomax-main-menu{padding:8px;display:flex;flex-direction:column;gap:5px}.nomax-main-menu button{border:0;background:var(--surface);color:var(--text);padding:12px;border-radius:11px;text-align:right;font:inherit;font-size:13px;font-weight:700;cursor:pointer}.nomax-main-menu button:hover{background:var(--primary-50);color:var(--primary-700)}";document.head.appendChild(ms);
     menu.addEventListener("click",function(e){if(e.target&&e.target.id==="nomaxMenuClose"){var t=$("headerMenuToggle");if(t)t.click();return;}var b=e.target.closest&&e.target.closest("[data-mm]");if(!b)return;var a=b.getAttribute("data-mm");var t=$("headerMenuToggle");if(t)t.click();
       if(a==="terms"&&window.openTermsModal)window.openTermsModal({});
@@ -20789,4 +20823,3 @@ html.nx-rails #nxAdD{ left:var(--nx-rail-l) }
   })();
 })();
 </script>
-
