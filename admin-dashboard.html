@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>داشبورد مدیریت نومیک</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#f4f6f9;--sf:#fff;--sf2:#f8fafc;--bd:#e4e8ee;--tx:#0f172a;--tx2:#64748b;--pr:#0f766e;--pr2:#14b8a6;--pl:#ccfbf1;--wr:#d97706;--er:#dc2626;--ok:#16a34a;--sh:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.05)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--sf:#111a2c;--sf2:#16213a;--bd:#22304d;--tx:#e6edf7;--tx2:#8fa1bd;--pl:#0d3b38;--sh:0 8px 24px rgba(0,0,0,.35)}}
+:root[data-theme=dark]{--bg:#0b1220;--sf:#111a2c;--sf2:#16213a;--bd:#22304d;--tx:#e6edf7;--tx2:#8fa1bd;--pl:#0d3b38;--sh:0 8px 24px rgba(0,0,0,.35)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.8 Vazirmatn,Tahoma,sans-serif}
+.wrap{max-width:1360px;margin:0 auto;padding:16px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--sf);border:1px solid var(--bd);border-radius:18px;padding:14px 18px;box-shadow:var(--sh)}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--pr),var(--pr2));color:#fff;display:grid;place-items:center;font-weight:800;font-size:19px}
+h1{margin:0;font-size:18px}.sub{color:var(--tx2);font-size:12px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,button,.btn{font:inherit;font-size:13px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);border-radius:10px;padding:8px 12px;cursor:pointer;text-decoration:none}
+.btn.pr,button.pr{background:var(--pr);border-color:var(--pr);color:#fff}
+nav{display:flex;gap:6px;overflow-x:auto;margin:14px 0;padding:6px;background:var(--sf);border:1px solid var(--bd);border-radius:14px;position:sticky;top:8px;z-index:20;box-shadow:var(--sh)}
+nav button{border:0;background:transparent;white-space:nowrap;padding:10px 16px;border-radius:10px;color:var(--tx2);font-weight:600}
+nav button.on{background:var(--pl);color:var(--pr)}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}.g21{grid-template-columns:2fr 1fr}
+@media(max-width:980px){.g4{grid-template-columns:repeat(2,1fr)}.g3,.g2,.g21{grid-template-columns:1fr}}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:16px;box-shadow:var(--sh);min-width:0}
+.card h3{margin:0 0 4px;font-size:15px}.card .sub{margin-bottom:10px}
+.kpi{display:flex;gap:12px;align-items:center}.ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--pl);flex:none}
+.kv{font-size:24px;font-weight:800;line-height:1.3}.kl{font-size:12px;color:var(--tx2)}.kd{font-size:11px;color:var(--tx2)}
+.ch{position:relative;height:280px}.ch.s{height:220px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{background:var(--sf2);color:var(--tx2);position:sticky;top:0;cursor:default}th.so{cursor:pointer}
+.tw{overflow:auto;max-height:480px;border:1px solid var(--bd);border-radius:12px}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;background:var(--pl);color:var(--pr)}.badge.w{background:#fef3c7;color:#92400e}.badge.e{background:#fee2e2;color:#991b1b}.badge.o{background:#dcfce7;color:#166534}
+.bar{height:8px;border-radius:9px;background:var(--bd);overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pr),var(--pr2))}
+.fn{display:grid;gap:10px}.fr{display:grid;grid-template-columns:110px 1fr 90px;gap:10px;align-items:center;font-size:12.5px}.fb{height:26px;border-radius:8px;background:var(--bd);overflow:hidden}.fb i{display:block;height:100%;background:linear-gradient(90deg,var(--pr),var(--pr2));transition:width .6s}
+#map{height:540px;border-radius:12px;border:1px solid var(--bd)}
+.hide{display:none!important}.state{padding:60px 20px;text-align:center;color:var(--tx2)}.state h2{color:var(--tx)}
+.alert{background:#fef3c7;color:#92400e;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px}
+.sk{height:90px;border-radius:16px;background:linear-gradient(90deg,var(--sf),var(--sf2),var(--sf));background-size:200% 100%;animation:sk 1.2s infinite}@keyframes sk{to{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><div class="logo">N</div><div><h1>داشبورد مدیریت نومیک</h1><div class="sub" id="stamp">در حال بارگذاری…</div></div></div>
+  <div class="tools">
+    <select id="days"><option value="7">۷ روز اخیر</option><option value="30" selected>۳۰ روز اخیر</option><option value="90">۹۰ روز اخیر</option><option value="365">یک سال اخیر</option></select>
+    <button id="refresh">↻ بروزرسانی</button><button id="theme">🌓</button>
+    <a class="btn" href="/adminehsan">پنل مدیریت کسب‌وکارها</a>
+  </div>
+</header>
+<div id="gate" class="card state"><h2>در حال بررسی دسترسی…</h2></div>
+<main id="app" class="hide">
+<nav id="tabs">
+  <button data-t="ov" class="on">📊 نمای کلی</button><button data-t="rq">📨 استعلام‌ها</button><button data-t="mk">🧭 بازار و تقاضا</button>
+  <button data-t="bz">🏪 کسب‌وکارها</button><button data-t="mp">🗺 نقشه</button><button data-t="ac">🕵 فعالیت‌ها</button>
+</nav>
+<div id="err"></div>
+
+<section data-p="ov">
+  <div class="grid g4" id="kpis"></div>
+  <div class="grid g21" style="margin-top:14px">
+    <div class="card"><h3>روند روزانه</h3><div class="sub">جستجو، استعلام، پیشنهاد و ثبت‌نام (به وقت تهران)</div><div class="ch"><canvas id="cSeries"></canvas></div></div>
+    <div class="card"><h3>قیف استعلام</h3><div class="sub">از ارسال تا انتخاب</div><div class="fn" id="funnel"></div></div>
+  </div>
+  <div class="grid g3" style="margin-top:14px">
+    <div class="card"><h3>ساعات اوج</h3><div class="sub">فعالیت در ۲۴ ساعت</div><div class="ch s"><canvas id="cHours"></canvas></div></div>
+    <div class="card"><h3>کاربران بر اساس نقش</h3><div class="ch s"><canvas id="cRoles"></canvas></div></div>
+    <div class="card"><h3>صف تأیید</h3><div class="sub">کسب‌وکارهای منتظر بررسی</div><div id="pending"></div></div>
+  </div>
+</section>
+
+<section data-p="rq" class="hide">
+  <div class="grid g4" id="kpis2"></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>وضعیت استعلام‌ها</h3><div class="ch"><canvas id="cStatus"></canvas></div></div>
+    <div class="card"><h3>سرعت پاسخ</h3><div class="sub">زمان تا اولین پیشنهاد</div><div id="resp"></div></div>
+  </div>
+</section>
+
+<section data-p="mk" class="hide">
+  <div class="card"><h3>تقاضا در برابر عرضه (دسته‌ها)</h3><div class="sub">تقاضا = جستجو + استعلام. شکاف بزرگ یعنی فرصت جذب کسب‌وکار.</div><div class="ch" style="height:360px"><canvas id="cCats"></canvas></div></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>جدول دسته‌ها</h3><div class="tw" id="tCats"></div></div>
+    <div class="card"><h3>زیردسته‌های پرتقاضا</h3><div class="tw" id="tSubs"></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>پرجستجوترین عبارت‌ها</h3><div class="tw" id="tTop"></div></div>
+    <div class="card"><h3>جستجوهای بدون نتیجه 🎯</h3><div class="sub">چیزهایی که مردم می‌خواهند و نومیک ندارد</div><div class="tw" id="tZero"></div></div>
+  </div>
+</section>
+
+<section data-p="bz" class="hide">
+  <div class="card"><h3>عملکرد کسب‌وکارها</h3><div class="sub">روی عنوان ستون کلیک کنید تا مرتب شود</div>
+    <div class="tools" style="margin-bottom:10px"><select id="bf"><option value="">همه</option><option value="silent">بی‌پاسخ (≥۳ استعلام، ۰ پیشنهاد)</option><option value="noloc">بدون موقعیت</option><option value="neg">امتیاز منفی</option></select></div>
+    <div class="tw" style="max-height:620px" id="tBiz"></div></div>
+</section>
+
+<section data-p="mp" class="hide">
+  <div class="card"><h3>نقشهٔ تقاضا و عرضه</h3><div class="sub"><span class="badge e">●</span> استعلام فوری &nbsp;<span class="badge w">●</span> استعلام &nbsp;<span class="badge o">●</span> کسب‌وکار</div><div id="map"></div></div>
+</section>
+
+<section data-p="ac" class="hide">
+  <div class="grid g2">
+    <div class="card"><h3>کنش‌های کاربران</h3><div class="ch"><canvas id="cActs"></canvas></div></div>
+    <div class="card"><h3>آخرین رویدادها</h3><div class="tw" id="feed"></div></div>
+  </div>
+</section>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+'use strict';
+var CATS={"car":{"n":"خودرو و حمل‌ونقل","e":"🚗","s":{"mechanic":"مکانیک","electric":"برق خودرو","suspension":"جلوبندی و تعلیق","parts":"قطعات یدکی","body":"صافکاری و نقاشی","tire":"لاستیک و باتری","taxi":"آژانس و تاکسی","transport":"حمل و نقل","fuel":"پمپ بنزین و خدمات","motorcycle":"موتورسیکلت","vehicle_rental":"اجاره خودرو","other":"سایر"}},"building":{"n":"ساختمان و تأسیسات","e":"🏠","s":{"plumbing":"لوله کشی","electrical":"برق کاری","painting":"نقاشی ساختمان","masonry":"بنایی و کاشی کاری","doors":"درب و پنجره","ac":"کولر و اسپلیت","carpentry":"نجاری و کابینت","contractor":"پیمانکاری ساختمان","locksmith":"کلیدسازی","glazing":"شیشه بری","tiling":"کاشی و سرامیک","waterproofing":"ایزوگام و عایق","elevator":"آسانسور","other":"سایر"}},"digital":{"n":"دیجیتال و فناوری","e":"📱","s":{"mobile_repair":"تعمیر موبایل","computer_repair":"تعمیر کامپیوتر و لپ‌تاپ","mobile_sale":"فروش موبایل و لوازم","computer_sale":"فروش کامپیوتر","print":"چاپ و پرینت","photo":"عکاسی و فیلم‌برداری","network":"شبکه و اینترنت","satellite":"ماهواره و آنتن","web":"طراحی سایت و دیجیتال","gaming":"گیم‌نت و کافی‌نت","other":"سایر"}},"food":{"n":"خوراک و رستوران","e":"🍔","s":{"restaurant":"رستوران سنتی","fastfood":"فست‌فود و پیتزا","sandwich":"ساندویچ و برگر","cafe":"کافه و کافی‌شاپ","confectionery":"قنادی و شیرینی","bakery":"نانوایی","juice":"آبمیوه و بستنی","kebab":"کبابی","home_food":"غذای خانگی","catering":"کیترینگ و مراسم","dairy":"لبنیات","other":"سایر"}},"agri":{"n":"کشاورزی و دام","e":"🌾","s":{"seeds":"بذر و کود","machinery":"ماشین‌آلات کشاورزی","palm":"نخل و خرما","citrus":"باغداری و مرکبات","livestock":"دامداری","poultry":"مرغداری و طیور","vet":"دامپزشکی","bee":"زنبورداری و عسل","irrigation":"آبیاری و تجهیزات","agri_services":"خدمات کشاورزی","greenhouse":"گلخانه","other":"سایر"}},"beauty":{"n":"زیبایی و آرایش","e":"💇","s":{"barber_men":"آرایشگاه مردانه","barber_women":"آرایشگاه زنانه","nails":"ناخن و مانیکور","makeup":"میکاپ و گریم","massage":"ماساژ و اسپا","epilation":"اپیلاسیون","skin_care":"پوست و مراقبت","hair":"کاشت و مراقبت مو","cosmetics":"فروش لوازم آرایشی","other":"سایر"}},"retail":{"n":"خرده‌فروشی و پوشاک","e":"🛍","s":{"women_clothing":"پوشاک زنانه","men_clothing":"پوشاک مردانه","kids_clothing":"پوشاک بچه‌گانه","shoes":"کفش و صندل","bags":"کیف و چرم","gold":"طلا و جواهر","gifts":"لوازم هدیه و کادو","supermarket":"سوپرمارکت","nuts":"خشکبار و آجیل","perfume":"عطر و ادکلن","fabric":"پارچه و خیاطی","carpet":"فرش و موکت","home_goods":"لوازم خانگی","other":"سایر"}},"services":{"n":"خدمات عمومی و تعمیرات","e":"🔧","s":{"home_appliance":"تعمیر لوازم خانگی","tv_audio":"تعمیر تلویزیون و صوتی","laundry":"خشکشویی و اتوشویی","carpet_wash":"قالیشویی","moving":"باربری و اسباب‌کشی","key":"کلیدسازی و قفل","pest":"سمپاشی و کنترل آفات","carwash":"کارواش","heater":"آبگرمکن و پکیج","watch":"ساعت‌سازی","shoemaker":"کفاشی و تعمیر کفش","other":"سایر"}},"education":{"n":"آموزش و پرورش","e":"🎓","s":{"elementary":"مدرسه ابتدایی","middle":"مدرسه متوسطه اول","high":"دبیرستان","art_school":"هنرستان","university":"دانشگاه و آموزش عالی","language":"آموزشگاه زبان","konkur":"آموزشگاه کنکور","music":"آموزشگاه موسیقی","art_class":"آموزشگاه هنر","sport_class":"آموزشگاه ورزشی","computer_class":"آموزشگاه کامپیوتر","science":"آموزشگاه علمی","kindergarten":"مهدکودک و پیش‌دبستانی","private_class":"کلاس خصوصی","vocational":"آموزشگاه فنی و حرفه‌ای","other":"سایر"}},"medical":{"n":"پزشکی و درمان","e":"🏥","s":{"dentist":"دندانپزشکی","gp":"پزشک عمومی","pharmacy":"داروخانه","lab":"آزمایشگاه","imaging":"تصویربرداری","heart":"متخصص قلب","neuro":"متخصص مغز و اعصاب","pediatric":"متخصص اطفال","ortho":"متخصص ارتوپدی","eye":"چشم‌پزشکی","ent":"گوش، حلق و بینی","derma":"پوست و مو","obgyn":"زنان و زایمان","physio":"فیزیوتراپی","hospital":"بیمارستان و درمانگاه","other":"سایر"}},"sport":{"n":"ورزش و تفریح","e":"🏋️","s":{"gym":"باشگاه ورزشی","pool":"استخر و شنا","football":"فوتبال و فوتسال","martial":"ورزش‌های رزمی","yoga":"یوگا و پیلاتس","cycling":"دوچرخه‌سواری","playground":"شهربازی و تفریح","billiard":"بیلیارد و بولینگ","camping":"کمپینگ و طبیعت‌گردی","other":"سایر"}},"art":{"n":"هنر و سرگرمی","e":"🎨","s":{"photography":"عکاسی حرفه‌ای","cinema":"سینما و تئاتر","music_art":"موسیقی","painting_art":"نقاشی و طراحی","handicraft":"صنایع دستی","entertainment":"سرگرمی و بازی","event":"برگزاری مراسم","other":"سایر"}},"pets":{"n":"حیوانات خانگی","e":"🐾","s":{"pet_shop":"پت شاپ","pet_vet":"دامپزشکی حیوانات خانگی","pet_grooming":"آرایش حیوانات","pet_boarding":"پانسیون حیوانات","pet_training":"آموزش حیوانات","other":"سایر"}},"books":{"n":"کتاب و نوشت‌افزار","e":"📚","s":{"bookshop":"فروشگاه کتاب","stationery":"نوشت‌افزار","office_supplies":"لوازم اداری","bags_school":"کیف و کوله","paper":"دفتر و کاغذ","art_supplies":"لوازم هنری","other":"سایر"}},"office":{"n":"خدمات اداری و مالی","e":"💼","s":{"gov_office":"دفتر پیشخوان دولت","notary":"دفتر اسناد رسمی","lawyer":"وکیل و مشاور حقوقی","insurance":"بیمه","accounting":"حسابداری","bank":"خدمات بانکی","taxi_office":"دفتر تاکسی","real_estate":"مشاور املاک","travel_agency":"آژانس مسافرتی","other":"سایر"}},"tourism":{"n":"اقامت و گردشگری","e":"🏨","s":{"hotel":"هتل و مسافرخانه","ecolodge":"اقامتگاه بوم‌گردی","tour":"تور و گردشگری","historic":"جاذبه تاریخی","natural":"جاذبه طبیعی","other":"سایر"}},"other":{"n":"سایر","e":"❓","s":{"other_all":"سایر"}}};
+var sb=supabase.createClient("https://pqydooffsqhvrmswzpfa.supabase.co","sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF");
+var $=function(i){return document.getElementById(i)};
+var lazy={},D=null,charts={},map=null,mapDone=false,sortKey='received',sortDir=-1;
+function n(v){return Number(v||0).toLocaleString('fa-IR')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function cn(id,sub){var c=CATS[id];if(!c)return id?esc(id):'—';var t=c.e+' '+c.n;if(sub)t+=' › '+(c.s[sub]||sub);return esc(t)}
+function pct(a,b){return b?Math.round(a*100/b):0}
+function fdate(s){try{return new Date(s).toLocaleString('fa-IR',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Tehran'})}catch(e){return s||''}}
+function fday(s){try{return new Date(s+'T12:00:00').toLocaleDateString('fa-IR',{month:'short',day:'numeric'})}catch(e){return s}}
+
+function theme(){var dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);
+  Chart.defaults.color=dark?'#8fa1bd':'#64748b';Chart.defaults.borderColor=dark?'#22304d':'#e4e8ee';Chart.defaults.font.family='Vazirmatn,Tahoma';Chart.defaults.animation=false;}
+function mk(id,cfg){if(charts[id])charts[id].destroy();var el=$(id);if(!el)return;cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{rtl:true,labels:{usePointStyle:true,boxWidth:8}},tooltip:{rtl:true,textDirection:'rtl'}}},cfg.options||{});charts[id]=new Chart(el,cfg)}
+
+function kpi(ic,l,v,d){return '<div class="card kpi"><div class="ic">'+ic+'</div><div><div class="kl">'+l+'</div><div class="kv">'+v+'</div><div class="kd">'+(d||'&nbsp;')+'</div></div></div>'}
+function table(cols,rows,empty){if(!rows.length)return '<div class="state" style="padding:24px">'+(empty||'داده‌ای در این بازه نیست')+'</div>';
+  return '<table><thead><tr>'+cols.map(function(c){return '<th>'+c[0]+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+c[1](r)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>'}
+
+function render(){
+  var k=D.kpi,f=D.funnel;
+  $('stamp').textContent='آخرین بروزرسانی: '+fdate(D.generated_at)+' · بازهٔ '+n(D.days)+' روز';
+  $('kpis').innerHTML=
+    kpi('🏪','کسب‌وکار تأییدشده',n(k.biz_approved),'جدید: '+n(k.biz_new))+
+    kpi('⏳','منتظر تأیید',n(k.biz_pending),k.biz_pending>0?'نیازمند بررسی':'صف خالی')+
+    kpi('👥','کاربران',n(k.users_total),'جدید: '+n(k.users_new))+
+    kpi('🔎','جستجو',n(k.searches),'بدون نتیجه: '+n(k.searches_zero)+' ('+n(pct(k.searches_zero,k.searches))+'٪)')+
+    kpi('📨','استعلام',n(k.requests),'فوری: '+n(k.requests_urgent))+
+    kpi('💬','پیشنهاد ثبت‌شده',n(k.offers),'به‌ازای هر استعلام: '+n(k.requests?(k.offers/k.requests).toFixed(1):0))+
+    kpi('⭐','میانگین امتیاز',k.reviews_avg==null?'—':n(k.reviews_avg),'نظر جدید: '+n(k.reviews))+
+    kpi('🤝','نرخ انتخاب',n(pct(f.selected,f.requests))+'٪','انتخاب‌شده: '+n(f.selected));
+  $('kpis2').innerHTML=
+    kpi('📨','کل استعلام',n(f.requests))+kpi('✅','انتخاب‌شده',n(f.selected),n(pct(f.selected,f.requests))+'٪')+
+    kpi('⌛','منقضی',n(f.expired),'بدون پیشنهاد: '+n(f.no_offer_closed))+kpi('🟢','باز',n(f.open));
+
+  mk('cSeries',{type:'line',data:{labels:D.series.map(function(x){return fday(x.d)}),datasets:[
+    {label:'جستجو',data:D.series.map(function(x){return x.searches}),borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.12)',fill:true,tension:.35,pointRadius:0},
+    {label:'استعلام',data:D.series.map(function(x){return x.requests}),borderColor:'#d97706',tension:.35,pointRadius:0},
+    {label:'پیشنهاد',data:D.series.map(function(x){return x.offers}),borderColor:'#2563eb',tension:.35,pointRadius:0},
+    {label:'ثبت‌نام',data:D.series.map(function(x){return x.signups}),borderColor:'#9333ea',tension:.35,pointRadius:0}]},options:{scales:{x:{ticks:{maxTicksLimit:8,maxRotation:0}},y:{beginAtZero:true,ticks:{precision:0}}}}});
+
+  var steps=[['ثبت استعلام',f.requests],['مسیریابی شد',f.routed],['ارسال شد',f.sent],['دیده شد',f.seen],['پیشنهاد گرفت',f.offered],['انتخاب شد',f.selected]];
+  $('funnel').innerHTML=steps.map(function(s){return '<div class="fr"><span>'+s[0]+'</span><div class="fb"><i style="width:'+pct(s[1],f.requests)+'%"></i></div><b>'+n(s[1])+' ('+n(pct(s[1],f.requests))+'٪)</b></div>'}).join('');
+
+  mk('cHours',{type:'bar',data:{labels:D.hours.map(function(x){return n(x.h)}),datasets:[{label:'جستجو',data:D.hours.map(function(x){return x.searches}),backgroundColor:'#14b8a6'},{label:'استعلام',data:D.hours.map(function(x){return x.requests}),backgroundColor:'#d97706'}]},options:{scales:{x:{stacked:true},y:{stacked:true,ticks:{precision:0}}}}});
+  var rl={admin:'مدیر',owner:'مالک',user:'کاربر',business:'مالک'},rk=Object.keys(D.roles);
+  mk('cRoles',{type:'doughnut',data:{labels:rk.map(function(r){return rl[r]||r}),datasets:[{data:rk.map(function(r){return D.roles[r]}),backgroundColor:['#0f766e','#d97706','#2563eb','#9333ea','#64748b']}]},options:{cutout:'62%'}});
+  $('pending').innerHTML=D.pending.length?D.pending.map(function(p){return '<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><span>'+esc(p.name||p.id)+'<br><span class="sub">'+cn(p.cat)+'</span></span><span class="badge '+(p.edit?'w':'')+'">'+(p.edit?'ویرایش':'جدید')+'</span></div>'}).join('')+'<p style="margin:10px 0 0"><a class="btn pr" href="/adminehsan">بررسی در پنل</a></p>':'<div class="sub">همه‌چیز بررسی شده ✅</div>';
+
+  lazy.rq=function(){  mk('cStatus',{type:'doughnut',data:{labels:['انتخاب‌شده','باز','منقضی'],datasets:[{data:[f.selected,f.open,f.expired],backgroundColor:['#16a34a','#2563eb','#dc2626']}]},options:{cutout:'60%'}});};
+  var r=D.response;$('resp').innerHTML=r.samples?('<div class="grid g3"><div><div class="kl">میانه</div><div class="kv">'+n(r.median_min)+' دقیقه</div></div><div><div class="kl">صدک ۹۰</div><div class="kv">'+n(r.p90_min)+' دقیقه</div></div><div><div class="kl">نمونه</div><div class="kv">'+n(r.samples)+'</div></div></div>'):'<div class="sub">هنوز پیشنهادی ثبت نشده است.</div>';
+
+  var cats=D.categories.slice(0,12);
+  lazy.mk=function(){mk('cCats',{type:'bar',data:{labels:cats.map(function(c){return (CATS[c.id]?CATS[c.id].n:c.id)}),datasets:[{label:'تقاضا (جستجو+استعلام)',data:cats.map(function(c){return c.searches+c.requests}),backgroundColor:'#d97706'},{label:'کسب‌وکار فعال',data:cats.map(function(c){return c.businesses}),backgroundColor:'#0f766e'}]},options:{scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});};
+  $('tCats').innerHTML=table([['دسته',function(c){return cn(c.id)}],['کسب‌وکار',function(c){return n(c.businesses)}],['جستجو',function(c){return n(c.searches)}],['بی‌نتیجه',function(c){return n(c.zero)}],['استعلام',function(c){return n(c.requests)}],['بی‌پاسخ',function(c){return n(c.unanswered)}],
+    ['وضعیت',function(c){var dm=c.searches+c.requests;return c.businesses===0&&dm>0?'<span class="badge e">جذب فوری</span>':(dm>=3*Math.max(c.businesses,1)?'<span class="badge w">کمبود عرضه</span>':'<span class="badge o">متعادل</span>')}]],D.categories);
+  $('tSubs').innerHTML=table([['زیردسته',function(s){return cn(s.cat,s.sub)}],['جستجو',function(s){return n(s.searches)}],['استعلام',function(s){return n(s.requests)}],['کسب‌وکار',function(s){return n(s.businesses)}]],D.subcategories);
+  $('tTop').innerHTML=table([['عبارت',function(x){return esc(x.q)}],['تعداد',function(x){return n(x.n)}],['میانگین نتیجه',function(x){return n(x.avg_results)}],['بی‌نتیجه',function(x){return n(x.zero)}]],D.top_searches);
+  $('tZero').innerHTML=table([['عبارت',function(x){return esc(x.q)}],['تعداد',function(x){return n(x.n)}],['دسته',function(x){return cn(x.cat)}]],D.zero_searches,'همهٔ جستجوها نتیجه داشتند 👌');
+  bizTable();
+  lazy.ac=function(){  var a=D.actions;mk('cActs',{type:'bar',data:{labels:a.map(function(x){return x.action}),datasets:[{label:'تعداد',data:a.map(function(x){return x.n}),backgroundColor:'#14b8a6'},{label:'کاربر یکتا',data:a.map(function(x){return x.users}),backgroundColor:'#2563eb'}]},options:{indexAxis:'y'}});};
+  runLazy();
+}
+function runLazy(){var t=document.querySelector('#tabs .on').dataset.t;if(lazy[t])lazy[t]()}
+function bizTable(){
+  var f=$('bf').value,rows=D.businesses.filter(function(b){return !f||(f==='silent'&&b.received>=3&&b.offers===0)||(f==='noloc'&&!b.has_loc)||(f==='neg'&&Number(b.neg)>0)});
+  rows.sort(function(a,b){var x=a[sortKey],y=b[sortKey];x=x==null?-1:x;y=y==null?-1:y;return (x>y?1:x<y?-1:0)*sortDir});
+  var cols=[['کسب‌وکار','name',function(b){return esc(b.name||b.id)}],['دسته','cat',function(b){return cn(b.cat,b.sub)}],['دریافت','received',function(b){return n(b.received)}],['دیده‌شده','seen',function(b){return n(b.seen)}],['پیشنهاد','offers',function(b){return n(b.offers)}],
+   ['نرخ پاسخ','rate',function(b){var p=pct(b.offers,b.received);return '<div class="bar"><i style="width:'+p+'%"></i></div>'+n(p)+'٪'}],['امتیاز','rating',function(b){return b.rating==null?'—':n(b.rating)+' ('+n(b.reviews)+')'}],['منفی','neg',function(b){return n(b.neg)}],
+   ['هشدار','',function(b){var w=[];if(b.received>=3&&b.offers===0)w.push('<span class="badge e">بی‌پاسخ</span>');if(!b.has_loc)w.push('<span class="badge w">بدون موقعیت</span>');if(Number(b.neg)>0)w.push('<span class="badge w">منفی</span>');return w.join(' ')||'<span class="badge o">سالم</span>'}]];
+  rows.forEach(function(b){b.rate=pct(b.offers,b.received)});
+  $('tBiz').innerHTML=rows.length?'<table><thead><tr>'+cols.map(function(c){return '<th class="'+(c[1]?'so':'')+'" data-k="'+c[1]+'">'+c[0]+(c[1]===sortKey?(sortDir>0?' ▲':' ▼'):'')+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+c[2](r)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>':'<div class="state" style="padding:24px">موردی نیست</div>';
+}
+function drawMap(){
+  if(!window.L||!D)return;
+  if(!map){map=L.map('map').setView([30.5959,50.2417],13);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);map._g=L.layerGroup().addTo(map)}
+  map._g.clearLayers();
+  D.geo.requests.forEach(function(p){L.circleMarker([p[0],p[1]],{radius:6,color:p[2]?'#dc2626':'#d97706',fillOpacity:.55,weight:1}).addTo(map._g)});
+  D.geo.businesses.forEach(function(p){L.circleMarker([p[0],p[1]],{radius:5,color:'#16a34a',fillColor:'#16a34a',fillOpacity:.85,weight:1}).bindTooltip(String(p[2]||'')).addTo(map._g)});
+  setTimeout(function(){map.invalidateSize()},50);
+}
+async function feed(){
+  var r=await sb.rpc('admin_activity_feed',{p_limit:60});
+  if(r.error){$('feed').innerHTML='<div class="state">'+esc(r.error.message)+'</div>';return}
+  $('feed').innerHTML=table([['زمان',function(x){return fdate(x.created_at)}],['کاربر',function(x){return esc(x.who)}],['کنش',function(x){return '<span class="badge">'+esc(x.action)+'</span>'}],['مورد',function(x){return esc((x.ref_type||'')+' '+(x.ref_id||''))}]],r.data||[]);
+}
+async function load(){
+  $('err').innerHTML='';
+  var r=await sb.rpc('admin_dashboard',{p_days:Number($('days').value)});
+  if(r.error){$('err').innerHTML='<div class="alert">خطا در دریافت داده: '+esc(r.error.message)+(/function|does not exist|schema cache/i.test(r.error.message)?' — اسکریپت SQL داشبورد هنوز اجرا نشده است.':'')+'</div>';return}
+  D=r.data;render();feed();if(!$('app').querySelector('[data-p=mp]').classList.contains('hide'))drawMap();
+}
+async function boot(){
+  theme();
+  var s=await sb.auth.getSession(),u=s.data&&s.data.session&&s.data.session.user;
+  if(!u){$('gate').innerHTML='<h2>ابتدا وارد حساب مدیر شوید</h2><p><a class="btn pr" href="/adminehsan">ورود مدیر</a></p>';return}
+  var ok=await sb.rpc('nx_is_admin');
+  if(ok.error||ok.data!==true){$('gate').innerHTML='<h2>⛔ دسترسی مجاز نیست</h2><p class="sub">'+(ok.error?esc(ok.error.message):'این حساب نقش مدیر ندارد.')+'</p>';return}
+  $('gate').classList.add('hide');$('app').classList.remove('hide');load();
+}
+$('tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  [].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x===b)});
+  [].forEach.call(document.querySelectorAll('[data-p]'),function(p){p.classList.toggle('hide',p.dataset.p!==b.dataset.t)});
+  if(b.dataset.t==='mp')drawMap();runLazy();
+  setTimeout(function(){Object.keys(charts).forEach(function(k){try{charts[k].resize()}catch(_){}})},60)});
+$('days').onchange=load;$('refresh').onclick=load;$('bf').onchange=bizTable;
+$('tBiz').addEventListener('click',function(e){var t=e.target.closest('th.so');if(!t)return;var k=t.dataset.k;if(k===sortKey)sortDir=-sortDir;else{sortKey=k;sortDir=-1}bizTable()});
+$('theme').onclick=function(){var d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark';theme();if(D)render()};
+boot();
+})();
+</script>
+</body>
+</html>
