@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>داشبورد کسب‌وکار من | نومکس</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#f4f6f9;--sf:#fff;--sf2:#f8fafc;--bd:#e4e8ee;--tx:#0f172a;--tx2:#64748b;--pr:#0f766e;--pr2:#14b8a6;--pl:#ccfbf1;--sh:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.05)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1220;--sf:#111a2c;--sf2:#16213a;--bd:#22304d;--tx:#e6edf7;--tx2:#8fa1bd;--pl:#0d3b38;--sh:0 8px 24px rgba(0,0,0,.35)}}
+:root[data-theme=dark]{--bg:#0b1220;--sf:#111a2c;--sf2:#16213a;--bd:#22304d;--tx:#e6edf7;--tx2:#8fa1bd;--pl:#0d3b38;--sh:0 8px 24px rgba(0,0,0,.35)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.9 Vazirmatn,Tahoma,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:14px 14px 60px}
+.hero{background:linear-gradient(135deg,#0b4f4a,#0f766e 60%,#14b8a6);color:#fff;border-radius:20px;padding:18px 20px;box-shadow:0 14px 34px rgba(15,118,110,.25)}
+.hero h1{margin:0;font-size:19px}.hero .sub{opacity:.85;font-size:12.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+select,.btn{font:inherit;font-size:13px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.14);color:#fff;border-radius:11px;padding:8px 12px;cursor:pointer;text-decoration:none}
+select option{color:#000}.btn.w{background:#fff;color:var(--pr);border-color:#fff;font-weight:700}
+.grid{display:grid;gap:12px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:15px;box-shadow:var(--sh);min-width:0;margin-top:12px}
+.grid .card{margin-top:0}.card h3{margin:0 0 2px;font-size:15px}.sub2{color:var(--tx2);font-size:12px;margin-bottom:10px}
+.kpi .l{font-size:12px;color:var(--tx2)}.kpi .v{font-size:26px;font-weight:800;line-height:1.3}.kpi .t{font-size:11.5px}
+.up{color:#16a34a}.dn{color:#dc2626}.fl{color:var(--tx2)}
+.ch{position:relative;height:250px}.ch.s{height:210px}
+.tips{display:grid;gap:8px}.tip{display:flex;gap:10px;background:var(--sf2);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.9}
+.tip b{display:block}.tip.w{border-color:#f59e0b;background:rgba(245,158,11,.08)}.tip.g{border-color:#22c55e;background:rgba(34,197,94,.07)}.tip.i{border-color:#38bdf8;background:rgba(56,189,248,.07)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{padding:8px 9px;text-align:right;border-bottom:1px solid var(--bd)}th{color:var(--tx2);background:var(--sf2)}
+.tw{overflow:auto;border:1px solid var(--bd);border-radius:12px}
+.badge{display:inline-block;padding:1px 9px;border-radius:99px;font-size:11px;background:var(--pl);color:var(--pr)}.badge.w{background:#fef3c7;color:#92400e}.badge.e{background:#fee2e2;color:#991b1b}
+.fn{display:grid;gap:9px}.fr{display:grid;grid-template-columns:90px 1fr 70px;gap:8px;align-items:center;font-size:12.5px}.fb{height:24px;border-radius:8px;background:var(--bd);overflow:hidden}.fb i{display:block;height:100%;background:linear-gradient(90deg,var(--pr),var(--pr2))}
+.star{display:grid;grid-template-columns:40px 1fr 30px;gap:8px;align-items:center;font-size:12.5px;margin:4px 0}.star .fb{height:10px}
+.state{padding:50px 16px;text-align:center;color:var(--tx2)}.state h2{color:var(--tx)}
+.hide{display:none!important}.alert{background:#fef3c7;color:#92400e;border-radius:12px;padding:10px 14px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hero">
+  <div class="row"><div><h1 id="bname">داشبورد کسب‌وکار من</h1><div class="sub" id="bsub">در حال بارگذاری…</div></div>
+  <div style="font-size:30px">📈</div></div>
+  <div class="tools">
+    <select id="biz" class="hide"></select>
+    <select id="days"><option value="7">۷ روز اخیر</option><option value="30" selected>۳۰ روز اخیر</option><option value="90">۹۰ روز اخیر</option></select>
+    <a class="btn w" href="/nomax/">🏠 صفحه اصلی</a>
+    
+  </div>
+</div>
+<div id="gate" class="card state"><h2>در حال بررسی…</h2></div>
+<main id="app" class="hide">
+  <div id="err"></div>
+  <div class="card"><h3>💡 پیشنهادهای هوشمند برای شما</h3><div class="sub2">بر اساس رفتار مشتری‌ها در حوزهٔ کاری خودتان</div><div class="tips" id="tips"></div></div>
+  <div class="grid g4" id="kpis" style="margin-top:12px"></div>
+  <div class="grid g2" style="margin-top:12px">
+    <div class="card"><h3>بازدید و تماس با شما</h3><div class="sub2">چند نفر کسب‌وکار شما را دیدند و تماس گرفتند</div><div class="ch"><canvas id="cMine"></canvas></div></div>
+    <div class="card"><h3>تقاضای حوزهٔ شما در شهر</h3><div class="sub2">جستجو و استعلام در دستهٔ <b id="catn"></b></div><div class="ch"><canvas id="cMarket"></canvas></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:12px">
+    <div class="card"><h3>🔎 مردم بهبهان چه می‌گردند؟</h3><div class="sub2">پرجستجوترین عبارت‌ها در حوزهٔ شما و رشد نسبت به دورهٔ قبل</div><div class="tw" id="tTop"></div></div>
+    <div class="card"><h3>🎯 فرصت‌های از دست‌رفته</h3><div class="sub2">چیزهایی که مردم می‌خواهند و نتیجه‌ای پیدا نکردند</div><div class="tw" id="tOpp"></div></div>
+  </div>
+  <div class="grid g3" style="margin-top:12px">
+    <div class="card"><h3>📨 استعلام‌های من</h3><div class="sub2">از رسیدن تا انتخاب</div><div class="fn" id="funnel"></div></div>
+    <div class="card"><h3>📍 استعلام‌ها از کجا می‌آیند؟</h3><div class="sub2">فاصلهٔ درخواست‌دهنده‌ها تا کسب‌وکار شما</div><div class="ch s"><canvas id="cRing"></canvas></div></div>
+    <div class="card"><h3>⏰ ساعت‌های طلایی</h3><div class="sub2">بهترین ساعت‌ها برای در دسترس بودن</div><div class="ch s"><canvas id="cHours"></canvas></div></div>
+  </div>
+  <div class="grid g3" style="margin-top:12px">
+    <div class="card"><h3>⚡ سرعت پاسخ‌گویی</h3><div class="sub2">میانهٔ زمان تا پیشنهاد</div><div id="resp"></div></div>
+    <div class="card"><h3>🏁 رقابت در حوزهٔ شما</h3><div class="sub2">فقط آمار کلی؛ نام رقبا نمایش داده نمی‌شود</div><div id="comp"></div></div>
+    <div class="card"><h3>⭐ نظرات مشتری‌ها</h3><div class="sub2" id="revsub"></div><div id="stars"></div></div>
+  </div>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+'use strict';
+var CATS={"car":{"n":"خودرو و حمل‌ونقل","e":"🚗","s":{"mechanic":"مکانیک","electric":"برق خودرو","suspension":"جلوبندی و تعلیق","parts":"قطعات یدکی","body":"صافکاری و نقاشی","tire":"لاستیک و باتری","taxi":"آژانس و تاکسی","transport":"حمل و نقل","fuel":"پمپ بنزین و خدمات","motorcycle":"موتورسیکلت","vehicle_rental":"اجاره خودرو","other":"سایر"}},"building":{"n":"ساختمان و تأسیسات","e":"🏠","s":{"plumbing":"لوله کشی","electrical":"برق کاری","painting":"نقاشی ساختمان","masonry":"بنایی و کاشی کاری","doors":"درب و پنجره","ac":"کولر و اسپلیت","carpentry":"نجاری و کابینت","contractor":"پیمانکاری ساختمان","locksmith":"کلیدسازی","glazing":"شیشه بری","tiling":"کاشی و سرامیک","waterproofing":"ایزوگام و عایق","elevator":"آسانسور","other":"سایر"}},"digital":{"n":"دیجیتال و فناوری","e":"📱","s":{"mobile_repair":"تعمیر موبایل","computer_repair":"تعمیر کامپیوتر و لپ‌تاپ","mobile_sale":"فروش موبایل و لوازم","computer_sale":"فروش کامپیوتر","print":"چاپ و پرینت","photo":"عکاسی و فیلم‌برداری","network":"شبکه و اینترنت","satellite":"ماهواره و آنتن","web":"طراحی سایت و دیجیتال","gaming":"گیم‌نت و کافی‌نت","other":"سایر"}},"food":{"n":"خوراک و رستوران","e":"🍔","s":{"restaurant":"رستوران سنتی","fastfood":"فست‌فود و پیتزا","sandwich":"ساندویچ و برگر","cafe":"کافه و کافی‌شاپ","confectionery":"قنادی و شیرینی","bakery":"نانوایی","juice":"آبمیوه و بستنی","kebab":"کبابی","home_food":"غذای خانگی","catering":"کیترینگ و مراسم","dairy":"لبنیات","other":"سایر"}},"agri":{"n":"کشاورزی و دام","e":"🌾","s":{"seeds":"بذر و کود","machinery":"ماشین‌آلات کشاورزی","palm":"نخل و خرما","citrus":"باغداری و مرکبات","livestock":"دامداری","poultry":"مرغداری و طیور","vet":"دامپزشکی","bee":"زنبورداری و عسل","irrigation":"آبیاری و تجهیزات","agri_services":"خدمات کشاورزی","greenhouse":"گلخانه","other":"سایر"}},"beauty":{"n":"زیبایی و آرایش","e":"💇","s":{"barber_men":"آرایشگاه مردانه","barber_women":"آرایشگاه زنانه","nails":"ناخن و مانیکور","makeup":"میکاپ و گریم","massage":"ماساژ و اسپا","epilation":"اپیلاسیون","skin_care":"پوست و مراقبت","hair":"کاشت و مراقبت مو","cosmetics":"فروش لوازم آرایشی","other":"سایر"}},"retail":{"n":"خرده‌فروشی و پوشاک","e":"🛍","s":{"women_clothing":"پوشاک زنانه","men_clothing":"پوشاک مردانه","kids_clothing":"پوشاک بچه‌گانه","shoes":"کفش و صندل","bags":"کیف و چرم","gold":"طلا و جواهر","gifts":"لوازم هدیه و کادو","supermarket":"سوپرمارکت","nuts":"خشکبار و آجیل","perfume":"عطر و ادکلن","fabric":"پارچه و خیاطی","carpet":"فرش و موکت","home_goods":"لوازم خانگی","other":"سایر"}},"services":{"n":"خدمات عمومی و تعمیرات","e":"🔧","s":{"home_appliance":"تعمیر لوازم خانگی","tv_audio":"تعمیر تلویزیون و صوتی","laundry":"خشکشویی و اتوشویی","carpet_wash":"قالیشویی","moving":"باربری و اسباب‌کشی","key":"کلیدسازی و قفل","pest":"سمپاشی و کنترل آفات","carwash":"کارواش","heater":"آبگرمکن و پکیج","watch":"ساعت‌سازی","shoemaker":"کفاشی و تعمیر کفش","other":"سایر"}},"education":{"n":"آموزش و پرورش","e":"🎓","s":{"elementary":"مدرسه ابتدایی","middle":"مدرسه متوسطه اول","high":"دبیرستان","art_school":"هنرستان","university":"دانشگاه و آموزش عالی","language":"آموزشگاه زبان","konkur":"آموزشگاه کنکور","music":"آموزشگاه موسیقی","art_class":"آموزشگاه هنر","sport_class":"آموزشگاه ورزشی","computer_class":"آموزشگاه کامپیوتر","science":"آموزشگاه علمی","kindergarten":"مهدکودک و پیش‌دبستانی","private_class":"کلاس خصوصی","vocational":"آموزشگاه فنی و حرفه‌ای","other":"سایر"}},"medical":{"n":"پزشکی و درمان","e":"🏥","s":{"dentist":"دندانپزشکی","gp":"پزشک عمومی","pharmacy":"داروخانه","lab":"آزمایشگاه","imaging":"تصویربرداری","heart":"متخصص قلب","neuro":"متخصص مغز و اعصاب","pediatric":"متخصص اطفال","ortho":"متخصص ارتوپدی","eye":"چشم‌پزشکی","ent":"گوش، حلق و بینی","derma":"پوست و مو","obgyn":"زنان و زایمان","physio":"فیزیوتراپی","hospital":"بیمارستان و درمانگاه","other":"سایر"}},"sport":{"n":"ورزش و تفریح","e":"🏋️","s":{"gym":"باشگاه ورزشی","pool":"استخر و شنا","football":"فوتبال و فوتسال","martial":"ورزش‌های رزمی","yoga":"یوگا و پیلاتس","cycling":"دوچرخه‌سواری","playground":"شهربازی و تفریح","billiard":"بیلیارد و بولینگ","camping":"کمپینگ و طبیعت‌گردی","other":"سایر"}},"art":{"n":"هنر و سرگرمی","e":"🎨","s":{"photography":"عکاسی حرفه‌ای","cinema":"سینما و تئاتر","music_art":"موسیقی","painting_art":"نقاشی و طراحی","handicraft":"صنایع دستی","entertainment":"سرگرمی و بازی","event":"برگزاری مراسم","other":"سایر"}},"pets":{"n":"حیوانات خانگی","e":"🐾","s":{"pet_shop":"پت شاپ","pet_vet":"دامپزشکی حیوانات خانگی","pet_grooming":"آرایش حیوانات","pet_boarding":"پانسیون حیوانات","pet_training":"آموزش حیوانات","other":"سایر"}},"books":{"n":"کتاب و نوشت‌افزار","e":"📚","s":{"bookshop":"فروشگاه کتاب","stationery":"نوشت‌افزار","office_supplies":"لوازم اداری","bags_school":"کیف و کوله","paper":"دفتر و کاغذ","art_supplies":"لوازم هنری","other":"سایر"}},"office":{"n":"خدمات اداری و مالی","e":"💼","s":{"gov_office":"دفتر پیشخوان دولت","notary":"دفتر اسناد رسمی","lawyer":"وکیل و مشاور حقوقی","insurance":"بیمه","accounting":"حسابداری","bank":"خدمات بانکی","taxi_office":"دفتر تاکسی","real_estate":"مشاور املاک","travel_agency":"آژانس مسافرتی","other":"سایر"}},"tourism":{"n":"اقامت و گردشگری","e":"🏨","s":{"hotel":"هتل و مسافرخانه","ecolodge":"اقامتگاه بوم‌گردی","tour":"تور و گردشگری","historic":"جاذبه تاریخی","natural":"جاذبه طبیعی","other":"سایر"}},"other":{"n":"سایر","e":"❓","s":{"other_all":"سایر"}}};
+var sb=supabase.createClient("https://pqydooffsqhvrmswzpfa.supabase.co","sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF");
+var $=function(i){return document.getElementById(i)},charts={},D=null;
+function n(v){return Number(v||0).toLocaleString('fa-IR')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pct(a,b){return b?Math.round(a*100/b):0}
+function fday(s){try{return new Date(s+'T12:00:00').toLocaleDateString('fa-IR',{month:'short',day:'numeric'})}catch(e){return s}}
+function mk(id,cfg){if(charts[id])charts[id].destroy();cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{rtl:true,labels:{usePointStyle:true,boxWidth:8}},tooltip:{rtl:true,textDirection:'rtl'}}},cfg.options||{});charts[id]=new Chart($(id),cfg)}
+function trend(c,p){if(!p&&!c)return '<span class="t fl">—</span>';if(!p)return '<span class="t up">▲ جدید</span>';var d=Math.round((c-p)*100/p);return '<span class="t '+(d>0?'up':d<0?'dn':'fl')+'">'+(d>0?'▲ ':d<0?'▼ ':'')+n(Math.abs(d))+'٪ نسبت به دورهٔ قبل</span>'}
+function kpi(ic,l,v,t){return '<div class="card kpi"><div class="l">'+ic+' '+l+'</div><div class="v">'+v+'</div>'+(t||'<span class="t">&nbsp;</span>')+'</div>'}
+function table(cols,rows,empty){if(!rows.length)return '<div class="state" style="padding:22px">'+empty+'</div>';return '<table><thead><tr>'+cols.map(function(c){return '<th>'+c[0]+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+c[1](r)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>'}
+function theme(){var dark=matchMedia('(prefers-color-scheme:dark)').matches;Chart.defaults.color=dark?'#8fa1bd':'#64748b';Chart.defaults.borderColor=dark?'#22304d':'#e4e8ee';Chart.defaults.font.family='Vazirmatn,Tahoma';Chart.defaults.animation=false}
+
+function tips(){
+  var k=D.kpi,dm=D.demand,out=[];
+  function t(c,h,b){out.push('<div class="tip '+c+'"><span>'+(c==='w'?'⚠️':c==='g'?'✅':'💡')+'</span><span><b>'+h+'</b>'+b+'</span></div>')}
+  if(!D.has_location)t('w','موقعیت دقیق ثبت نشده','استعلام‌های نزدیک به شما با اولویت بیشتری به شما می‌رسد. در ویرایش کسب‌وکار، موقعیت را از روی نقشه ثبت کنید.');
+  if(k.received>=3&&k.offers===0)t('w','به '+n(k.received)+' استعلام پاسخ نداده‌اید','مشتری معمولاً به اولین پیشنهادها توجه می‌کند. حتی یک پیشنهاد کوتاه شانس انتخاب‌شدن شما را بالا می‌برد.');
+  if(D.response.mine!=null&&D.response.city!=null&&D.response.mine>D.response.city*1.5&&D.response.mine>5)t('w','پاسخ‌دهی شما کندتر از میانگین است','میانهٔ شما '+n(D.response.mine)+' دقیقه و میانهٔ شهر '+n(D.response.city)+' دقیقه است. اعلان‌ها را روشن نگه دارید.');
+  if(D.opportunities.length)t('i','مردم دنبال «'+esc(D.opportunities[0].q)+'» می‌گردند و نتیجه‌ای پیدا نمی‌کنند','اگر این خدمت را ارائه می‌دهید، در توضیحات و برچسب‌های کسب‌وکار بنویسید تا در جستجو دیده شوید.');
+  var up=D.top_searches.filter(function(x){return x.prev>0&&x.n>=3&&x.n>=x.prev*1.5})[0];
+  if(up)t('g','جستجوی «'+esc(up.q)+'» رو به رشد است','تقاضا نسبت به دورهٔ قبل بیشتر شده؛ اگر موجودی یا تخفیف مرتبط دارید همین حالا اعلام کنید.');
+  if(dm.unanswered>=2)t('i',n(dm.unanswered)+' استعلام در حوزهٔ شما هیچ پیشنهادی نگرفتند','بازار خالی از پاسخ است؛ هر چه سریع‌تر پاسخ دهید برنده می‌شوید.');
+  var best=D.hours.slice().sort(function(a,b){return (b.searches+b.requests*3)-(a.searches+a.requests*3)})[0];
+  if(best&&best.searches+best.requests>0)t('i','اوج تقاضا ساعت '+n(best.h)+' تا '+n(best.h+1)+' است','در این ساعت‌ها حتماً در دسترس باشید و تلفن را جواب دهید.');
+  if(k.views>=10&&pct(k.calls,k.views)<5)t('w','فقط '+n(pct(k.calls,k.views))+'٪ از بازدیدکننده‌ها تماس می‌گیرند','عکس واضح، توضیح کامل و تخفیف جذاب، نرخ تماس را بالا می‌برد.');
+  if(!k.reviews)t('w','هنوز نظری ثبت نشده','از مشتری‌های راضی بخواهید نظر بدهند؛ امتیاز در ترتیب نمایش و ارسال استعلام اثر مستقیم دارد.');
+  if(!k.views&&!k.calls)t('i','ردیاب بازدید و تماس تازه فعال شده','آمار بازدید و تماس از همین حالا شروع می‌شود و در روزهای بعد کامل‌تر می‌شود.');
+  $('tips').innerHTML=out.length?out.join(''):'<div class="tip g"><span>✅</span><span><b>همه‌چیز مرتب است</b>فعلاً نکتهٔ خاصی نیست. با ادامهٔ کار آمار دقیق‌تر می‌شود.</span></div>';
+}
+function render(){
+  var k=D.kpi,dm=D.demand,c=CATS[D.cat],cl=c?(c.e+' '+c.n+(c.s[D.sub]?' › '+c.s[D.sub]:'')):'';
+  $('bname').textContent=D.name||'کسب‌وکار من';$('bsub').textContent=cl+' · بازهٔ '+n(D.days)+' روز';$('catn').textContent=cl;
+  tips();
+  $('kpis').innerHTML=kpi('👁','بازدید پروفایل',n(k.views),trend(k.views,k.views_prev))+kpi('📞','تماس',n(k.calls),trend(k.calls,k.calls_prev))+
+    kpi('📨','استعلام دریافتی',n(k.received),trend(k.received,k.received_prev))+kpi('🏆','انتخاب‌شدن',n(k.won),'<span class="t fl">از '+n(k.offers)+' پیشنهاد ('+n(pct(k.won,k.offers))+'٪)</span>');
+  mk('cMine',{type:'line',data:{labels:D.series.map(function(x){return fday(x.d)}),datasets:[{label:'بازدید',data:D.series.map(function(x){return x.views}),borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.12)',fill:true,tension:.35,pointRadius:0},{label:'تماس',data:D.series.map(function(x){return x.calls}),borderColor:'#d97706',tension:.35,pointRadius:0}]},options:{scales:{x:{ticks:{maxTicksLimit:7,maxRotation:0}},y:{beginAtZero:true,ticks:{precision:0}}}}});
+  mk('cMarket',{type:'line',data:{labels:D.series.map(function(x){return fday(x.d)}),datasets:[{label:'جستجو',data:D.series.map(function(x){return x.searches}),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.1)',fill:true,tension:.35,pointRadius:0},{label:'استعلام',data:D.series.map(function(x){return x.requests}),borderColor:'#9333ea',tension:.35,pointRadius:0}]},options:{scales:{x:{ticks:{maxTicksLimit:7,maxRotation:0}},y:{beginAtZero:true,ticks:{precision:0}}}}});
+  $('tTop').innerHTML=table([['عبارت',function(x){return esc(x.q)}],['تعداد',function(x){return n(x.n)}],['روند',function(x){return !x.prev?'<span class="badge">جدید</span>':(x.n>x.prev?'<span class="up">▲ '+n(Math.round((x.n-x.prev)*100/x.prev))+'٪</span>':x.n<x.prev?'<span class="dn">▼ '+n(Math.round((x.prev-x.n)*100/x.prev))+'٪</span>':'—')}]],D.top_searches,'هنوز جستجویی در حوزهٔ شما ثبت نشده');
+  $('tOpp').innerHTML=table([['عبارت',function(x){return esc(x.q)}],['تعداد',function(x){return n(x.n)}],['',function(){return '<span class="badge w">فرصت</span>'}]],D.opportunities,'همهٔ جستجوهای حوزهٔ شما نتیجه داشتند 👌');
+  var st=[['دریافت',k.received],['دیده‌شده',k.seen],['پیشنهاد',k.offers],['انتخاب‌شده',k.won]];
+  $('funnel').innerHTML=st.map(function(s){return '<div class="fr"><span>'+s[0]+'</span><div class="fb"><i style="width:'+pct(s[1],k.received||Math.max(k.offers,1))+'%"></i></div><b>'+n(s[1])+'</b></div>'}).join('');
+  mk('cRing',{type:'doughnut',data:{labels:['کمتر از ۱ کیلومتر','۱ تا ۳ کیلومتر','بیش از ۳ کیلومتر'],datasets:[{data:[dm.near_1,dm.near_3,dm.near_6],backgroundColor:['#0f766e','#14b8a6','#94a3b8']}]},options:{cutout:'58%'}});
+  mk('cHours',{type:'bar',data:{labels:D.hours.map(function(x){return n(x.h)}),datasets:[{label:'جستجو',data:D.hours.map(function(x){return x.searches}),backgroundColor:'#14b8a6'},{label:'استعلام',data:D.hours.map(function(x){return x.requests}),backgroundColor:'#d97706'}]},options:{scales:{x:{stacked:true,ticks:{maxTicksLimit:12}},y:{stacked:true,ticks:{precision:0}}}}});
+  var r=D.response;$('resp').innerHTML='<div style="display:flex;gap:18px"><div><div class="sub2">شما</div><div class="kpi"><div class="v">'+(r.mine==null?'—':n(r.mine))+'</div></div></div><div><div class="sub2">میانهٔ شهر</div><div class="kpi"><div class="v">'+(r.city==null?'—':n(r.city))+'</div></div></div></div><div class="sub2">دقیقه تا اولین پیشنهاد</div>';
+  var cp=D.competition;$('comp').innerHTML='<div>تعداد کسب‌وکارهای هم‌حوزه: <b>'+n(cp.competitors)+'</b></div><div>میانگین امتیاز حوزه: <b>'+(cp.avg_rating==null?'—':n(cp.avg_rating))+'</b></div><div>رتبهٔ شما بین امتیازدار‌ها: <b>'+(cp.my_rank==null?'بدون امتیاز':n(cp.my_rank)+' از '+n(cp.rated_total))+'</b></div><div class="sub2" style="margin-top:6px">تقاضای شهر: '+n(dm.total)+' استعلام، '+n(dm.urgent)+' فوری</div>';
+  $('revsub').textContent=(k.reviews?n(k.reviews)+' نظر · میانگین '+n(k.rating):'هنوز نظری نیست');
+  var tot=0;[5,4,3,2,1].forEach(function(i){tot+=Number(D.stars[i]||0)});
+  $('stars').innerHTML=[5,4,3,2,1].map(function(i){var c=Number(D.stars[i]||0);return '<div class="star"><span>'+n(i)+' ⭐</span><div class="fb"><i style="width:'+pct(c,tot)+'%"></i></div><span>'+n(c)+'</span></div>'}).join('');
+}
+async function load(){
+  $('err').innerHTML='';
+  var r=await sb.rpc('owner_dashboard',{p_business_id:$('biz').value,p_days:Number($('days').value)});
+  if(r.error){$('err').innerHTML='<div class="alert">خطا: '+esc(r.error.message)+(/does not exist|schema cache/i.test(r.error.message)?' — اسکریپت SQL داشبورد مالک هنوز اجرا نشده است.':'')+'</div>';return}
+  D=r.data;render();
+}
+async function boot(){
+  theme();
+  var s=await sb.auth.getSession(),u=s.data&&s.data.session&&s.data.session.user;
+  if(!u){$('gate').innerHTML='<h2>ابتدا وارد حساب خود شوید</h2><p><a class="btn w" style="color:#0f766e;background:#ccfbf1;border-color:#99f6e4" href="/nomax/">ورود به نومکس</a></p>';return}
+  var r=await sb.rpc('owner_my_businesses');
+  if(r.error){$('gate').innerHTML='<h2>خطا</h2><p class="sub2">'+esc(r.error.message)+'</p>';return}
+  var list=(r.data||[]).filter(function(b){return b.status==='approved'});
+  if(!list.length){$('gate').innerHTML='<h2>کسب‌وکار تأییدشده‌ای ندارید</h2><p class="sub2">بعد از تأیید کسب‌وکار، آمار آن اینجا نمایش داده می‌شود.</p>';return}
+  var sel=$('biz');sel.innerHTML=list.map(function(b){return '<option value="'+esc(b.id)+'">'+esc(b.name||b.id)+'</option>'}).join('');
+  if(list.length>1)sel.classList.remove('hide');
+  $('gate').classList.add('hide');$('app').classList.remove('hide');load();
+}
+$('days').onchange=load;$('biz').onchange=load;
+boot();
+})();
+</script>
+</body>
+</html>
