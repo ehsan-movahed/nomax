@@ -1,0 +1,139 @@
+-- ============================================================
+-- داشبورد مالک نومیک | هر مالک فقط آمار کسب‌وکار خودش و تجمیع حوزهٔ خودش را می‌بیند
+-- ============================================================
+
+create or replace function public.nx_km(a1 double precision, o1 double precision, a2 double precision, o2 double precision)
+returns double precision language sql immutable as $$
+  select 2*6371*asin(sqrt(power(sin(radians(a2-a1)/2),2)+cos(radians(a1))*cos(radians(a2))*power(sin(radians(o2-o1)/2),2)));
+$$;
+
+-- لیست کسب‌وکارهای من
+create or replace function public.owner_my_businesses()
+returns table(id text, name text, status text, category_id text, subcategory_id text)
+language sql stable security definer set search_path = public as $$
+  select b.id::text, b.payload->>'name', b.status, b.payload->>'categoryId', b.payload->>'subcategoryId'
+  from businesses b where b.owner_id::text = auth.uid()::text and auth.uid() is not null order by b.status, 2;
+$$;
+revoke all on function public.owner_my_businesses() from public, anon;
+grant execute on function public.owner_my_businesses() to authenticated;
+
+create or replace function public.owner_dashboard(p_business_id text, p_days int default 30)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  d int := greatest(1, least(coalesce(p_days,30), 180));
+  v_from timestamptz := now() - make_interval(days => greatest(1, least(coalesce(p_days,30), 180)));
+  v_prev timestamptz := now() - make_interval(days => 2*greatest(1, least(coalesce(p_days,30), 180)));
+  v_today date := (now() at time zone 'Asia/Tehran')::date;
+  b businesses%rowtype;
+  cat text; sub text; ph text; lat double precision; lng double precision;
+  o jsonb := '{}'::jsonb; v jsonb; my_rating numeric; my_rev int;
+begin
+  select * into b from businesses x where x.id::text = p_business_id and x.owner_id::text = auth.uid()::text and auth.uid() is not null;
+  if not found then raise exception 'forbidden' using errcode = '42501'; end if;
+  cat := b.payload->>'categoryId'; sub := b.payload->>'subcategoryId';
+  ph  := right(regexp_replace(translate(coalesce(b.payload->>'phone',''),'۰۱۲۳۴۵۶۷۸۹','0123456789'),'\D','','g'),10);
+  lat := nullif(b.payload->'location'->>'lat','')::double precision;
+  lng := nullif(b.payload->'location'->>'lng','')::double precision;
+
+  select round(avg(nullif(r.payload->>'stars','')::numeric),2), count(*) into my_rating, my_rev
+    from reviews r where r.payload->>'businessId' = b.id::text;
+
+  -- شاخص‌ها + مقایسه با دورهٔ قبل
+  select jsonb_build_object(
+    'views',      (select count(*) from nx_activity_log l where l.action='biz_view'   and l.ref_id=b.id::text and l.created_at>=v_from),
+    'views_prev', (select count(*) from nx_activity_log l where l.action='biz_view'   and l.ref_id=b.id::text and l.created_at>=v_prev and l.created_at<v_from),
+    'calls',      (select count(*) from nx_activity_log l where l.action='call_click' and ph<>'' and l.ref_id=ph and l.created_at>=v_from),
+    'calls_prev', (select count(*) from nx_activity_log l where l.action='call_click' and ph<>'' and l.ref_id=ph and l.created_at>=v_prev and l.created_at<v_from),
+    'received',   (select count(*) from request_recipients rr where rr.business_id=b.id::text and rr.release_at<=now() and rr.created_at>=v_from),
+    'received_prev',(select count(*) from request_recipients rr where rr.business_id=b.id::text and rr.release_at<=now() and rr.created_at>=v_prev and rr.created_at<v_from),
+    'seen',       (select count(*) from request_recipients rr where rr.business_id=b.id::text and rr.release_at<=now() and rr.created_at>=v_from and rr.viewed_at is not null),
+    'offers',     (select count(*) from request_offers f where f.business_id::text=b.id::text and f.created_at>=v_from),
+    'won',        (select count(*) from request_offers f join service_requests s on s.selected_offer_id = f.id where f.business_id::text=b.id::text and f.created_at>=v_from),
+    'rating', my_rating, 'reviews', my_rev
+  ) into v;
+  o := o || jsonb_build_object('kpi', v);
+
+  -- سری روزانه: بازدید، تماس، جستجوی حوزهٔ من، استعلام حوزهٔ من
+  select coalesce(jsonb_agg(jsonb_build_object('d', to_char(g.day,'YYYY-MM-DD'),
+    'views', (select count(*) from nx_activity_log l where l.action='biz_view' and l.ref_id=b.id::text and (l.created_at at time zone 'Asia/Tehran')::date=g.day),
+    'calls', (select count(*) from nx_activity_log l where l.action='call_click' and ph<>'' and l.ref_id=ph and (l.created_at at time zone 'Asia/Tehran')::date=g.day),
+    'searches', (select count(*) from market_searches m where m.category_id=cat and (sub is null or m.subcategory_id=sub) and (m.created_at at time zone 'Asia/Tehran')::date=g.day),
+    'requests', (select count(*) from service_requests s where s.category_id=cat and (sub is null or s.subcategory_id=sub) and (s.created_at at time zone 'Asia/Tehran')::date=g.day)
+  ) order by g.day),'[]'::jsonb) into v
+  from (select generate_series(v_today-(d-1), v_today, interval '1 day')::date as day) g;
+  o := o || jsonb_build_object('series', v);
+
+  -- پرجستجوترین‌ها در حوزهٔ من + روند نسبت به دورهٔ قبل
+  select coalesce(jsonb_agg(x), '[]'::jsonb) into v from (
+    select jsonb_build_object('q', q, 'n', n, 'prev', prev, 'zero', z) as x from (
+      select query q,
+        count(*) filter (where created_at>=v_from) n,
+        count(*) filter (where created_at>=v_prev and created_at<v_from) prev,
+        count(*) filter (where created_at>=v_from and result_count=0) z
+      from market_searches
+      where category_id=cat and (sub is null or subcategory_id=sub) and created_at>=v_prev
+      group by query) t where n>0 order by n desc limit 12) s;
+  o := o || jsonb_build_object('top_searches', v);
+
+  -- فرصت‌ها: جستجوهای بی‌نتیجه (مردم می‌خواهند، کسی ندارد)
+  select coalesce(jsonb_agg(x), '[]'::jsonb) into v from (
+    select jsonb_build_object('q', query, 'n', count(*)) as x
+    from market_searches where category_id=cat and (sub is null or subcategory_id=sub) and created_at>=v_from and result_count=0
+    group by query order by count(*) desc limit 8) s;
+  o := o || jsonb_build_object('opportunities', v);
+
+  -- بازار استعلام در حوزهٔ من
+  select jsonb_build_object(
+    'total',  count(*), 'urgent', count(*) filter (where coalesce(is_urgent,false)),
+    'unanswered', count(*) filter (where not exists (select 1 from request_offers f where f.request_id=s.id)),
+    'near_1', count(*) filter (where lat is not null and (s.location->>'lat') is not null and nx_km(lat,lng,(s.location->>'lat')::double precision,(s.location->>'lng')::double precision) < 1),
+    'near_3', count(*) filter (where lat is not null and (s.location->>'lat') is not null and nx_km(lat,lng,(s.location->>'lat')::double precision,(s.location->>'lng')::double precision) between 1 and 3),
+    'near_6', count(*) filter (where lat is not null and (s.location->>'lat') is not null and nx_km(lat,lng,(s.location->>'lat')::double precision,(s.location->>'lng')::double precision) > 3),
+    'located', count(*) filter (where (s.location->>'lat') is not null)
+  ) into v
+  from service_requests s
+  where s.category_id=cat and (sub is null or s.subcategory_id=sub) and s.created_at>=v_from;
+  o := o || jsonb_build_object('demand', v);
+
+  -- ساعات اوج در حوزهٔ من
+  select coalesce(jsonb_agg(jsonb_build_object('h',h,
+    'searches',(select count(*) from market_searches m where m.category_id=cat and (sub is null or m.subcategory_id=sub) and m.created_at>=v_from and extract(hour from m.created_at at time zone 'Asia/Tehran')=h),
+    'requests',(select count(*) from service_requests s where s.category_id=cat and (sub is null or s.subcategory_id=sub) and s.created_at>=v_from and extract(hour from s.created_at at time zone 'Asia/Tehran')=h)
+  ) order by h),'[]'::jsonb) into v from generate_series(0,23) h;
+  o := o || jsonb_build_object('hours', v);
+
+  -- رقابت (فقط تجمیعی، بدون نام رقبا)
+  select jsonb_build_object(
+    'competitors', count(*) - 1,
+    'avg_rating', round(avg(rt.a),2),
+    'my_rank', case when my_rating is null then null else 1 + count(*) filter (where rt.a > my_rating) end,
+    'rated_total', count(*) filter (where rt.a is not null)
+  ) into v
+  from businesses x
+  left join lateral (select avg(nullif(r.payload->>'stars','')::numeric) a from reviews r where r.payload->>'businessId'=x.id::text) rt on true
+  where x.status='approved' and x.payload->>'categoryId'=cat and (sub is null or x.payload->>'subcategoryId'=sub);
+  o := o || jsonb_build_object('competition', v);
+
+  -- سرعت پاسخ من در برابر شهر (دقیقه از لحظهٔ رسیدن استعلام)
+  select jsonb_build_object(
+    'mine', (select round((percentile_cont(0.5) within group (order by m))::numeric,1) from (
+              select extract(epoch from (min(f.created_at) - rr.release_at))/60.0 m
+              from request_recipients rr join request_offers f on f.request_id=rr.request_id and f.business_id::text=rr.business_id
+              where rr.business_id=b.id::text and rr.created_at>=v_from group by rr.request_id, rr.release_at) t where m>=0),
+    'city', (select round((percentile_cont(0.5) within group (order by m))::numeric,1) from (
+              select extract(epoch from (f.created_at - rr.release_at))/60.0 m
+              from request_recipients rr join request_offers f on f.request_id=rr.request_id and f.business_id::text=rr.business_id
+              where rr.created_at>=v_from) t where m>=0)
+  ) into v;
+  o := o || jsonb_build_object('response', v);
+
+  -- توزیع امتیاز
+  select coalesce(jsonb_object_agg(s, c),'{}'::jsonb) into v from (
+    select (payload->>'stars') s, count(*) c from reviews where payload->>'businessId'=b.id::text group by 1) t;
+  o := o || jsonb_build_object('stars', v);
+
+  return o || jsonb_build_object('days', d, 'has_location', lat is not null,
+    'cat', cat, 'sub', sub, 'name', b.payload->>'name', 'status', b.status, 'generated_at', now());
+end $$;
+revoke all on function public.owner_dashboard(text, int) from public, anon;
+grant execute on function public.owner_dashboard(text, int) to authenticated;
