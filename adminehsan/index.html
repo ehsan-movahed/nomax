@@ -15110,7 +15110,53 @@ details.biz-accordion > summary .biz-quick-call svg{ width:16px; height:16px; }
   });
 })();
 </script>
-
+<style id="nx-admin-polish">
+  body.admin-route{background:linear-gradient(180deg,#e6f4f1 0,#f4f6f9 260px)!important}
+  body.admin-route #adminRouteShell{max-width:1180px!important;padding-top:18px}
+  #adminRouteMount{width:100%}
+  body.admin-route #adminCard{width:100%!important;max-width:none!important;margin:0!important}
+  #adminRouteHeader{background:linear-gradient(135deg,#0b4f4a,#0f766e 60%,#14b8a6)!important;border:0!important;color:#fff;border-radius:20px!important;box-shadow:0 14px 34px rgba(15,118,110,.28)!important;padding:18px 22px!important}
+  #adminRouteHeader h1{color:#fff!important;font-size:20px!important}
+  #adminRouteHeader p{color:rgba(255,255,255,.8)!important}
+  #adminRouteHeader .brand-mark{background:rgba(255,255,255,.18)!important;box-shadow:none!important;backdrop-filter:blur(6px)}
+  #adminRouteHeader .route-actions a,#adminRouteHeader .route-actions button{background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.28)!important;color:#fff!important;border-radius:12px!important;padding:10px 14px!important;font-weight:600;cursor:pointer;transition:.15s}
+  #adminRouteHeader .route-actions a:hover,#adminRouteHeader .route-actions button:hover{background:rgba(255,255,255,.28)!important;transform:translateY(-1px)}
+  #adminRouteHeader .route-actions a.nx-dash{background:#fff!important;color:#0f766e!important;border-color:#fff!important}
+  body.admin-route #adminCard{border:0!important;border-radius:20px!important;box-shadow:0 10px 30px rgba(15,23,42,.07)!important}
+  body.admin-route #adminCard .admin-sub-tabs{grid-template-columns:repeat(5,minmax(0,1fr))!important;background:#fff;border:1px solid #e4e8ee}
+  body.admin-route #adminCard .admin-sub-tab{border-radius:11px;font-weight:700;transition:.15s;display:flex;align-items:center;justify-content:center;text-decoration:none;color:inherit}
+  body.admin-route #adminCard .admin-sub-tab.active{background:#0f766e!important;color:#fff!important}
+  body.admin-route #adminCard a.admin-sub-tab.nx-dash-tab{background:#ecfeff;color:#0f766e!important}
+  body.admin-route #adminCard .admin-stat-card{border-radius:16px;box-shadow:0 4px 14px rgba(15,23,42,.05);transition:.15s}
+  body.admin-route #adminCard .admin-stat-card:hover{transform:translateY(-2px)}
+  body.admin-route #adminCard .admin-filter-chip{border-radius:99px}
+  @media(max-width:760px){body.admin-route #adminCard .admin-sub-tabs{grid-template-columns:repeat(2,1fr)!important}}
+</style>
+<script id="nx-admin-polish-js">
+(function(){
+  var HOME='/nomax/', DASH='/nomax/admin-dashboard.html';
+  function fix(){
+    var act=document.querySelector('#adminRouteHeader .route-actions');
+    if(act && !act.querySelector('.nx-dash')){
+      act.innerHTML='<a href="'+HOME+'">🏠 صفحه اصلی</a><a class="nx-dash" href="'+DASH+'">📊 داشبورد</a><button type="button" id="nxAdminLogout">خروج از مدیریت</button>';
+      document.getElementById('nxAdminLogout').onclick=async function(){
+        try{ if(window.__nomaxSupabaseClient) await window.__nomaxSupabaseClient.auth.signOut(); }catch(e){}
+        location.href=HOME;
+      };
+    }
+    var old=document.querySelector('#adminSubTabs [data-sub="analytics"]'); if(old) old.remove();
+    var pnl=document.getElementById('adminMarketAnalytics'); if(pnl) pnl.remove();
+    var tabs=document.getElementById('adminSubTabs');
+    if(tabs && !tabs.querySelector('.nx-dash-tab')){
+      var a=document.createElement('a'); a.className='admin-sub-tab nx-dash-tab'; a.href=DASH; a.textContent='📊 داشبورد'; tabs.appendChild(a);
+    }
+  }
+  window.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a.nx-dash-tab'); if(a) e.stopPropagation();
+  },true);
+  fix(); window.addEventListener('load',function(){fix();setTimeout(fix,500);});
+})();
+</script>
 </body>
   </html>
 <style id="nomax-location-arrow-fix">
