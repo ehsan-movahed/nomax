@@ -10200,7 +10200,7 @@ updateStats();
     var p = getPending(); if(!p) return;
     setPending(null);
     if(p.type === "admin"){
-      if(state.admin) openAdminPanel();
+      if(!document.body.classList.contains("admin-route") && !state.admin){ return; }       if(state.admin) openAdminPanel();
       else if(state.user){
         /* بررسی دوباره قبل از نمایش خطا: گاهی نقش مدیر چند لحظه دیرتر از ورود آماده می‌شود */
         var _t = 0;
