@@ -10250,7 +10250,7 @@ updateStats();
       btn.onclick = async function(){
         var a = btn.getAttribute("data-am"); closeMenu();
         if(a === "panel"){ if(window.nomaxPanel) window.nomaxPanel.open(); }
-        else if(a === "admin"){ openAdminPanel(); }
+        else if(a === "admin"){ location.href = "/nomax/adminehsan/"; }
         else if(a === "out"){ await signOut(); }
       };
     });
@@ -11209,7 +11209,7 @@ h += offers.map(function(o,i){
     var admin = window.nomaxAuth.admin();
     a.innerHTML = '<div class="np-card np-row"><div class="np-ava">'+esc((name||"؟").trim().charAt(0).toUpperCase())+'</div><div style="min-width:0"><div style="font-weight:800">'+esc(name)+((u.app_metadata&&u.app_metadata.id_verified)?' <span class="st-pill" style="background:rgba(22,163,74,.12);color:#15803d;font-size:11px;margin-right:6px">✓ احراز هویت‌شده</span>':'')+'</div><div style="font-size:12px;color:var(--text-3);direction:ltr;text-align:right;word-break:break-all">'+esc(u.email||"")+'</div>'+(admin?'<span class="st-pill" style="background:rgba(220,38,38,.1);color:#b91c1c;margin-top:6px;display:inline-block">🛡 مدیر</span>':'')+'</div></div>';
     ac.innerHTML = (admin ? '<button type="button" class="np-act" id="npAdmin">🛡 پنل مدیریت</button>' : '')+'<button type="button" class="np-act danger" id="npOut">🚪 خروج از حساب</button>';
-    if($("npAdmin")) $("npAdmin").onclick = function(){ close(); if(window.openAdminPanel) window.openAdminPanel(); };
+    if($("npAdmin")) $("npAdmin").onclick = function(){ close(); location.href = "/nomax/adminehsan/"; };
     $("npOut").onclick = function(){ close(); window.nomaxAuth.signOut(); };
   }
 
