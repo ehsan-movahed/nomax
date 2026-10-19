@@ -14981,6 +14981,54 @@ details.biz-accordion > summary .biz-quick-call svg{ width:16px; height:16px; }
   start();
 })();
 </script>
+  <script id="nx-owner-tracker">
+(function(){
+  var DASH='/nomax/owner-dashboard.html';
+  function mine(){ try{ return (window.nomaxMyBusinesses && window.nomaxMyBusinesses()) || []; }catch(e){ return []; } }
+  function digits(s){ return String(s||'').replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);}).replace(/\D/g,'').slice(-10); }
+  function once(key, mins){
+    try{
+      var k='nx_t_'+key, t=Number(sessionStorage.getItem(k)||0);
+      if(Date.now()-t < mins*60000) return false;
+      sessionStorage.setItem(k, String(Date.now()));
+    }catch(e){}
+    return true;
+  }
+  function wrapSheet(){
+    var f=window.nxOpenBusinessSheet;
+    if(typeof f!=='function' || f.__nxw) return false;
+    var w=function(b){
+      try{
+        if(b && b.id!=null && window.nxLog){
+          var own = mine().some(function(m){ return String(m.id)===String(b.id); });
+          if(!own && once('v'+b.id, 30)) window.nxLog('biz_view','business',b.id);
+        }
+      }catch(e){}
+      return f.apply(this, arguments);
+    };
+    w.__nxw=true; window.nxOpenBusinessSheet=w; return true;
+  }
+  var tries=0; (function t(){ if(!wrapSheet() && ++tries<40) setTimeout(t,500); })();
+  document.addEventListener('click',function(e){
+    try{
+      var a=e.target.closest && e.target.closest('a[href^="tel:"]'); if(!a || !window.nxLog) return;
+      var d=digits(a.getAttribute('href')); if(d.length<10 || d.slice(0,1)==='1') return;
+      if(mine().some(function(m){ return digits(m.phone)===d; })) return;
+      if(once('c'+d, 10)) window.nxLog('call_click','phone',d);
+    }catch(_){}
+  },true);
+  function addCard(){
+    var host=document.getElementById('npBizList');
+    if(!host || document.getElementById('nxOwnerDashLink') || !mine().length) return;
+    var a=document.createElement('a'); a.id='nxOwnerDashLink'; a.href=DASH;
+    a.style.cssText='display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:14px 16px;border-radius:16px;text-decoration:none;color:#fff;font-weight:800;background:linear-gradient(135deg,#0b4f4a,#0f766e 60%,#14b8a6);box-shadow:0 8px 20px rgba(15,118,110,.25)';
+    a.innerHTML='<span style="font-size:24px">📊</span><span style="flex:1">داشبورد کسب‌وکار من<br><small style="font-weight:400;opacity:.85">بازدید، تماس، جستجوهای اطراف و فرصت‌ها</small></span><span>←</span>';
+    host.insertBefore(a, host.firstChild);
+  }
+  setInterval(addCard, 1500);
+})();
+</script>
+  
 </body>
   </html>
 <style id="nomax-location-arrow-fix">
