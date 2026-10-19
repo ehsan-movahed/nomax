@@ -15028,6 +15028,79 @@ details.biz-accordion > summary .biz-quick-call svg{ width:16px; height:16px; }
   setInterval(addCard, 1500);
 })();
 </script>
+  <style id="nx-menu-style">
+  .acct-menu{width:min(310px,calc(100vw - 24px))!important;padding:0!important;border-radius:20px!important;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,.28)!important;border:1px solid var(--border)!important}
+  .acct-menu .am-head.nx{display:flex;align-items:center;gap:12px;padding:16px!important;margin:0!important;border:0!important;background:linear-gradient(135deg,#0b4f4a,#0f766e 60%,#14b8a6);color:#fff}
+  .acct-menu .am-av{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:800;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.45)}
+  .acct-menu .am-tx{min-width:0;flex:1}
+  .acct-menu .am-head.nx .am-name{color:#fff;font-size:15px}
+  .acct-menu .am-head.nx .am-mail{color:rgba(255,255,255,.8)!important;font-size:11px}
+  .acct-menu .am-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .acct-menu .am-chip{font-size:10.5px;font-weight:800;padding:1px 9px;border-radius:99px;background:rgba(255,255,255,.2);color:#fff}
+  .acct-menu .am-list{padding:8px}
+  .acct-menu .am-list button{gap:12px!important;padding:9px 10px!important;border-radius:12px!important;transition:background .15s,transform .15s}
+  .acct-menu .am-list button:hover{background:var(--muted);transform:translateX(-2px)}
+  .acct-menu .am-ico{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-size:17px;background:rgba(20,184,166,.12)}
+  .acct-menu .am-list button.nx-dash .am-ico{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff}
+  .acct-menu .am-list button.nx-dash{background:rgba(20,184,166,.08)}
+  .acct-menu .am-list button.danger .am-ico{background:rgba(220,38,38,.1)}
+  .acct-menu .am-sep{height:1px;background:var(--border);margin:6px 4px}
+</style>
+<script id="nx-menu-js">
+(function(){
+  function mine(){ try{ return (window.nomaxMyBusinesses && window.nomaxMyBusinesses()) || []; }catch(e){ return []; } }
+  function go(u){ var m=document.getElementById('acctMenu'); if(m) m.classList.remove('open'); location.href=u; }
+  function dashBtn(label,url){
+    var b=document.createElement('button'); b.type='button'; b.className='nx-dash'; b.textContent='📊 '+label;
+    b.onclick=function(){ go(url); }; return b;
+  }
+  function polish(m){
+    var head=m.querySelector('.am-head'); if(!head || head.classList.contains('nx')) return;
+    var nm=(head.querySelector('.am-name')||{}).textContent||'کاربر';
+    var isAdmin=!!m.querySelector('[data-am="admin"]');
+    var owner=mine().length>0;
+    head.classList.add('nx');
+    var roleEl=head.querySelector('.am-role');
+    var av=document.createElement('div'); av.className='am-av'; av.textContent=nm.trim().charAt(0).toUpperCase()||'N';
+    var tx=document.createElement('div'); tx.className='am-tx';
+    while(head.firstChild) tx.appendChild(head.firstChild);
+    var chips=document.createElement('div'); chips.className='am-chips';
+    if(roleEl) roleEl.remove();
+    if(isAdmin) chips.innerHTML+='<span class="am-chip">🛡 مدیر</span>';
+    if(owner) chips.innerHTML+='<span class="am-chip">🏪 مالک کسب‌وکار</span>';
+    if(chips.children.length) tx.appendChild(chips);
+    head.appendChild(av); head.appendChild(tx);
+    var list=document.createElement('div'); list.className='am-list';
+    var btns=[].slice.call(m.querySelectorAll(':scope > button'));
+    var out=btns.filter(function(b){ return b.getAttribute('data-am')==='out'; })[0];
+    btns.forEach(function(b){
+      if(b===out) return;
+      var t=b.textContent.trim(), sp=t.indexOf(' '), ic=sp>0?t.slice(0,sp):'•', rest=sp>0?t.slice(sp+1):t;
+      b.innerHTML='<span class="am-ico">'+ic+'</span><span>'+rest+'</span>';
+      list.appendChild(b);
+    });
+    if(isAdmin){ var a=dashBtn('داشبورد مدیریت','/nomax/admin-dashboard.html'); list.insertBefore(a, list.firstChild); }
+    if(owner){ var o=dashBtn('داشبورد کسب‌وکار من','/nomax/owner-dashboard.html'); list.insertBefore(o, list.firstChild); }
+    [].forEach.call(list.querySelectorAll('button.nx-dash'),function(b){
+      var t=b.textContent.trim(); b.innerHTML='<span class="am-ico">📊</span><span>'+t.replace('📊','').trim()+'</span>';
+    });
+    if(out){
+      var t2=out.textContent.trim(), s2=t2.indexOf(' ');
+      out.innerHTML='<span class="am-ico">'+(s2>0?t2.slice(0,s2):'🚪')+'</span><span>'+(s2>0?t2.slice(s2+1):t2)+'</span>';
+      var sep=document.createElement('div'); sep.className='am-sep'; list.appendChild(sep); list.appendChild(out);
+    }
+    [].slice.call(m.children).forEach(function(c){ if(c!==head) c.remove(); });
+    m.appendChild(list);
+  }
+  function watch(m){
+    if(m.__nxw) return; m.__nxw=true;
+    new MutationObserver(function(){ polish(m); }).observe(m,{childList:true});
+    polish(m);
+  }
+  var m0=document.getElementById('acctMenu'); if(m0) watch(m0);
+  new MutationObserver(function(){ var m=document.getElementById('acctMenu'); if(m) watch(m); }).observe(document.body,{childList:true});
+})();
+</script>
   
 </body>
   </html>
