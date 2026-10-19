@@ -16,7 +16,7 @@
 .hero h1{margin:0;font-size:19px}.hero .sub{opacity:.85;font-size:12.5px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-select,.btn{font:inherit;font-size:13px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.14);color:#fff;border-radius:11px;padding:8px 12px;cursor:pointer;text-decoration:none}
+select,button.btn,.btn{font:inherit;font-size:13px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.14);color:#fff;border-radius:11px;padding:8px 12px;cursor:pointer;text-decoration:none}
 select option{color:#000}.btn.w{background:#fff;color:var(--pr);border-color:#fff;font-weight:700}
 .grid{display:grid;gap:12px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
 @media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
@@ -44,6 +44,7 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{padding:8px 9px
   <div class="tools">
     <select id="biz" class="hide"></select>
     <select id="days"><option value="7">۷ روز اخیر</option><option value="30" selected>۳۰ روز اخیر</option><option value="90">۹۰ روز اخیر</option></select>
+    <button type="button" class="btn" id="theme" title="حالت شب / روز">🌓</button>
     <a class="btn w" href="/nomax/">🏠 صفحه اصلی</a>
     
   </div>
@@ -89,7 +90,8 @@ function mk(id,cfg){if(charts[id])charts[id].destroy();cfg.options=Object.assign
 function trend(c,p){if(!p&&!c)return '<span class="t fl">—</span>';if(!p)return '<span class="t up">▲ جدید</span>';var d=Math.round((c-p)*100/p);return '<span class="t '+(d>0?'up':d<0?'dn':'fl')+'">'+(d>0?'▲ ':d<0?'▼ ':'')+n(Math.abs(d))+'٪ نسبت به دورهٔ قبل</span>'}
 function kpi(ic,l,v,t){return '<div class="card kpi"><div class="l">'+ic+' '+l+'</div><div class="v">'+v+'</div>'+(t||'<span class="t">&nbsp;</span>')+'</div>'}
 function table(cols,rows,empty){if(!rows.length)return '<div class="state" style="padding:22px">'+empty+'</div>';return '<table><thead><tr>'+cols.map(function(c){return '<th>'+c[0]+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+c[1](r)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>'}
-function theme(){var dark=matchMedia('(prefers-color-scheme:dark)').matches;Chart.defaults.color=dark?'#8fa1bd':'#64748b';Chart.defaults.borderColor=dark?'#22304d':'#e4e8ee';Chart.defaults.font.family='Vazirmatn,Tahoma';Chart.defaults.animation=false}
+function isDark(){var t=document.documentElement.dataset.theme;return t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches}
+function theme(){var dark=isDark();Chart.defaults.color=dark?'#8fa1bd':'#64748b';Chart.defaults.borderColor=dark?'#22304d':'#e4e8ee';Chart.defaults.font.family='Vazirmatn,Tahoma';Chart.defaults.animation=false}
 
 function tips(){
   var k=D.kpi,dm=D.demand,out=[];
@@ -147,6 +149,9 @@ async function boot(){
   $('gate').classList.add('hide');$('app').classList.remove('hide');load();
 }
 $('days').onchange=load;$('biz').onchange=load;
+try{var sv=localStorage.getItem('nx_theme');if(sv==='dark'||sv==='light')document.documentElement.dataset.theme=sv}catch(e){}
+theme();
+$('theme').onclick=function(){var d=document.documentElement;var next=isDark()?'light':'dark';d.dataset.theme=next;try{localStorage.setItem('nx_theme',next)}catch(e){}theme();if(D)render()};
 boot();
 })();
 </script>
