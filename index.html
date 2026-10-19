@@ -15101,6 +15101,48 @@ details.biz-accordion > summary .biz-quick-call svg{ width:16px; height:16px; }
   new MutationObserver(function(){ var m=document.getElementById('acctMenu'); if(m) watch(m); }).observe(document.body,{childList:true});
 })();
 </script>
+  <style id="nx-panel-style">
+  #nomaxPanel{background:linear-gradient(180deg,#d9f2ee 0,var(--bg) 220px)}
+  [data-theme="dark"] #nomaxPanel{background:linear-gradient(180deg,#0d3b38 0,var(--bg) 220px)}
+  #nomaxPanel .np-head{background:linear-gradient(135deg,#0b4f4a,#0f766e 60%,#14b8a6)!important;border:0!important;color:#fff;padding:14px 16px!important;box-shadow:0 10px 28px rgba(15,118,110,.3);border-radius:0 0 22px 22px;position:relative;z-index:2}
+  #nomaxPanel .np-head h2{color:#fff;font-size:18px!important}
+  #nomaxPanel .np-back,#nomaxPanel .np-headbtn{width:40px;height:40px;border:1px solid rgba(255,255,255,.3)!important;border-radius:13px!important;background:rgba(255,255,255,.16)!important;color:#fff!important;font-size:19px;cursor:pointer;display:grid;place-items:center;text-decoration:none;transition:.15s}
+  #nomaxPanel .np-back:hover,#nomaxPanel .np-headbtn:hover{background:rgba(255,255,255,.3)!important}
+  #nomaxPanel .np-pane{max-width:760px!important;padding:18px 16px 110px!important}
+  #nomaxPanel .np-h{font-size:15.5px!important;font-weight:800;margin:6px 0 12px!important;padding-right:12px;position:relative}
+  #nomaxPanel .np-h::before{content:"";position:absolute;right:0;top:15%;bottom:15%;width:4px;border-radius:4px;background:linear-gradient(180deg,#0f766e,#14b8a6)}
+  #nomaxPanel .np-card,#nomaxPanel .owner-business,#nomaxPanel #npNeeds details,#nomaxPanel #npNeeds [class*="card"],#nomaxPanel #npBizReqList > div{border-radius:18px!important;border:1px solid var(--border)!important;box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 22px rgba(15,23,42,.06)!important;transition:transform .15s,box-shadow .15s}
+  #nomaxPanel .owner-business:hover,#nomaxPanel #npNeeds details:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,118,110,.14)!important}
+  #nomaxPanel .owner-business{background:var(--surface);overflow:hidden}
+  #nomaxPanel .owner-info{background:var(--muted);border-radius:14px;padding:10px 12px}
+  #nomaxPanel .owner-actions{display:flex;gap:8px}
+  #nomaxPanel .owner-actions button{flex:1;border-radius:12px!important;font-weight:700;padding:11px!important;transition:.15s}
+  #nomaxPanel .owner-actions button:hover{transform:translateY(-1px)}
+  #nomaxPanel #newBusinessButton{border-radius:16px!important;background:linear-gradient(135deg,#0f766e,#14b8a6)!important;color:#fff!important;border:0!important;box-shadow:0 10px 24px rgba(15,118,110,.3)!important;font-weight:800;padding:15px!important}
+  #nomaxPanel .np-act,#nomaxPanel .np-linkbtn{border-radius:14px!important}
+  #nomaxPanel .np-strip button{border-radius:16px!important;box-shadow:0 4px 14px rgba(15,23,42,.05)}
+  #nomaxPanel .np-tabs{position:absolute;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:22px;box-shadow:0 14px 40px rgba(15,23,42,.18);padding:6px!important;gap:4px;max-width:560px;margin:0 auto}
+  #nomaxPanel .np-tabs button{border-radius:16px;padding:8px 2px 7px!important;transition:.15s}
+  #nomaxPanel .np-tabs button.active{background:rgba(20,184,166,.14);color:#0f766e!important}
+  #nomaxPanel .np-tabs button.active::after{display:none}
+  #nomaxPanel .np-ava{border-radius:50%!important;box-shadow:0 6px 16px rgba(15,118,110,.3)}
+</style>
+<script id="nx-panel-js">
+(function(){
+  function mine(){ try{ return (window.nomaxMyBusinesses && window.nomaxMyBusinesses()) || []; }catch(e){ return []; } }
+  function add(){
+    var head=document.querySelector('#nomaxPanel .np-head');
+    if(!head || head.querySelector('.np-headbtn')) return;
+    var a=document.createElement('a'); a.className='np-headbtn'; a.title='داشبورد'; a.textContent='📊';
+    a.href='/nomax/owner-dashboard.html'; a.style.display='none'; head.appendChild(a);
+  }
+  function sync(){
+    add(); var a=document.querySelector('#nomaxPanel .np-headbtn');
+    if(a) a.style.display = mine().length ? 'grid' : 'none';
+  }
+  setInterval(sync,1500); sync();
+})();
+</script>
   
 </body>
   </html>
