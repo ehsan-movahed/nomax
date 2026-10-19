@@ -48,7 +48,7 @@ th{background:var(--sf2);color:var(--tx2);position:sticky;top:0;cursor:default}t
   <div class="tools">
     <select id="days"><option value="7">۷ روز اخیر</option><option value="30" selected>۳۰ روز اخیر</option><option value="90">۹۰ روز اخیر</option><option value="365">یک سال اخیر</option></select>
     <button id="refresh">↻ بروزرسانی</button><button id="theme">🌓</button>
-    <a class="btn" href="/adminehsan">پنل مدیریت کسب‌وکارها</a>
+    <a class="btn" href="/nomax/">🏠 صفحه اصلی</a><a class="btn pr" href="/nomax/adminehsan/">🛡 پنل مدیریت</a>
   </div>
 </header>
 <div id="gate" class="card state"><h2>در حال بررسی دسترسی…</h2></div>
@@ -163,7 +163,7 @@ function render(){
   mk('cHours',{type:'bar',data:{labels:D.hours.map(function(x){return n(x.h)}),datasets:[{label:'جستجو',data:D.hours.map(function(x){return x.searches}),backgroundColor:'#14b8a6'},{label:'استعلام',data:D.hours.map(function(x){return x.requests}),backgroundColor:'#d97706'}]},options:{scales:{x:{stacked:true},y:{stacked:true,ticks:{precision:0}}}}});
   var rl={admin:'مدیر',owner:'مالک',user:'کاربر',business:'مالک'},rk=Object.keys(D.roles);
   mk('cRoles',{type:'doughnut',data:{labels:rk.map(function(r){return rl[r]||r}),datasets:[{data:rk.map(function(r){return D.roles[r]}),backgroundColor:['#0f766e','#d97706','#2563eb','#9333ea','#64748b']}]},options:{cutout:'62%'}});
-  $('pending').innerHTML=D.pending.length?D.pending.map(function(p){return '<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><span>'+esc(p.name||p.id)+'<br><span class="sub">'+cn(p.cat)+'</span></span><span class="badge '+(p.edit?'w':'')+'">'+(p.edit?'ویرایش':'جدید')+'</span></div>'}).join('')+'<p style="margin:10px 0 0"><a class="btn pr" href="/adminehsan">بررسی در پنل</a></p>':'<div class="sub">همه‌چیز بررسی شده ✅</div>';
+  $('pending').innerHTML=D.pending.length?D.pending.map(function(p){return '<div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)"><span>'+esc(p.name||p.id)+'<br><span class="sub">'+cn(p.cat)+'</span></span><span class="badge '+(p.edit?'w':'')+'">'+(p.edit?'ویرایش':'جدید')+'</span></div>'}).join('')+'<p style="margin:10px 0 0"><a class="btn pr" href="/nomax/adminehsan/">بررسی در پنل</a></p>':'<div class="sub">همه‌چیز بررسی شده ✅</div>';
 
   lazy.rq=function(){  mk('cStatus',{type:'doughnut',data:{labels:['انتخاب‌شده','باز','منقضی'],datasets:[{data:[f.selected,f.open,f.expired],backgroundColor:['#16a34a','#2563eb','#dc2626']}]},options:{cutout:'60%'}});};
   var r=D.response;$('resp').innerHTML=r.samples?('<div class="grid g3"><div><div class="kl">میانه</div><div class="kv">'+n(r.median_min)+' دقیقه</div></div><div><div class="kl">صدک ۹۰</div><div class="kv">'+n(r.p90_min)+' دقیقه</div></div><div><div class="kl">نمونه</div><div class="kv">'+n(r.samples)+'</div></div></div>'):'<div class="sub">هنوز پیشنهادی ثبت نشده است.</div>';
@@ -211,7 +211,7 @@ async function load(){
 async function boot(){
   theme();
   var s=await sb.auth.getSession(),u=s.data&&s.data.session&&s.data.session.user;
-  if(!u){$('gate').innerHTML='<h2>ابتدا وارد حساب مدیر شوید</h2><p><a class="btn pr" href="/adminehsan">ورود مدیر</a></p>';return}
+  if(!u){$('gate').innerHTML='<h2>ابتدا وارد حساب مدیر شوید</h2><p><a class="btn pr" href="/nomax/adminehsan/">ورود مدیر</a></p>';return}
   var ok=await sb.rpc('nx_is_admin');
   if(ok.error||ok.data!==true){$('gate').innerHTML='<h2>⛔ دسترسی مجاز نیست</h2><p class="sub">'+(ok.error?esc(ok.error.message):'این حساب نقش مدیر ندارد.')+'</p>';return}
   $('gate').classList.add('hide');$('app').classList.remove('hide');load();
