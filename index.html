@@ -11814,6 +11814,7 @@ window.NOMAX_CFG = {
     var ok = await loadStatus();
     boxes.forEach(function(b){
       var el = $(b[0]); if(!el) return;
+      el.style.display = ok ? "" : "none";
       el.innerHTML = ok ? widgetHTML(b[1]) : "";
       el.querySelectorAll("[data-nw]").forEach(function(btn){
         btn.onclick = function(){ act(btn.getAttribute("data-nw"), btn); };
