@@ -10926,6 +10926,19 @@ h += offers.map(function(o,i){
     if(!user()){ box.innerHTML = ""; if(window.nomaxPanel) window.nomaxPanel.setNeeds(false, 0); return; }
     var act = active(), h = "";
     if(window.nomaxPanel) window.nomaxPanel.setNeeds(!!act, act ? (act.offers||[]).length : 0);
+    var __nxOpen = list.filter(function(r){ return r.status === "open"; });
+    var __nxWithOffers = __nxOpen.filter(function(r){ return Array.isArray(r.offers) && r.offers.length > 0; });
+    var __nxSelected = list.filter(function(r){ return r.status === "selected"; });
+    var __nxClosed = list.filter(function(r){ return r.status === "cancelled" || r.status === "expired" || r.status === "closed"; });
+    h += '<section class="nx-customer-dashboard" aria-label="خلاصه وضعیت درخواست‌ها">' +
+      '<div class="nx-h">📊 خلاصه درخواست‌های من</div>' +
+      '<div class="nx-cd-intro">وضعیت درخواست‌ها و پیشنهادهای دریافتی را یک‌جا ببین.</div>' +
+      '<div class="nx-cd-grid">' +
+      '<div class="nx-cd-card" data-kind="active"><div class="nx-cd-top"><span>در حال استعلام</span><i class="nx-cd-icon">🔎</i></div><b class="nx-cd-num">'+toFa(__nxOpen.length)+'</b><small class="nx-cd-foot">درخواست‌های باز</small></div>' +
+      '<div class="nx-cd-card" data-kind="offers"><div class="nx-cd-top"><span>پیشنهاد دریافت‌شده</span><i class="nx-cd-icon">💬</i></div><b class="nx-cd-num">'+toFa(__nxWithOffers.length)+'</b><small class="nx-cd-foot">درخواست دارای پیشنهاد</small></div>' +
+      '<div class="nx-cd-card" data-kind="selected"><div class="nx-cd-top"><span>انتخاب‌شده</span><i class="nx-cd-icon">✓</i></div><b class="nx-cd-num">'+toFa(__nxSelected.length)+'</b><small class="nx-cd-foot">پیشنهاد انتخاب‌شده</small></div>' +
+      '<div class="nx-cd-card" data-kind="closed"><div class="nx-cd-top"><span>لغو یا منقضی</span><i class="nx-cd-icon">📁</i></div><b class="nx-cd-num">'+toFa(__nxClosed.length)+'</b><small class="nx-cd-foot">درخواست‌های پایان‌یافته</small></div>' +
+      '</div></section>';
     if(act) h += reqBox(act, true);
     else h += '<div class="empty" style="padding:14px"><div class="desc">درخواست فعالی نداری. چیزی که می‌خوای رو ثبت کن تا کسب‌وکارها قیمت بدن.</div><button class="cta" id="newReqBtn">📨 ثبت درخواست جدید</button></div>';
     var cutoff = Date.now() - 7*24*60*60*1000;
@@ -15435,6 +15448,48 @@ details.biz-accordion > summary .biz-quick-call svg{ width:16px; height:16px; }
 })();
 </script>
   
+
+<style id="nomax6-mobile-layout-fixes">
+/* NOMAX6: prevent accidental page-level horizontal movement without disabling intentional carousels */
+html, body { width:100%; max-width:100%; }
+html { overflow-x: clip; }
+body { overflow-x: clip; }
+*, *::before, *::after { box-sizing:border-box; }
+#nomaxPanel { width:100%; max-width:100vw; overflow:hidden; }
+#nomaxPanel .np-body { width:100%; min-width:0; overflow-x:clip; }
+#nomaxPanel .np-pane { width:100%; min-width:0; max-width:760px; margin-inline:auto; }
+#nomaxPanel .np-tabs {
+  position:absolute !important;
+  left:50% !important; right:auto !important;
+  transform:translateX(-50%) !important;
+  width:calc(100% - 28px) !important;
+  max-width:560px !important; min-width:0 !important;
+  margin:0 !important; box-sizing:border-box !important;
+  display:flex !important; align-items:stretch !important;
+  justify-content:space-evenly !important; gap:4px !important;
+}
+#nomaxPanel .np-tabs button { flex:1 1 0 !important; min-width:0 !important; max-width:none !important; padding-inline:2px !important; white-space:normal !important; overflow-wrap:anywhere; text-align:center !important; }
+#nomaxPanel .np-tabs button > span:not(.ic) { display:block; max-width:100%; line-height:1.45; }
+#nomaxPanel .np-tabs button .ic { flex:0 0 22px; }
+#nomaxPanel .np-pane > *, #nomaxPanel .np-pane details, #nomaxPanel .np-pane .snp-card { min-width:0; max-width:100%; }
+#nomaxPanel img, #nomaxPanel video, #nomaxPanel canvas, #nomaxPanel iframe { max-width:100%; }
+/* Customer dashboard summary */
+.nx-customer-dashboard { margin:0 0 16px; }
+.nx-customer-dashboard .nx-cd-intro { color:var(--text-2); font-size:12px; line-height:1.8; margin:-5px 0 12px; }
+.nx-customer-dashboard .nx-cd-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.nx-customer-dashboard .nx-cd-card { min-width:0; border:1px solid var(--border); border-radius:16px; background:var(--surface); padding:13px 12px; box-shadow:0 5px 18px rgba(15,23,42,.045); }
+.nx-customer-dashboard .nx-cd-card .nx-cd-top { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--text-2); font-size:11.5px; font-weight:800; }
+.nx-customer-dashboard .nx-cd-icon { width:30px; height:30px; flex:0 0 30px; border-radius:10px; display:grid; place-items:center; background:var(--primary-50); color:var(--primary-700); font-size:16px; }
+.nx-customer-dashboard .nx-cd-num { display:block; margin-top:7px; font-size:23px; line-height:1.25; font-weight:900; color:var(--text); }
+.nx-customer-dashboard .nx-cd-foot { display:block; margin-top:3px; font-size:10.5px; color:var(--text-3); }
+.nx-customer-dashboard .nx-cd-card[data-kind="selected"] .nx-cd-icon { background:#ecfdf5;color:#047857; }
+.nx-customer-dashboard .nx-cd-card[data-kind="closed"] .nx-cd-icon { background:#f1f5f9;color:#475569; }
+[data-theme="dark"] .nx-customer-dashboard .nx-cd-card[data-kind="selected"] .nx-cd-icon { background:rgba(16,185,129,.15);color:#6ee7b7; }
+[data-theme="dark"] .nx-customer-dashboard .nx-cd-card[data-kind="closed"] .nx-cd-icon { background:rgba(148,163,184,.15);color:#cbd5e1; }
+@media (min-width:560px) { .nx-customer-dashboard .nx-cd-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (max-width:360px) { #nomaxPanel .np-tabs { width:calc(100% - 20px)!important; gap:2px!important; padding:4px!important; } #nomaxPanel .np-tabs button { font-size:10px!important; } .nx-customer-dashboard .nx-cd-card { padding:11px 9px; } }
+</style>
+
 </body>
   </html>
 <style id="nomax-location-arrow-fix">
