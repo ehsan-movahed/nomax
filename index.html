@@ -10997,6 +10997,7 @@ h += offers.map(function(o,i){
 
   /* ---------- پنل مالک ---------- */
   var ownerReqs = [];
+  var custTrackingRows = [];
   async function rpcSafe(name, params){
     var r = await sb.rpc(name, params);
     if(r.error){
@@ -11038,6 +11039,12 @@ h += offers.map(function(o,i){
         });
       }
     }catch(_e){}
+    /* وضعیت پیگیری مشتری‌ها از Supabase خوانده می‌شود؛ RLS فقط رکوردهای مجاز مالک را برمی‌گرداند. */
+    try{
+      var __ct = await sb.from("business_customer_tracking").select("request_id,business_id,stage,note,updated_at");
+      custTrackingRows = __ct && !__ct.error && Array.isArray(__ct.data) ? __ct.data : [];
+      if(__ct && __ct.error) console.warn("business_customer_tracking", __ct.error);
+    }catch(_ctErr){ custTrackingRows = []; }
     await loadDeclines(); reportTimeouts();
     var pending = ownerReqs.filter(function(x){ return x.status === "open" && !x.my_offer && !declinedOf(x); }).length;
     if(silent && window.__nxPrev!==undefined && pending>window.__nxPrev){ showToast("📨 استعلام قیمت جدید رسید!","success"); if(window.nomaxBeep) window.nomaxBeep(); }
@@ -11060,7 +11067,7 @@ h += offers.map(function(o,i){
   /* ===== v4: درخواست‌های دریافتی مالک — کارت‌های مرتب + بایگانی ۷ روزه (حداکثر ۱۵) ===== */
 
   /* ===== v14: «مشتری‌های من» — دفترچهٔ مشتری با جستجو، فیلتر زمانی، گروه‌بندی ماهانه و صفحه‌بندی ===== */
-  var custQ = "", custRange = "all", custLimit = 10, archFilter = "all";
+  var custQ = "", custRange = "all", custStage = "all", custLimit = 10, archFilter = "all";
   function nxUid(){ try{ var u = window.nomaxAuth && window.nomaxAuth.user && window.nomaxAuth.user(); return u ? String(u.id) : "x"; }catch(e){ return "x"; } }
   function jRead(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } }
   function jWrite(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -11069,8 +11076,11 @@ h += offers.map(function(o,i){
     ownerReqs.forEach(function(q){
       if(q.status === "selected" && q.selected_mine && q.my_offer){
         var o = q.my_offer;
-        book[String(q.id)] = { id:String(q.id), name:q.requester_name || "مشتری", phone:q.requester_phone || "", service:q.service || "",
+        var __tr = custTrackingRows.find(function(t){ return String(t.request_id) === String(q.id) && String(t.business_id) === String(q.business_id); });
+        var __old = book[String(q.id)] || {};
+        book[String(q.id)] = { id:String(q.id), requestId:String(q.id), businessId:String(q.business_id), name:q.requester_name || "مشتری", phone:q.requester_phone || "", service:q.service || "",
           price:o.price || "", brand:o.brand || "", note:o.note || "", area:q.area || "", biz:q.business_name || "",
+          stage:(__tr && __tr.stage) || __old.stage || "new", trackingNote:(__tr && __tr.note) || __old.trackingNote || "", trackingExists:!!__tr,
           t:q.selected_at || q.updated_at || q.created_at || "" };
       }
     });
@@ -11110,6 +11120,7 @@ h += offers.map(function(o,i){
     var q = custQ.trim().toLowerCase().replace(/[۰-۹]/g, function(d){ return "۰۱۲۳۴۵۶۷۸۹".indexOf(d); });
     return list.filter(function(c){
       if(!custInRange(c, custRange)) return false;
+      if(custStage !== "all" && (c.stage || "new") !== custStage) return false;
       if(!q) return true;
       var hay = (c.name + " " + c.phone + " " + c.service + " " + c.brand + " " + c.price).toLowerCase();
       return hay.indexOf(q) !== -1;
@@ -11144,6 +11155,7 @@ h += offers.map(function(o,i){
         (c.note ? '<dt>توضیح شما</dt><dd>' + esc(c.note) + '</dd>' : "") +
         (c.area ? '<dt>محدوده</dt><dd>' + esc(c.area) + '</dd>' : "") +
         '<dt>تاریخ</dt><dd>' + esc(c.t ? formatDate(Date.parse(c.t)) : "—") + '</dd></dl>' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;padding:10px;border:1px solid var(--line,#e5e7eb);border-radius:12px"><label for="cust-stage-' + esc(c.id) + '" style="font-size:12px;font-weight:700">وضعیت مشتری</label><select id="cust-stage-' + esc(c.id) + '" data-customer-stage="' + esc(c.id) + '" data-business-id="' + esc(c.businessId || "") + '" style="max-width:190px;padding:8px;border-radius:9px"><option value="new" ' + ((c.stage||"new")==="new"?"selected":"") + '>مشتری جدید</option><option value="follow_up" ' + (c.stage==="follow_up"?"selected":"") + '>در حال پیگیری</option><option value="completed" ' + (c.stage==="completed"?"selected":"") + '>تکمیل‌شده</option><option value="archived" ' + (c.stage==="archived"?"selected":"") + '>بایگانی</option></select>' + (c.trackingExists ? '<small style="color:var(--muted,#64748b)">ذخیره در پایگاه داده</small>' : '<small style="color:#b45309">رکورد پیگیری هنوز در پایگاه داده نیست</small>') + '</div>' +
         '<div class="nx-cust-actions">' +
         (ph ? '<a href="tel:' + esc(ph) + '">☎ تماس · <span dir="ltr">' + toFa(esc(c.phone)) + '</span></a>' : '<span class="nx-cust-empty" style="padding:0">شماره‌ی موبایل ثبت نشده است.</span>') +
         (wa ? '<a class="wa" target="_blank" rel="noopener" href="' + wa + '">واتس‌اپ</a>' : "") + '</div></div></details>';
@@ -11157,16 +11169,45 @@ h += offers.map(function(o,i){
     var chips = [["all","همه"],["week","۷ روز"],["month","۳۰ روز"],["q","۳ ماه"],["old","قدیمی‌تر"]].map(function(x){
       return '<button type="button" data-crange="' + x[0] + '" class="' + (custRange === x[0] ? "on" : "") + '">' + x[1] + '<small>' + toFa(cnt(x[0])) + '</small></button>';
     }).join("");
+    var stages = [["all","همه وضعیت‌ها"],["new","مشتریان جدید"],["follow_up","در حال پیگیری"],["completed","تکمیل‌شده"],["archived","بایگانی"]].map(function(x){
+      var n = list.filter(function(c){ return x[0] === "all" || (c.stage || "new") === x[0]; }).length;
+      return '<button type="button" data-cstagefilter="' + x[0] + '" class="' + (custStage === x[0] ? "on" : "") + '">' + x[1] + '<small>' + toFa(n) + '</small></button>';
+    }).join("");
     return '<div class="nx-cust-wrap"><div class="nx-sec">👥 مشتری‌های من <b>' + toFa(list.length) + '</b></div>' +
       '<div class="nx-empty-s" style="margin:0 0 4px">کسانی که پیشنهاد شما را انتخاب کرده‌اند؛ شماره‌شان فقط برای شما نمایش داده می‌شود.</div>' +
       (list.length > 5 ? '<input type="search" class="nx-cust-search" id="custSearch" placeholder="جستجوی نام، شماره یا خدمت…" value="' + esc(custQ) + '">' : "") +
+      '<div class="nx-chips" id="custStageChips" style="flex-wrap:wrap">' + stages + '</div>' +
       (list.length > 3 ? '<div class="nx-chips" id="custChips">' + chips + '</div>' : "") +
       '<div id="nxCustList">' + custRows(list) + '</div></div>';
   }
   function custBind(box){
     var list = custList();
-    function paint(){ var el = $("nxCustList"); if(el){ el.innerHTML = custRows(list); bindMore(); } }
+    function paint(){ var el = $("nxCustList"); if(el){ el.innerHTML = custRows(list); bindMore(); bindStageChanges(); } }
     function bindMore(){ var m = $("custMore"); if(m) m.onclick = function(){ custLimit += 10; paint(); }; }
+    function bindStageChanges(){
+      box.querySelectorAll("[data-customer-stage]").forEach(function(sel){
+        sel.onchange = async function(){
+          var cid = String(sel.getAttribute("data-customer-stage") || ""), biz = String(sel.getAttribute("data-business-id") || ""), next = sel.value;
+          var allowed = ["new","follow_up","completed","archived"];
+          if(allowed.indexOf(next) < 0) return;
+          var old = list.find(function(c){ return String(c.id) === cid; });
+          if(!old) return;
+          if(!old.trackingExists){ sel.value = old.stage || "new"; showToast("برای ذخیره وضعیت، ابتدا اسکریپت SQL پیگیری مشتری را در Supabase اجرا کنید.", "error"); return; }
+          sel.disabled = true;
+          var res = await sb.from("business_customer_tracking").update({stage:next, updated_at:new Date().toISOString()}).eq("request_id", old.requestId || cid).eq("business_id", biz).select("request_id,business_id,stage,note,updated_at");
+          sel.disabled = false;
+          if(res.error || !res.data || !res.data.length){ sel.value = old.stage || "new"; showToast("ذخیره وضعیت انجام نشد؛ دسترسی RLS یا رکورد مشتری را بررسی کنید.", "error"); return; }
+          var row = res.data[0];
+          custTrackingRows = custTrackingRows.filter(function(t){ return !(String(t.request_id)===String(row.request_id) && String(t.business_id)===String(row.business_id)); });
+          custTrackingRows.push(row);
+          old.stage = row.stage; old.trackingExists = true;
+          var key = "nx_custbook_v1_" + nxUid(), book = jRead(key) || {}; if(book[cid]){ book[cid].stage=row.stage; book[cid].trackingExists=true; jWrite(key,book); }
+          showToast("وضعیت مشتری ذخیره شد.", "success");
+          paint();
+          box.querySelectorAll("#custStageChips [data-cstagefilter]").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-cstagefilter") === custStage); });
+        };
+      });
+    }
     var s = $("custSearch");
     if(s) s.oninput = function(){ custQ = s.value; custLimit = 10; paint(); };
     box.querySelectorAll("#custChips [data-crange]").forEach(function(b){
@@ -11176,7 +11217,11 @@ h += offers.map(function(o,i){
         paint();
       };
     });
-    bindMore();
+    box.querySelectorAll("#custStageChips [data-cstagefilter]").forEach(function(b){
+      b.onclick = function(){ custStage = b.getAttribute("data-cstagefilter"); custLimit = 10;
+        box.querySelectorAll("#custStageChips [data-cstagefilter]").forEach(function(x){ x.classList.toggle("on", x === b); }); paint(); };
+    });
+    bindMore(); bindStageChanges();
     /* علامت «دیده‌شده»: وقتی این بخش واقعاً باز است */
     var key = "nx_custseen_v1_" + nxUid();
     setTimeout(function(){
