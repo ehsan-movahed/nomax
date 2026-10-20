@@ -11048,6 +11048,7 @@ h += offers.map(function(o,i){
   }
   window.loadOwnerRequests = async function(silent){
     var box = $("myRequests");
+    if(silent && box){ var __ae=document.activeElement; if(__ae && box.contains(__ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(__ae.tagName) && __ae.value){ return; } }
     var owner = window.currentOwner ? window.currentOwner() : null;
     if(!owner){
       if(box && !silent) box.innerHTML = '<div class="empty" style="padding:24px"><div class="desc">برای دیدن درخواست‌ها وارد حساب شوید.</div></div>';
@@ -11101,6 +11102,17 @@ h += offers.map(function(o,i){
   function nxUid(){ try{ var u = window.nomaxAuth && window.nomaxAuth.user && window.nomaxAuth.user(); return u ? String(u.id) : "x"; }catch(e){ return "x"; } }
   function jRead(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } }
   function jWrite(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function nxReqIsNew(q){
+    try{ var seen=jRead("nx_reqseen_v1_"+nxUid()); if(seen===null) return false; return !seen[String(q.id)+"_"+String(q.business_id||"")]; }catch(e){ return false; }
+  }
+  function nxReqMarkSeen(list){
+    var key="nx_reqseen_v1_"+nxUid(), first=(jRead(key)===null);
+    setTimeout(function(){
+      var pane=$("myRequests"); if(!first && !(pane && pane.offsetParent!==null)) return;
+      var seen=jRead(key)||{}; list.forEach(function(q){ seen[String(q.id)+"_"+String(q.business_id||"")]=1; });
+      jWrite(key,seen);
+    }, first?0:5000);
+  }
   function custList(){
     var key = "nx_custbook_v1_" + nxUid(), book = jRead(key) || {};
     ownerReqs.forEach(function(q){
@@ -11324,13 +11336,20 @@ h += offers.map(function(o,i){
   function renderOwner(){
     var box=$("myRequests"); if(!box)return;
     if(!ownerReqs.length && !custList().length){box.innerHTML='<div class="empty" style="padding:24px"><div style="font-size:28px">📭</div><div class="title">درخواست مرتبطی نیست</div><div class="desc">وقتی مشتری چیزی مرتبط با دسته کسب‌وکار شما بخواهد، اینجا می‌بینید.</div></div>';return;}
-    var act=[],arch=[],WEEK=7*86400000; ownerReqs.forEach(function(q,i){var o=q.my_offer;if(q.status==="open"&&!o&&!declinedOf(q))act.push({q:q,i:i});else if(!(q.status==="selected"&&q.selected_mine)&&Date.now()-new Date(q.created_at).getTime()<WEEK)arch.push({q:q,i:i});}); arch.sort(function(a,b){return new Date(b.q.created_at)-new Date(a.q.created_at)});var __ac={all:arch.length,sent:0,other:0,declined:0};arch.forEach(function(x){__ac[archKind(x.q)]++;});window.__nxArchCounts=__ac;if(archFilter!=="all")arch=arch.filter(function(x){return archKind(x.q)===archFilter;});var __archTotal=arch.length; arch=arch.slice(0,archLimit); var __actTotal=act.length; act=act.slice(0,actLimit);
+    archOpen=true;var act=[],arch=[],WEEK=7*86400000; ownerReqs.forEach(function(q,i){var o=q.my_offer;if(q.status==="open"&&!o&&!declinedOf(q))act.push({q:q,i:i});else if(!(q.status==="selected"&&q.selected_mine)&&Date.now()-new Date(q.created_at).getTime()<WEEK)arch.push({q:q,i:i});}); act.sort(function(a,b){return (b.q.is_urgent?1:0)-(a.q.is_urgent?1:0)||new Date(b.q.created_at)-new Date(a.q.created_at)});arch.sort(function(a,b){return new Date(b.q.created_at)-new Date(a.q.created_at)});var __ac={all:arch.length,sent:0,other:0,declined:0};arch.forEach(function(x){__ac[archKind(x.q)]++;});window.__nxArchCounts=__ac;if(archFilter!=="all")arch=arch.filter(function(x){return archKind(x.q)===archFilter;});var __archTotal=arch.length; arch=arch.slice(0,archLimit); var __actTotal=act.length; act=act.slice(0,actLimit);
     var h='<div class="nx-sec">⏳ استعلام‌های جدید <b>'+toFa(__actTotal)+'</b></div>'; if(!act.length)h+='<div class="nx-empty-s">استعلام جدیدی برای پاسخ وجود ندارد.</div>';
-    act.forEach(function(x){var q=x.q,i=x.i,phone=String(q.phone||q.user_phone||""),masked=phone?phone.replace(/(\d{3})(\d{3,})(\d{2})$/,'$1•••$3'):'شماره مخفی';h+='<details class="nx-owner-req" data-owner-req="'+esc(q.id)+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+(q.is_urgent?'<span class="nx-urg">⚡ فوری</span> ':'')+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+'</div></div><div class="nx-summary-actions"><button type="button" class="nx-mini-btn ok" data-send="'+i+'">✓ تأیید</button><button type="button" class="nx-mini-btn no" data-decline="'+i+'">رد</button></div></summary><div class="nx-owner-body"><div class="nx-owner-detail-grid"><div class="nx-owner-detail"><b>نام مشتری</b>'+esc(q.requester_name||"مشتری")+'</div><div class="nx-owner-detail"><b>کالا / خدمت</b>'+esc(q.service||"—")+'</div><div class="nx-owner-detail"><b>مکان</b>'+esc(q.area||"—")+'</div><div class="nx-owner-detail"><b>توضیحات</b>'+esc(q.description||"—")+'</div><div class="nx-owner-detail"><b>زمان ثبت</b>'+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div>'+(isLate(q)?'<div class="nx-warn" style="margin-top:9px;display:inline-block">⚠️ بیش از ۲۴ ساعت بی‌پاسخ مانده؛ امتیاز منفی ثبت می‌شود.</div>':'')+'<div class="nx-oc-form" style="margin-top:10px"><div class="nx-row2"><input data-f="price" data-i="'+i+'" maxlength="15" inputmode="numeric" placeholder="💰 مبلغ (تومان)"><select data-f="unit" data-i="'+i+'"><option value="">واحد…</option><option>کیلو</option><option>عدد</option><option>متر</option><option>ساعت</option><option>بسته</option><option>کل کار</option><option>بعد از بررسی</option></select></div><div class="nx-row2" style="grid-template-columns:1fr"><input data-f="brand" data-i="'+i+'" maxlength="40" placeholder="🏷 برند (اختیاری)"></div><div class="nx-notebox"><textarea data-f="note" data-i="'+i+'" rows="2" maxlength="120" placeholder="توضیح کوتاه (گارانتی، موجودی، تحویل…)"></textarea><span class="nx-cnt">۰ / ۱۲۰</span></div></div></div></details>';});
-    if(__actTotal>act.length)h+='<button type="button" class="adq-more" id="actMore">نمایش '+toFa(Math.min(10,__actTotal-act.length))+' مورد بیشتر ('+toFa(__actTotal-act.length)+' مانده)</button>';h+=custHTML();h+='<button type="button" class="np-linkbtn" id="archToggle">🗄 '+(archOpen?'پنهان کردن بایگانی':'بایگانی ('+toFa(__archTotal)+')')+'</button>';
+    act.forEach(function(x){var q=x.q,i=x.i,phone=String(q.phone||q.user_phone||""),masked=phone?phone.replace(/(\d{3})(\d{3,})(\d{2})$/,'$1•••$3'):'شماره مخفی';h+='<details class="nx-owner-req" data-owner-req="'+esc(q.id)+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+(q.is_urgent?'<span class="nx-urg">⚡ فوری</span> ':'')+(nxReqIsNew(q)?'<span class="nx-newtag">جدید</span> ':'')+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+' · 🕒 '+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div><div class="nx-summary-actions"><button type="button" class="nx-mini-btn ok" data-send="'+i+'">✓ تأیید</button><button type="button" class="nx-mini-btn no" data-decline="'+i+'">رد</button></div></summary><div class="nx-owner-body"><div class="nx-owner-detail-grid"><div class="nx-owner-detail"><b>نام مشتری</b>'+esc(q.requester_name||"مشتری")+'</div><div class="nx-owner-detail"><b>کالا / خدمت</b>'+esc(q.service||"—")+'</div><div class="nx-owner-detail"><b>مکان</b>'+esc(q.area||"—")+'</div><div class="nx-owner-detail"><b>توضیحات</b>'+esc(q.description||"—")+'</div><div class="nx-owner-detail"><b>زمان ثبت</b>'+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div>'+(isLate(q)?'<div class="nx-warn" style="margin-top:9px;display:inline-block">⚠️ بیش از ۲۴ ساعت بی‌پاسخ مانده؛ امتیاز منفی ثبت می‌شود.</div>':'')+'<div class="nx-oc-form" style="margin-top:10px"><div class="nx-row2"><input data-f="price" data-i="'+i+'" maxlength="15" inputmode="numeric" placeholder="💰 مبلغ (تومان)"><select data-f="unit" data-i="'+i+'"><option value="">واحد…</option><option>کیلو</option><option>عدد</option><option>متر</option><option>ساعت</option><option>بسته</option><option>کل کار</option><option>بعد از بررسی</option></select></div><div class="nx-row2" style="grid-template-columns:1fr"><input data-f="brand" data-i="'+i+'" maxlength="40" placeholder="🏷 برند (اختیاری)"></div><div class="nx-notebox"><textarea data-f="note" data-i="'+i+'" rows="2" maxlength="120" placeholder="توضیح کوتاه (گارانتی، موجودی، تحویل…)"></textarea><span class="nx-cnt">۰ / ۱۲۰</span></div></div></div></details>';});
+    if(__actTotal>act.length)h+='<button type="button" class="adq-more" id="actMore">نمایش '+toFa(Math.min(10,__actTotal-act.length))+' مورد بیشتر ('+toFa(__actTotal-act.length)+' مانده)</button>';h+='\u0001';h+=custHTML();h+='\u0001';h+='<button type="button" class="np-linkbtn" id="archToggle">🗄 '+(archOpen?'پنهان کردن بایگانی':'بایگانی ('+toFa(__archTotal)+')')+'</button>';
     if(archOpen){h+=archChipsHTML();if(!arch.length)h+='<div class="nx-cust-empty">موردی در این دسته نیست.</div>';arch.forEach(function(x){var q=x.q,o=q.my_offer,d=declinedOf(q),ok=!!(o&&q.status==="selected"&&q.selected_mine),no=!!d,st=o?(q.status==="selected"?(q.selected_mine?'🎉 پیشنهاد شما انتخاب شد':'مشتری پیشنهاد دیگری را انتخاب کرد'):'پیشنهاد ارسال شد'):(d?(d==='timeout'?'بدون پاسخ (۲۴ ساعت)':'رد شد'):'بسته شده');h+='<details class="nx-owner-req '+(ok?'archived-ok ':'')+(no?'archived-no':'')+'"><summary><div class="nx-summary-main"><div class="nx-summary-service">'+(q.is_urgent?'<span class="nx-urg">⚡ فوری</span> ':'')+esc(q.service||"استعلام")+'</div><div class="nx-summary-user">👤 '+esc(q.requester_name||"مشتری")+'</div><div class="nx-summary-contact">📍 '+esc(q.area||"مکان ثبت نشده")+' · '+esc(getTimeAgo(new Date(q.created_at).getTime()))+'</div></div><span class="st-pill '+(ok?'selected':'')+'">'+esc(st)+'</span></summary><div class="nx-owner-body">'+ocHead(q)+(o?'<div class="nx-reply"><div class="nx-reply-h">پاسخ شما</div><div class="nx-reply-r"><span>💰 '+esc(o.price)+'</span>'+(o.brand?'<span>🏷 '+esc(o.brand)+'</span>':'')+'</div>'+(o.note?'<div class="nx-note">'+esc(o.note)+'</div>':'')+'</div>':'')+(ok?'<div class="nx-won"><div class="nx-won-t">🎉 مشتری پیشنهاد شما را انتخاب کرد</div><div class="nx-won-n">👤 '+esc(q.requester_name||"مشتری")+'</div>'+(q.requester_phone?'<a class="nx-won-call" href="tel:'+esc(cleanPhone(q.requester_phone))+'">☎ تماس با مشتری · <span dir="ltr">'+toFa(esc(q.requester_phone))+'</span></a><div class="nx-won-h">این شماره فقط به‌دلیل انتخاب شما برای شما نمایش داده می‌شود.</div>':'<div class="nx-won-h">مشتری شماره‌ی موبایل ثبت نکرده است؛ منتظر تماس او بمانید.</div>')+'</div>':'')+'<div class="nx-oc-state">🔒 این مورد در بایگانی است و قابل ویرایش نیست.</div></div></details>';});}
     if(archOpen&&__archTotal>arch.length)h+='<button type="button" class="adq-more" id="archMore">نمایش '+toFa(Math.min(10,__archTotal-arch.length))+' مورد بیشتر ('+toFa(__archTotal-arch.length)+' مانده)</button>';
+    var __parts=h.split('\u0001'),__custN=custList().length,__ar=(window.__nxArchCounts||{}).all||0;
+    var __ot=window.__nxOwnerTab||'new'; if(['new','cust','arch'].indexOf(__ot)<0)__ot='new';
+    var __tabs=[['new','⏳ جدید',__actTotal,'hot'],['cust','👥 مشتری‌ها',__custN,''],['arch','🗄 بایگانی',__ar,'']];
+    var __bar='<div class="nx-seg" id="nxOwnerSeg" role="tablist">'+__tabs.map(function(t){return '<button type="button" role="tab" data-ot="'+t[0]+'" class="'+(__ot===t[0]?'on':'')+'">'+t[1]+(t[2]?' <i class="'+(t[3]||'')+'">'+toFa(t[2])+'</i>':'')+'</button>';}).join('')+'</div>';
+    h=__bar+'<div class="nx-pane">'+(__parts[{new:0,cust:1,arch:2}[__ot]]||'')+'</div>';
     box.innerHTML=h;
+    box.querySelectorAll('#nxOwnerSeg [data-ot]').forEach(function(b){b.onclick=function(){window.__nxOwnerTab=b.getAttribute('data-ot');renderOwner();};});
+    if(__ot==='new'){nxReqMarkSeen(ownerReqs);}
     custBind(box);
     box.querySelectorAll("#archChips [data-af]").forEach(function(b){b.onclick=function(){archFilter=b.getAttribute("data-af");archLimit=10;renderOwner()};});
     var __am=$("actMore"); if(__am)__am.onclick=function(){actLimit+=10;renderOwner()};
@@ -11715,7 +11734,7 @@ h += offers.map(function(o,i){
 /* ===== تنظیمات اعلان — این دو مقدار را پر کن ===== */
 window.NOMAX_CFG = {
   baleBot: "YOUR_BALE_BOT_USERNAME",
-  vapidPublic: "YOUR_VAPID_PUBLIC_KEY",
+  vapidPublic: "BDn-Olcw5iKSD3edX3wMb2h73EDRhBDCXHA37Ku5jx9ZXC1tGT7hHXs-mwLSNpUBNW2otqd51on4FPE19fQLkSo",
   turnstileSiteKey: ""
 };
 </script>
@@ -21762,5 +21781,55 @@ html.nx-rails #nxAdD{ left:var(--nx-rail-l) }
     return '<div class="row nx-lu' + (old ? ' old' : '') + '">🕒 <span>آخرین بروزرسانی: ' + txt +
       (old ? '<small>مدتی است اطلاعات بروز نشده؛ قبل از مراجعه تماس بگیرید.</small>' : '') + '</span></div>';
   };
+})();
+</script>
+<style id="nomax-v15-css">
+/* ===== v15: پنل‌های مرتب‌تر ===== */
+.nx-seg{ display:flex; gap:4px; padding:4px; margin:0 0 12px; background:var(--muted); border-radius:14px; position:sticky; top:0; z-index:5; }
+.nx-seg button{ flex:1; border:0; background:transparent; color:var(--text-2); font:inherit; font-size:12.5px; font-weight:800; padding:9px 6px; border-radius:11px; cursor:pointer; white-space:nowrap; }
+.nx-seg button.on{ background:var(--surface); color:var(--primary-700); box-shadow:0 1px 4px rgba(15,23,42,.12); }
+.nx-seg i{ font-style:normal; font-size:10.5px; font-weight:800; min-width:18px; display:inline-block; padding:1px 5px; border-radius:9px; background:var(--border); color:var(--text-2); margin-right:3px; }
+.nx-seg i.hot{ background:var(--danger); color:#fff; }
+.nx-pane > .nx-sec:first-child{ display:none; }
+.nx-newtag{ font-size:10px; font-weight:800; color:#fff; background:#16a34a; border-radius:6px; padding:1px 6px; vertical-align:middle; }
+#archToggle{ display:none !important; }
+.nx-owner-req > summary{ padding:10px 12px; }
+.nx-owner-req .nx-summary-service{ font-size:13.5px; }
+.nx-owner-req .nx-summary-user,.nx-owner-req .nx-summary-contact{ font-size:11.5px; }
+/* پنل مشتری: خلاصه فشرده، بدون متن اضافه */
+.nx-customer-dashboard .nx-cd-intro,.nx-customer-dashboard .nx-cd-foot{ display:none !important; }
+.nx-customer-dashboard .nx-cd-grid{ display:grid !important; grid-template-columns:repeat(4,1fr); gap:6px; }
+.nx-customer-dashboard .nx-cd-card{ padding:8px 6px !important; min-height:0 !important; text-align:center; }
+.nx-customer-dashboard .nx-cd-top{ flex-direction:column; gap:2px; font-size:10.5px; }
+.nx-customer-dashboard .nx-cd-icon{ display:none; }
+.nx-customer-dashboard .nx-cd-num{ font-size:18px !important; }
+</style>
+
+<script id="nomax-v15">
+/* اشتراک خودکار اعلان بعد از ورود: اگر کاربر قبلاً اجازه داده ولی هنگام اجازه وارد حساب نبود */
+(function(){
+  var cfg = window.NOMAX_CFG || {};
+  if(!cfg.vapidPublic || cfg.vapidPublic.indexOf("YOUR_") === 0) return;
+  if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
+  function b64u(s){ var p="=".repeat((4-s.length%4)%4), b=(s+p).replace(/-/g,"+").replace(/_/g,"/"), r=atob(b), o=new Uint8Array(r.length); for(var i=0;i<r.length;i++) o[i]=r.charCodeAt(i); return o; }
+  var busy = false;
+  async function ensure(){
+    if(busy) return;
+    try{
+      if(Notification.permission !== "granted") return;
+      if(!(window.nomaxAuth && window.nomaxAuth.user && window.nomaxAuth.user())) return;
+      var sb = window.__nomaxSupabaseClient; if(!sb) return;
+      busy = true;
+      var reg = await navigator.serviceWorker.register("./sw.js");
+      await navigator.serviceWorker.ready;
+      var sub = await reg.pushManager.getSubscription();
+      if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64u(cfg.vapidPublic) });
+      var j = sub.toJSON();
+      await sb.rpc("save_push_subscription", { p_endpoint:j.endpoint, p_p256dh:j.keys.p256dh, p_auth:j.keys.auth });
+    }catch(e){ console.warn("push ensure", e); }
+    finally{ busy = false; }
+  }
+  window.addEventListener("nomax-auth", function(){ setTimeout(ensure, 800); });
+  setTimeout(ensure, 2500);
 })();
 </script>
