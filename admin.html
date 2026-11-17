@@ -5,6 +5,7 @@
 <meta name="theme-color" content="#071c1b"><title>مدیریت مرکزی نومکس</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
 <style>
 :root{color-scheme:dark;--bg:#071c1b;--panel:#102b29;--line:#28504b;--muted:#a9c2bd;--mint:#5eead4;--text:#f2fffc;--danger:#fca5a5}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 90% 0,#16443d 0,transparent 42%),var(--bg);color:var(--text);font-family:Vazirmatn,Tahoma,sans-serif;min-height:100vh}
@@ -18,8 +19,8 @@ main{width:min(980px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
 <div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>۱. انتخاب کسب‌وکار</h2><span class="pill">مدیر کل</span></div><div class="field"><label for="business">کسب‌وکار مقصد</label><select id="business"><option value="">در حال دریافت فهرست…</option></select></div><div id="businessInfo" class="business-meta"></div></div>
 <div class="card"><h2>۲. تعیین فایل‌های تجربهٔ AR</h2><p class="hint">فایل‌ها ابتدا در فضای ذخیره‌سازی بارگذاری می‌شوند؛ تا زمانی که دکمهٔ انتشار را نزنی، محتوای فعال قبلی در سایت باقی می‌ماند.</p>
 <div class="grid">
-<div class="filebox"><div class="field"><label for="target">فایل تارگت آمادهٔ MindAR (.mind)</label><input id="target" type="file" accept=".mind,application/octet-stream" required></div><p class="hint">این فایل خروجی کامپایل تصویر تارگت است؛ تصویر JPG/PNG به‌تنهایی برای موتور فعلی کافی نیست.</p></div>
-<div class="filebox"><div class="field"><label for="poster">تصویر پوستر / مرجع (PNG یا JPG)</label><input id="poster" type="file" accept="image/png,image/jpeg,image/webp"></div><p class="hint">برای نمایش تصویر مرجع و نگهداری نسخهٔ پوستر کسب‌وکار.</p></div>
+<div class="filebox"><div class="field"><label for="targetImage">تصویر تارگت (PNG یا JPG)</label><input id="targetImage" type="file" accept="image/png,image/jpeg,image/webp" required></div><p class="hint">تصویر را انتخاب کن؛ نومکس خودش آن را در مرورگر تحلیل و به فایل .mind تبدیل می‌کند.</p><div class="actions"><button id="compile" class="btn secondary" type="button" disabled>ساخت خودکار تارگت</button></div><div id="compileStatus" class="status" role="status">ابتدا تصویر تارگت را انتخاب کن.</div><div style="height:7px;background:#193d38;border-radius:99px;overflow:hidden"><div id="compileBar" style="height:100%;width:0;background:#5eead4;transition:width .2s"></div></div></div>
+<div class="filebox"><div class="field"><label for="poster">تصویر پوستر نمایشی (اختیاری)</label><input id="poster" type="file" accept="image/png,image/jpeg,image/webp"></div><p class="hint">اگر انتخاب نکنی، همان تصویر تارگت برای پوستر استفاده می‌شود.</p></div>
 <div class="filebox" style="grid-column:1/-1"><div class="field"><label for="video">محتوای AR (ویدئوی MP4)</label><input id="video" type="file" accept="video/mp4,video/*" required></div><p class="hint">ویدئو روی تارگت شناسایی‌شده نمایش داده می‌شود. حجم پیشنهادی کمتر از ۲۰ مگابایت.</p></div>
 </div>
 <div id="preview" class="preview hidden"><img id="posterPreview" alt="پیش‌نمایش پوستر" class="hidden"><video id="videoPreview" controls muted playsinline class="hidden"></video></div>
@@ -36,7 +37,7 @@ const KEY='sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF';
 const db=supabase.createClient(SUPABASE_URL,KEY);
 const $=id=>document.getElementById(id);
 const login=$('login'),workspace=$('workspace'),loginStatus=$('loginStatus'),publishStatus=$('publishStatus');
-let businesses=[],currentUser=null,previewUrls=[];
+let businesses=[],currentUser=null,previewUrls=[],compiledTarget=null,targetImageFile=null;
 function message(el,text,type=''){el.textContent=text;el.className='status '+type}
 function safeName(s){return String(s||'').replace(/[\\/]/g,'-').replace(/[^\p{L}\p{N}._-]+/gu,'-').slice(0,70)||'file'}
 function selected(){return businesses.find(b=>b.id===$('business').value)}
@@ -77,17 +78,56 @@ $('business').addEventListener('change',loadCurrent);
 $('refresh').addEventListener('click',async()=>{try{await loadCurrent();message(publishStatus,'وضعیت به‌روز شد.','ok')}catch(e){message(publishStatus,e.message,'error')}});
 function showPreview(){
  previewUrls.forEach(URL.revokeObjectURL);previewUrls=[];
- const p=$('poster').files[0],v=$('video').files[0];$('preview').classList.toggle('hidden',!p&&!v);
+ const p=$('poster').files[0]||targetImageFile,v=$('video').files[0];$('preview').classList.toggle('hidden',!p&&!v);
  $('posterPreview').classList.toggle('hidden',!p);$('videoPreview').classList.toggle('hidden',!v);
  if(p){const u=URL.createObjectURL(p);previewUrls.push(u);$('posterPreview').src=u}
  if(v){const u=URL.createObjectURL(v);previewUrls.push(u);$('videoPreview').src=u}
- $('publish').disabled=!(selected()&&$('target').files[0]&&v);
+ $('publish').disabled=!(selected()&&compiledTarget&&v);
 }
-['target','poster','video'].forEach(id=>$(id).addEventListener('change',showPreview));
+$('targetImage').addEventListener('change',()=>{
+ targetImageFile=$('targetImage').files[0]||null;compiledTarget=null;
+ $('compile').disabled=!targetImageFile;
+ $('compileBar').style.width='0%';
+ message($('compileStatus'),targetImageFile?'تصویر انتخاب شد؛ برای ساخت فایل .mind دکمه را بزن.':'ابتدا تصویر تارگت را انتخاب کن.');
+ showPreview();
+});
+$('poster').addEventListener('change',showPreview);
+$('video').addEventListener('change',showPreview);
+$('compile').addEventListener('click',async()=>{
+ if(!targetImageFile)return;
+ const btn=$('compile');btn.disabled=true;$('publish').disabled=true;
+ $('compileBar').style.width='0%';message($('compileStatus'),'در حال آماده‌سازی موتور تشخیص تصویر…');
+ let imageUrl=null;
+ try{
+  if(!window.MINDAR?.IMAGE?.Compiler)throw new Error('کتابخانهٔ کامپایلر MindAR بارگذاری نشده است. اتصال اینترنت یا CDN را بررسی کن.');
+  const compiler=new window.MINDAR.IMAGE.Compiler();
+  const image=await new Promise((resolve,reject)=>{
+   const img=new Image();imageUrl=URL.createObjectURL(targetImageFile);
+   img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('خواندن تصویر انتخاب‌شده ممکن نشد.'));
+   img.src=imageUrl;
+  });
+  message($('compileStatus'),'در حال تحلیل تصویر و استخراج نقاط قابل‌شناسایی…');
+  await compiler.compileImageTargets([image],progress=>{
+   const pct=Math.max(0,Math.min(100,Number(progress)||0));
+   $('compileBar').style.width=pct+'%';
+   message($('compileStatus'),'در حال ساخت تارگت خودکار: '+pct.toFixed(0)+'٪');
+  });
+  const buffer=await compiler.exportData();
+  if(!buffer||!buffer.byteLength)throw new Error('خروجی تارگت خالی است؛ تصویر دیگری انتخاب کن.');
+  compiledTarget=new File([buffer],'targets.mind',{type:'application/octet-stream'});
+  $('compileBar').style.width='100%';
+  message($('compileStatus'),'تارگت با موفقیت ساخته شد. حجم فایل: '+(buffer.byteLength/1024).toFixed(0)+' کیلوبایت.','ok');
+ }catch(err){
+  compiledTarget=null;message($('compileStatus'),err.message||'ساخت تارگت ناموفق بود.','error');
+ }finally{
+  if(imageUrl)URL.revokeObjectURL(imageUrl);
+  btn.disabled=!targetImageFile;
+  $('publish').disabled=!(selected()&&compiledTarget&&$('video').files[0]);
+ }
+});
 $('publish').addEventListener('click',async()=>{
- const b=selected(),target=$('target').files[0],video=$('video').files[0],poster=$('poster').files[0];
- if(!b||!target||!video){message(publishStatus,'کسب‌وکار، تارگت و ویدئو را انتخاب کن.','error');return}
- if(!target.name.toLowerCase().endsWith('.mind')){message(publishStatus,'فایل تارگت باید با فرمت .mind باشد.','error');return}
+ const b=selected(),target=compiledTarget,video=$('video').files[0],poster=$('poster').files[0]||targetImageFile;
+ if(!b||!target||!video){message(publishStatus,'کسب‌وکار، تصویر تارگت را انتخاب و کامپایل کن و ویدئو را هم اضافه کن.','error');return}
  if(target.size>20*1024*1024||video.size>20*1024*1024||(poster&&poster.size>20*1024*1024)){message(publishStatus,'حداکثر حجم هر فایل ۲۰ مگابایت است.','error');return}
  if(!confirm('محتوای جدید برای «'+b.name+'» منتشر شود؟ پس از تأیید، نسخهٔ فعال قبلی با این محتوا جایگزین می‌شود.'))return;
  setBusy(true);message(publishStatus,'در حال بارگذاری فایل‌ها…');
@@ -105,7 +145,7 @@ $('publish').addEventListener('click',async()=>{
   const {error}=await db.from('ar_content').upsert(row,{onConflict:'business_id'});
   if(error)throw error;
   message(publishStatus,'انتشار با موفقیت ثبت شد. نسخهٔ جدید اکنون از بک‌اند برای فرانت‌اند قابل دریافت است.','ok');
-  $('target').value='';$('poster').value='';$('video').value='';showPreview();await loadCurrent();
+  $('targetImage').value='';$('poster').value='';$('video').value='';targetImageFile=null;compiledTarget=null;$('compile').disabled=true;showPreview();await loadCurrent();
  }catch(err){console.error(err);message(publishStatus,'انتشار کامل نشد: '+(err.message||'خطای نامشخص')+' — اگر فایل‌ها آپلود شده باشند اما ثبت دیتابیس ناموفق باشد، نسخهٔ فعال قبلی تغییر نکرده است.','error')}
  finally{setBusy(false);showPreview()}
 });
