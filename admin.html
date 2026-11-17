@@ -31,9 +31,9 @@ main{width:min(980px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;
 <script>
 (function(){
 'use strict';
-const URL='https://pqydooffsqhvrmswzpfa.supabase.co';
+const SUPABASE_URL='https://pqydooffsqhvrmswzpfa.supabase.co';
 const KEY='sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF';
-const db=supabase.createClient(URL,KEY);
+const db=supabase.createClient(SUPABASE_URL,KEY);
 const $=id=>document.getElementById(id);
 const login=$('login'),workspace=$('workspace'),loginStatus=$('loginStatus'),publishStatus=$('publishStatus');
 let businesses=[],currentUser=null,previewUrls=[];
