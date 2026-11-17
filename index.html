@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://cdn.jsdelivr.net; connect-src 'self' data: https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co https://cdn.jsdelivr.net https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; media-src 'self' blob: data: https://pqydooffsqhvrmswzpfa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(), usb=()">
+<meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(self), payment=(), usb=()">
 <script>
 /* Anti-clickjacking: جلوگیری از نمایش سایت داخل iframe سایت‌های دیگر */
 (function(){ try{ if(window.top !== window.self){ document.documentElement.style.display="none"; window.top.location = window.self.location; } }catch(e){ document.documentElement.style.display="none"; } })();
@@ -9083,8 +9083,11 @@ function wrapAdmin(fnName){
           '<svg viewBox="0 0 24 24" fill="currentColor" style="width:22px;height:22px;display:block;flex-shrink:0"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM13 13h2v2h-2zM15 15h2v2h-2zM13 17h2v2h-2zM17 13h2v2h-2zM19 15h2v2h-2zM17 17h2v2h-2zM19 19h2v2h-2zM15 19h2v2h-2zM13 21h2v2h-2z"/></svg>' +
         '</button>';
 
-      actionsHtml +=
-        '<a class="action-btn ar-btn" href="ar-demo.html?business_id=' + encodeURIComponent(String(b.id)) + '" title="واقعیت افزوده" aria-label="واقعیت افزوده" style="display:inline-flex;align-items:center;justify-content:center;gap:5px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;border-radius:12px;padding:7px 10px;font-weight:800;text-decoration:none;font-size:12px;min-width:58px">AR ✨</a>';
+      // فقط دموی اختصاصی کافه آفتاب دکمهٔ AR دارد؛ کسب‌وکارهای دیگر تا زمان ثبت تارگت فعال نمایش نمی‌گیرند.
+      if(String(b.id) === 'ar-demo-cafe-aftab-001'){
+        actionsHtml +=
+          '<a class="action-btn ar-btn" href="ar-demo.html?business_id=' + encodeURIComponent(String(b.id)) + '" title="واقعیت افزوده" aria-label="واقعیت افزوده" style="display:inline-flex;align-items:center;justify-content:center;gap:5px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;border-radius:12px;padding:7px 10px;font-weight:800;text-decoration:none;font-size:12px;min-width:58px">AR ✨</a>';
+      }
 
       var __html = '<div class="business" style="animation-delay:'+(Math.min(j,8)*0.04)+'s">'+
         '<div class="business-inner">'+
