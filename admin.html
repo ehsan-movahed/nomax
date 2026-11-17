@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071c1b"><title>مدیریت مرکزی نومکس</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#071c1b;--panel:#102b29;--line:#28504b;--muted:#a9c2bd;--mint:#5eead4;--text:#f2fffc;--danger:#fca5a5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 90% 0,#16443d 0,transparent 42%),var(--bg);color:var(--text);font-family:Vazirmatn,Tahoma,sans-serif;min-height:100vh}
+main{width:min(980px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;background:#0f766e;display:grid;place-items:center;font-weight:900;font-size:22px}.muted{color:var(--muted)}h1{font-size:22px;margin:0}h2{font-size:17px;margin:0 0 14px}.card{background:#102b29ed;border:1px solid var(--line);border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 18px 45px #0002}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:7px;margin:12px 0}.field label{font-size:13px;color:#c6ddd8}.field input,.field select{width:100%;padding:13px;border:1px solid #37615b;border-radius:12px;background:#081f1d;color:white;font:inherit;min-width:0}.hint{font-size:12px;color:var(--muted);line-height:1.8;margin:0}.btn{border:0;border-radius:12px;padding:12px 18px;background:var(--mint);color:#06332e;font:800 14px Vazirmatn;cursor:pointer}.btn:disabled{opacity:.5;cursor:wait}.btn.secondary{background:#214540;color:white;border:1px solid #3b6b62}.btn.danger{background:#492d2d;color:#ffdada;border:1px solid #754444}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{font-size:13px;line-height:1.8;color:var(--muted);min-height:24px;margin-top:12px}.status.error{color:var(--danger)}.status.ok{color:var(--mint)}.hidden{display:none!important}.filebox{border:1px dashed #47736b;padding:14px;border-radius:14px;background:#0a211f}.filebox input{border:0;padding:8px 0;background:transparent}.preview{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.preview img,.preview video{width:100%;max-height:280px;object-fit:contain;background:#061614;border-radius:12px}.pill{font-size:11px;border:1px solid #3a6a62;border-radius:99px;padding:4px 9px;color:#b9eee3}.business-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}.footer{font-size:11px;color:#8fa9a3;text-align:center;margin-top:24px}
+@media(max-width:650px){.grid,.preview{grid-template-columns:1fr}.top{align-items:flex-start}.card{padding:16px}main{padding:20px 12px 45px}}
+</style></head>
+<body><main>
+<header class="top"><div class="brand"><div class="logo">N</div><div><h1>مدیریت مرکزی نومکس</h1><div class="muted" style="font-size:12px">انتشار محتوای واقعیت افزوده</div></div></div><button id="logout" class="btn secondary hidden">خروج</button></header>
+<section id="login" class="card" style="max-width:480px;margin:50px auto"><h2>ورود مدیر کل</h2><p class="hint">فقط حسابی که در پروفایل نومکس نقش مدیر دارد اجازهٔ ورود و انتشار خواهد داشت.</p><form id="loginForm"><div class="field"><label for="email">ایمیل مدیر</label><input id="email" type="email" autocomplete="username" required></div><div class="field"><label for="password">گذرواژه</label><input id="password" type="password" autocomplete="current-password" required></div><button class="btn" id="loginBtn" type="submit">ورود امن</button></form><div id="loginStatus" class="status" role="status"></div></section>
+<section id="workspace" class="hidden">
+<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>۱. انتخاب کسب‌وکار</h2><span class="pill">مدیر کل</span></div><div class="field"><label for="business">کسب‌وکار مقصد</label><select id="business"><option value="">در حال دریافت فهرست…</option></select></div><div id="businessInfo" class="business-meta"></div></div>
+<div class="card"><h2>۲. تعیین فایل‌های تجربهٔ AR</h2><p class="hint">فایل‌ها ابتدا در فضای ذخیره‌سازی بارگذاری می‌شوند؛ تا زمانی که دکمهٔ انتشار را نزنی، محتوای فعال قبلی در سایت باقی می‌ماند.</p>
+<div class="grid">
+<div class="filebox"><div class="field"><label for="target">فایل تارگت آمادهٔ MindAR (.mind)</label><input id="target" type="file" accept=".mind,application/octet-stream" required></div><p class="hint">این فایل خروجی کامپایل تصویر تارگت است؛ تصویر JPG/PNG به‌تنهایی برای موتور فعلی کافی نیست.</p></div>
+<div class="filebox"><div class="field"><label for="poster">تصویر پوستر / مرجع (PNG یا JPG)</label><input id="poster" type="file" accept="image/png,image/jpeg,image/webp"></div><p class="hint">برای نمایش تصویر مرجع و نگهداری نسخهٔ پوستر کسب‌وکار.</p></div>
+<div class="filebox" style="grid-column:1/-1"><div class="field"><label for="video">محتوای AR (ویدئوی MP4)</label><input id="video" type="file" accept="video/mp4,video/*" required></div><p class="hint">ویدئو روی تارگت شناسایی‌شده نمایش داده می‌شود. حجم پیشنهادی کمتر از ۲۰ مگابایت.</p></div>
+</div>
+<div id="preview" class="preview hidden"><img id="posterPreview" alt="پیش‌نمایش پوستر" class="hidden"><video id="videoPreview" controls muted playsinline class="hidden"></video></div>
+<div class="actions"><button id="publish" class="btn" disabled>تأیید من و انتشار محتوا</button><button id="refresh" class="btn secondary">بازخوانی وضعیت فعلی</button></div><div id="publishStatus" class="status" role="status"></div>
+</div>
+<div class="card"><h2>۳. وضعیت انتشار فعلی</h2><div id="currentStatus" class="hint">ابتدا یک کسب‌وکار انتخاب کن.</div></div>
+</section><div class="footer">Nomax · پنل خصوصی مدیریت محتوا · کلید عمومی Supabase در مرورگر استفاده می‌شود؛ کلید محرمانه هرگز در فرانت‌اند قرار ندارد.</div>
+</main>
+<script>
+(function(){
+'use strict';
+const URL='https://pqydooffsqhvrmswzpfa.supabase.co';
+const KEY='sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF';
+const db=supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+const login=$('login'),workspace=$('workspace'),loginStatus=$('loginStatus'),publishStatus=$('publishStatus');
+let businesses=[],currentUser=null,previewUrls=[];
+function message(el,text,type=''){el.textContent=text;el.className='status '+type}
+function safeName(s){return String(s||'').replace(/[\\/]/g,'-').replace(/[^\p{L}\p{N}._-]+/gu,'-').slice(0,70)||'file'}
+function selected(){return businesses.find(b=>b.id===$('business').value)}
+function setBusy(b){$('publish').disabled=b;$('loginBtn').disabled=b}
+async function verifyAdmin(user){
+ const {data,error}=await db.from('profiles').select('role').eq('id',user.id).maybeSingle();
+ if(error)throw error;
+ if(!data||data.role!=='admin')throw new Error('این حساب در Nomax نقش مدیر کل ندارد.');
+}
+async function loadBusinesses(){
+ const {data,error}=await db.from('businesses').select('id,name,address,payload,status').order('created_at',{ascending:false});
+ if(error)throw error;
+ businesses=(data||[]).map(b=>({id:b.id,name:b.name||b.payload?.name||b.payload?.business_name||b.id,address:b.address||b.payload?.address||'',status:b.status||b.payload?.status||''}));
+ const sel=$('business');sel.innerHTML='<option value="">انتخاب کسب‌وکار…</option>';
+ businesses.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name+' — '+b.id;sel.appendChild(o)});
+ if(businesses.length===1)sel.value=businesses[0].id;
+ await loadCurrent();
+}
+async function loadCurrent(){
+ const b=selected();$('businessInfo').textContent=b?(b.address||'')+' · '+b.id:'';
+ if(!b){$('currentStatus').textContent='ابتدا یک کسب‌وکار انتخاب کن.';return}
+ const {data,error}=await db.from('ar_content').select('target_url,video_url,poster_url,active,updated_at').eq('business_id',b.id).maybeSingle();
+ if(error){$('currentStatus').textContent='خطا در دریافت وضعیت: '+error.message;return}
+ $('currentStatus').textContent=data?(data.active?'فعال و در دسترس کاربران':'غیرفعال')+' · آخرین تغییر: '+new Date(data.updated_at).toLocaleString('fa-IR')+' · تارگت: '+(data.target_url?'ثبت شده':'ندارد')+' · ویدئو: '+(data.video_url?'ثبت شده':'ندارد'):'برای این کسب‌وکار هنوز محتوای AR ثبت نشده است.';
+}
+async function enter(user){
+ await verifyAdmin(user);currentUser=user;login.classList.add('hidden');workspace.classList.remove('hidden');$('logout').classList.remove('hidden');message(loginStatus,'');
+ await loadBusinesses();
+}
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();message(loginStatus,'در حال ورود…');setBusy(true);
+ try{const {data,error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await enter(data.user);message(loginStatus,'ورود موفق بود.','ok')}
+ catch(err){await db.auth.signOut();message(loginStatus,err.message||'ورود ناموفق بود.','error')}
+ finally{setBusy(false)}
+});
+$('logout').addEventListener('click',async()=>{await db.auth.signOut();currentUser=null;workspace.classList.add('hidden');$('logout').classList.add('hidden');login.classList.remove('hidden');message(loginStatus,'از حساب خارج شدی.','ok')});
+$('business').addEventListener('change',loadCurrent);
+$('refresh').addEventListener('click',async()=>{try{await loadCurrent();message(publishStatus,'وضعیت به‌روز شد.','ok')}catch(e){message(publishStatus,e.message,'error')}});
+function showPreview(){
+ previewUrls.forEach(URL.revokeObjectURL);previewUrls=[];
+ const p=$('poster').files[0],v=$('video').files[0];$('preview').classList.toggle('hidden',!p&&!v);
+ $('posterPreview').classList.toggle('hidden',!p);$('videoPreview').classList.toggle('hidden',!v);
+ if(p){const u=URL.createObjectURL(p);previewUrls.push(u);$('posterPreview').src=u}
+ if(v){const u=URL.createObjectURL(v);previewUrls.push(u);$('videoPreview').src=u}
+ $('publish').disabled=!(selected()&&$('target').files[0]&&v);
+}
+['target','poster','video'].forEach(id=>$(id).addEventListener('change',showPreview));
+$('publish').addEventListener('click',async()=>{
+ const b=selected(),target=$('target').files[0],video=$('video').files[0],poster=$('poster').files[0];
+ if(!b||!target||!video){message(publishStatus,'کسب‌وکار، تارگت و ویدئو را انتخاب کن.','error');return}
+ if(!target.name.toLowerCase().endsWith('.mind')){message(publishStatus,'فایل تارگت باید با فرمت .mind باشد.','error');return}
+ if(target.size>20*1024*1024||video.size>20*1024*1024||(poster&&poster.size>20*1024*1024)){message(publishStatus,'حداکثر حجم هر فایل ۲۰ مگابایت است.','error');return}
+ if(!confirm('محتوای جدید برای «'+b.name+'» منتشر شود؟ پس از تأیید، نسخهٔ فعال قبلی با این محتوا جایگزین می‌شود.'))return;
+ setBusy(true);message(publishStatus,'در حال بارگذاری فایل‌ها…');
+ try{
+  const folder=safeName(b.id),stamp=Date.now();
+  async function upload(file,path,type){const {error}=await db.storage.from('ar-assets').upload(path,file,{upsert:true,contentType:type,cacheControl:'3600'});if(error)throw error;const {data}=db.storage.from('ar-assets').getPublicUrl(path);return data.publicUrl}
+  const targetPath=folder+'/targets-'+stamp+'.mind';
+  const videoPath=folder+'/ar-video-'+stamp+'.mp4';
+  const targetUrl=await upload(target,targetPath,'application/octet-stream');
+  message(publishStatus,'تارگت بارگذاری شد؛ ویدئو در حال بارگذاری است…');
+  const videoUrl=await upload(video,videoPath,video.type||'video/mp4');
+  let posterUrl=null;
+  if(poster){message(publishStatus,'تصویر پوستر در حال بارگذاری است…');posterUrl=await upload(poster,folder+'/poster-'+stamp+'.'+(poster.name.split('.').pop()||'jpg'),poster.type||'image/jpeg')}
+  const row={business_id:b.id,target_url:targetUrl,video_url:videoUrl,poster_url:posterUrl,active:true,updated_at:new Date().toISOString()};
+  const {error}=await db.from('ar_content').upsert(row,{onConflict:'business_id'});
+  if(error)throw error;
+  message(publishStatus,'انتشار با موفقیت ثبت شد. نسخهٔ جدید اکنون از بک‌اند برای فرانت‌اند قابل دریافت است.','ok');
+  $('target').value='';$('poster').value='';$('video').value='';showPreview();await loadCurrent();
+ }catch(err){console.error(err);message(publishStatus,'انتشار کامل نشد: '+(err.message||'خطای نامشخص')+' — اگر فایل‌ها آپلود شده باشند اما ثبت دیتابیس ناموفق باشد، نسخهٔ فعال قبلی تغییر نکرده است.','error')}
+ finally{setBusy(false);showPreview()}
+});
+(async()=>{try{const {data}=await db.auth.getSession();if(data.session?.user)await enter(data.session.user)}catch(e){message(loginStatus,e.message||'برای ورود دوباره تلاش کن.','error')}})();
+})();
+</script></body></html>
