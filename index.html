@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' 'self'; font-src 'self' data: 'self'; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org 'self'; connect-src 'self' data: https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co 'self' https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; media-src 'self' blob: data: https://pqydooffsqhvrmswzpfa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://api.qrserver.com https://pqydooffsqhvrmswzpfa.supabase.co https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org 'self'; connect-src 'self' data: https://pqydooffsqhvrmswzpfa.supabase.co wss://pqydooffsqhvrmswzpfa.supabase.co 'self' https://challenges.cloudflare.com https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org; frame-src https://challenges.cloudflare.com; media-src 'self' blob: data: https://pqydooffsqhvrmswzpfa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(), geolocation=(self), payment=(), usb=()">
@@ -21,7 +21,7 @@
     display:flex; align-items:center; justify-content:center; flex-direction:column;
     gap:0; overflow:hidden; isolation:isolate;
     background:radial-gradient(ellipse at 50% 42%,#f0fdfa 0%,#ffffff 58%,#f8fafc 100%);
-    color:#0f766e; font-family:'Vazirmatn',Tahoma,sans-serif;
+    color:#0f766e; font-family:'Vazirmatn Variable',Tahoma,sans-serif;
     opacity:1; transition:opacity .42s ease, visibility .42s ease;
   }
   #nxSplash::before,#nxSplash::after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
@@ -40,7 +40,7 @@
   .nx-splash-service i{font-style:normal;font-size:14px}
   .nx-splash-loading{width:132px;height:3px;margin-top:29px;overflow:hidden;border-radius:99px;background:#d9f3ee}
   .nx-splash-loading span{display:block;width:42%;height:100%;border-radius:99px;background:linear-gradient(90deg,#0d9488,#2dd4bf);animation:nxSplashProgress 1.35s ease-in-out infinite}
-  #nxSplash small{margin-top:11px;font:500 11px/1.7 'Vazirmatn',Tahoma,sans-serif;color:#94a3b8}
+  #nxSplash small{margin-top:11px;font:500 11px/1.7 'Vazirmatn Variable',Tahoma,sans-serif;color:#94a3b8}
   html.nx-ready #nxSplash{opacity:0;visibility:hidden;pointer-events:none}
   @keyframes nxSplashFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
   @keyframes nxSplashOrbit{to{transform:rotate(360deg)}}
@@ -74,7 +74,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-5.8 0-10.5 4.5-10.5 10.2 0 7.6 8.2 14.2 9.7 15.4.5.4 1.1.4 1.6 0 1.5-1.2 9.7-7.8 9.7-15.4C26.5 7 21.8 2.5 16 2.5Z' fill='%230d9488'/%3E%3Ccircle cx='16' cy='12.5' r='5.2' fill='%23fff'/%3E%3Cpath d='M13.6 12.6l1.7 1.7 3.3-3.5' stroke='%23f59e0b' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://pqydooffsqhvrmswzpfa.supabase.co" crossorigin>
-<!-- Persian system font fallback; no external font CDN required. -->
+<link rel="stylesheet" href="./assets/vendor/vazirmatn/wght.css">
     
 <style>
 
@@ -179,7 +179,7 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 body, button, input, select, textarea{
-  font-family:'Vazirmatn', system-ui, -apple-system, Tahoma, sans-serif;
+  font-family:'Vazirmatn Variable', system-ui, -apple-system, Tahoma, sans-serif;
   letter-spacing:-.2px;
 }
 
