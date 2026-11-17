@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071c1b">
+<title>واقعیت افزوده | نومکس</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#071c1b;color:#fff;font-family:Vazirmatn,Tahoma,sans-serif}
+#ar-root{position:fixed;inset:0}#ar-root video{object-fit:cover}
+.panel{position:fixed;z-index:5;left:16px;right:16px;bottom:max(18px,env(safe-area-inset-bottom));padding:16px;border:1px solid #ffffff26;border-radius:20px;background:#071c1be8;backdrop-filter:blur(16px);text-align:center}
+h1{font-size:19px;margin:0 0 5px}.hint{font-size:13px;color:#c4d8d5;line-height:1.8;margin:0 0 12px}
+button{border:0;border-radius:13px;padding:12px 24px;background:#14b8a6;color:#042f2e;font:800 15px Vazirmatn;cursor:pointer;width:100%}
+button:disabled{opacity:.55;cursor:wait}#status{font-size:12px;color:#c4d8d5;margin-top:9px;min-height:22px}
+#close{position:fixed;z-index:6;top:max(16px,env(safe-area-inset-top));left:16px;width:auto;padding:8px 14px;background:#071c1bd9;color:white;border:1px solid #ffffff44}
+#video-source{display:none}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div id="ar-root"></div>
+<button id="close" type="button" onclick="history.back()">بازگشت</button>
+<section class="panel">
+  <h1>واقعیت افزوده نومکس</h1>
+  <p class="hint">دوربین را به سمت تصویر اختصاصی این کسب‌وکار بگیرید. پس از شناسایی تصویر، محتوای سه‌بعدی یا ویدئویی روی آن نمایش داده می‌شود.</p>
+  <button id="start" type="button">فعال‌کردن دوربین و شروع AR</button>
+  <div id="status" role="status">در حال آماده‌سازی…</div>
+</section>
+<video id="video-source" playsinline muted loop crossorigin="anonymous"></video>
+<script>
+(function(){
+'use strict';
+const SUPABASE_URL='https://pqydooffsqhvrmswzpfa.supabase.co';
+const SUPABASE_KEY='sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF';
+const params=new URLSearchParams(location.search);
+const businessId=params.get('business_id');
+const status=document.getElementById('status');
+const startButton=document.getElementById('start');
+const video=document.getElementById('video-source');
+const say=(message)=>{status.textContent=message};
+let ar=null,started=false;
+function fail(message){say(message);startButton.disabled=false}
+async function init(){
+  if(!businessId){fail('شناسهٔ کسب‌وکار در نشانی صفحه وجود ندارد.');return}
+  if(!window.isSecureContext){fail('برای دسترسی به دوربین باید سایت از طریق HTTPS باز شود.');return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){fail('این مرورگر از دسترسی دوربین پشتیبانی نمی‌کند.');return}
+  const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const {data,error}=await client.from('ar_content').select('target_url,video_url,poster_url').eq('business_id',businessId).eq('active',true).maybeSingle();
+  if(error){fail('دریافت تنظیمات AR ناموفق بود: '+error.message);return}
+  if(!data){fail('برای این کسب‌وکار هنوز محتوای AR فعالی ثبت نشده است.');return}
+  if(!data.target_url||!data.video_url){fail('فایل تارگت یا محتوای ویدئویی هنوز تنظیم نشده است.');return}
+  startButton.onclick=()=>begin(data);
+  say('محتوای AR آماده است. برای اجازهٔ دوربین دکمه را بزنید.');
+}
+async function begin(data){
+  if(started)return;
+  startButton.disabled=true;say('در حال درخواست اجازهٔ دوربین…');
+  try{
+    ar=new MINDAR.IMAGE.MindARThree({container:document.getElementById('ar-root'),imageTargetSrc:data.target_url,uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.001});
+    const {renderer,scene,camera}=ar;
+    const anchor=ar.addAnchor(0);
+    video.src=data.video_url;
+    await video.play().catch(()=>{});
+    const texture=new THREE.VideoTexture(video);
+    texture.colorSpace=THREE.SRGBColorSpace;
+    const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide});
+    const plane=new THREE.Mesh(new THREE.PlaneGeometry(1,1.5),material);
+    plane.position.set(0,0,0.01);
+    anchor.group.add(plane);
+    anchor.onTargetFound=()=>{say('تصویر شناسایی شد؛ محتوای AR در حال نمایش است.')};
+    anchor.onTargetLost=()=>{say('تصویر از کادر خارج شد؛ دوربین را دوباره روی تارگت بگیرید.')};
+    renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+    await ar.start();
+    started=true;
+    document.querySelector('.panel').style.opacity='.82';
+    say('دوربین فعال است؛ تصویر تارگت را مقابل دوربین نگه دارید.');
+  }catch(error){
+    console.error(error);
+    if(ar){try{await ar.stop()}catch(_){}}
+    ar=null;fail('شروع AR انجام نشد. مجوز دوربین و سازگاری مرورگر را بررسی کنید.');
+  }
+}
+window.addEventListener('pagehide',()=>{if(ar&&started){try{ar.stop()}catch(_){}}});
+init().catch(()=>fail('خطای غیرمنتظره در آماده‌سازی AR رخ داد.'));
+})();
+</script>
+</body>
+</html>
