@@ -68,7 +68,7 @@ async function begin(data){
     const texture=new THREE.VideoTexture(video);
     texture.colorSpace=THREE.SRGBColorSpace;
     const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide});
-    const plane=new THREE.Mesh(new THREE.PlaneGeometry(1,0.5625),material);
+    const plane=new THREE.Mesh(new THREE.PlaneGeometry(1,1.5),material);
     plane.position.set(0,0,0.01);
     anchor.group.add(plane);
     anchor.onTargetFound=()=>{say('تصویر شناسایی شد؛ محتوای AR در حال نمایش است.')};
