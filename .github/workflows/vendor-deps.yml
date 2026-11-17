@@ -1,0 +1,50 @@
+name: Vendor browser dependencies
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'admin.html'
+      - 'ar-demo.html'
+      - '.github/workflows/vendor-deps.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install pinned dependencies
+        run: npm install --no-audit --no-fund
+      - name: Copy browser distributions into the site
+        run: |
+          mkdir -p assets/vendor
+          cp node_modules/@supabase/supabase-js/dist/umd/supabase.js assets/vendor/supabase.js
+          cp node_modules/mind-ar/dist/mindar-image.prod.js assets/vendor/mindar-image.prod.js
+          cp node_modules/mind-ar/dist/mindar-image-three.prod.js assets/vendor/mindar-image-three.prod.js
+          cp node_modules/three/build/three.module.js assets/vendor/three.module.js
+          mkdir -p assets/vendor/licenses
+          cp node_modules/@supabase/supabase-js/LICENSE assets/vendor/licenses/supabase-js-LICENSE 2>/dev/null || true
+          cp node_modules/mind-ar/LICENSE assets/vendor/licenses/mind-ar-LICENSE 2>/dev/null || true
+          cp node_modules/three/LICENSE assets/vendor/licenses/three-LICENSE 2>/dev/null || true
+      - name: Commit vendored files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/vendor
+          if git diff --cached --quiet; then
+            echo "Vendor files are already up to date."
+          else
+            git commit -m "Vendor browser dependencies for offline-friendly AR"
+            git push origin main
+          fi
