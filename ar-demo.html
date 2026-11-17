@@ -17,8 +17,15 @@ button:disabled{opacity:.55;cursor:wait}#status{font-size:12px;color:#c4d8d5;mar
 #close{position:fixed;z-index:6;top:max(16px,env(safe-area-inset-top));left:16px;width:auto;padding:8px 14px;background:#071c1bd9;color:white;border:1px solid #ffffff44}
 #video-source{display:none}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+  }
+}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
 <body>
@@ -31,7 +38,9 @@ button:disabled{opacity:.55;cursor:wait}#status{font-size:12px;color:#c4d8d5;mar
   <div id="status" role="status">در حال آماده‌سازی…</div>
 </section>
 <video id="video-source" playsinline muted loop crossorigin="anonymous"></video>
-<script>
+<script type="module">
+import * as THREE from 'three';
+import { MindARThree } from 'mindar-image-three';
 (function(){
 'use strict';
 const SUPABASE_URL='https://pqydooffsqhvrmswzpfa.supabase.co';
@@ -60,8 +69,8 @@ async function begin(data){
   if(started)return;
   startButton.disabled=true;say('در حال درخواست اجازهٔ دوربین…');
   try{
-    if(!window.MINDAR||!window.MINDAR.IMAGE||!window.MINDAR.IMAGE.MindARThree){throw new Error('کتابخانهٔ تشخیص تصویر بارگذاری نشده است؛ اتصال اینترنت یا مسدودکنندهٔ محتوا را بررسی کنید.');}
-    ar=new MINDAR.IMAGE.MindARThree({container:document.getElementById('ar-root'),imageTargetSrc:data.target_url,uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.001});
+    if(typeof MindARThree!=='function'){throw new Error('ماژول تشخیص تصویر MindAR در دسترس نیست؛ اتصال CDN را بررسی کنید.');}
+    ar=new MindARThree({container:document.getElementById('ar-root'),imageTargetSrc:data.target_url,uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.001});
     const {renderer,scene,camera}=ar;
     const anchor=ar.addAnchor(0);
     video.src=data.video_url;
