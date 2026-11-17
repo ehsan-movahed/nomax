@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
       - name: Install pinned dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Copy browser distributions into the site
         run: |
           mkdir -p assets/vendor
