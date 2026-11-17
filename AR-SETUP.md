@@ -4,24 +4,27 @@
 
 `ar-demo-cafe-aftab-001`
 
-## فایل‌های آماده
+این رکورد صرفاً برای دموی AR تأیید شده است؛ هیچ کسب‌وکار واقعی یا دادهٔ مالک تغییر نکرده است.
 
-- `cafe-aftab-poster.png`: پوستر چاپی و تارگت تصویری
-- `cafe-aftab-demo.mp4`: ویدئوی نمایشی ۶ ثانیه‌ای
+## فایل‌ها و Storage
 
-این دو فایل در بستهٔ تحویلی این کار آماده شده‌اند؛ هنوز در Storage بارگذاری نشده‌اند.
+Bucket عمومی `ar-assets` ساخته شده است. سقف فایل ۲۰ مگابایت است و MIMEهای مجاز شامل `.mind`، MP4 و PNG هستند.
 
-## ساخت تارگت MindAR
+مسیر پیشنهادی فایل‌ها در Storage:
 
-1. پوستر PNG را در ابزار رسمی MindAR Target Compiler باز کنید:
-   https://hiukim.github.io/mind-ar-js-doc/tools/compile/
-2. تصویر را انتخاب و Compile کنید.
-3. توزیع نقاط ویژگی را بررسی کنید و فایل واقعی `.mind` را دانلود کنید.
-4. فایل `.mind` و MP4 و PNG را در bucket عمومی `ar-assets` در Supabase بارگذاری کنید.
+- `ar-demo-cafe-aftab-001/targets.mind`
+- `ar-demo-cafe-aftab-001/cafe-aftab-demo.mp4`
+- `ar-demo-cafe-aftab-001/cafe-aftab-poster.png`
 
-## ثبت محتوای AR
+فایل‌های محلی آماده‌اند، اما هنوز به Storage منتقل نشده‌اند؛ در نتیجه URL عمومی معتبر برای آن‌ها وجود ندارد.
 
-پس از آپلود، URL عمومی هر فایل را بردارید و در SQL زیر جایگزین کنید:
+## تارگت MindAR
+
+فایل `targets.mind` که ارائه شد از نظر ساختار MessagePack و نسخهٔ v2 قابل خواندن است و یک تصویر ۱۰۲۴×۱۵۳۶ با ۱۱ سطح matching دارد. این اعتبارسنجی ساختاری است و جای تست تشخیص واقعی روی گوشی را نمی‌گیرد.
+
+## ثبت محتوای AR پس از آپلود
+
+URLهای عمومی فایل‌های آپلودشده را در SQL زیر جایگزین کنید:
 
 ```sql
 insert into public.ar_content
@@ -29,9 +32,9 @@ insert into public.ar_content
 values
   (
     'ar-demo-cafe-aftab-001',
-    'PUBLIC_URL_TO_COMPILED_TARGET.mind',
-    'PUBLIC_URL_TO_VIDEO.mp4',
-    'PUBLIC_URL_TO_POSTER.png',
+    'PUBLIC_URL_TO_TARGETS_MIND',
+    'PUBLIC_URL_TO_VIDEO_MP4',
+    'PUBLIC_URL_TO_POSTER_PNG',
     true
   )
 on conflict (business_id) do update set
@@ -44,6 +47,6 @@ on conflict (business_id) do update set
 
 ## تست
 
-صفحهٔ `ar-demo.html?business_id=ar-demo-cafe-aftab-001` را روی HTTPS و با گوشی باز کنید، اجازهٔ دوربین بدهید و پوستر چاپ‌شده را مقابل دوربین بگیرید.
+پس از ثبت URLها، صفحهٔ `ar-demo.html?business_id=ar-demo-cafe-aftab-001` را روی HTTPS با گوشی باز کنید، اجازهٔ دوربین بدهید و پوستر را مقابل دوربین بگیرید. تا قبل از آپلود فایل‌ها و ثبت `ar_content`، صفحه به‌درستی پیام «محتوای AR فعال نیست» نشان می‌دهد.
 
-دکمهٔ AR در کارت نتایج کسب‌وکار به همین صفحه هدایت می‌کند. این تغییرات در PR آزمایشی هستند و تا ادغام، در نسخهٔ اصلی سایت منتشر نمی‌شوند.
+تغییرات رابط کاربری در PR آزمایشی هستند و تا ادغام و انتشار، در نسخهٔ اصلی سایت دیده نمی‌شوند.
