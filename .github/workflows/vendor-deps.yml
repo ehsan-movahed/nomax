@@ -12,6 +12,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: nomax-vendor-main
+  cancel-in-progress: false
+
 jobs:
   vendor:
     runs-on: ubuntu-latest
@@ -34,6 +38,8 @@ jobs:
           cp -R node_modules/mind-ar/dist/. assets/vendor/mind-ar/
           cp node_modules/three/build/three.module.js assets/vendor/three.module.js
           cp -R node_modules/three/examples/jsm assets/vendor/three-jsm
+          mkdir -p assets/vendor/leaflet
+          cp -R node_modules/leaflet/dist/. assets/vendor/leaflet/
           mkdir -p assets/vendor/licenses
           cp node_modules/@supabase/supabase-js/LICENSE assets/vendor/licenses/supabase-js-LICENSE 2>/dev/null || true
           cp node_modules/mind-ar/LICENSE assets/vendor/licenses/mind-ar-LICENSE 2>/dev/null || true
@@ -47,5 +53,7 @@ jobs:
             echo "Vendor files are already up to date."
           else
             git commit -m "Vendor browser dependencies for offline-friendly AR"
-            git push origin main
+            git fetch origin main
+            git rebase origin/main
+            git push origin HEAD:main
           fi
