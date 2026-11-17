@@ -30,9 +30,10 @@ jobs:
         run: |
           mkdir -p assets/vendor
           cp node_modules/@supabase/supabase-js/dist/umd/supabase.js assets/vendor/supabase.js
-          cp node_modules/mind-ar/dist/mindar-image.prod.js assets/vendor/mindar-image.prod.js
-          cp node_modules/mind-ar/dist/mindar-image-three.prod.js assets/vendor/mindar-image-three.prod.js
+          mkdir -p assets/vendor/mind-ar
+          cp -R node_modules/mind-ar/dist/. assets/vendor/mind-ar/
           cp node_modules/three/build/three.module.js assets/vendor/three.module.js
+          cp -R node_modules/three/examples/jsm assets/vendor/three-jsm
           mkdir -p assets/vendor/licenses
           cp node_modules/@supabase/supabase-js/LICENSE assets/vendor/licenses/supabase-js-LICENSE 2>/dev/null || true
           cp node_modules/mind-ar/LICENSE assets/vendor/licenses/mind-ar-LICENSE 2>/dev/null || true
