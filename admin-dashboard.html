@@ -311,7 +311,7 @@ async function load(){
   $('err').innerHTML='';
   var r=await sb.rpc('admin_dashboard',{p_days:Number($('days').value)});
   if(r.error){$('err').innerHTML='<div class="alert">خطا در دریافت داده: '+esc(r.error.message)+(/function|does not exist|schema cache/i.test(r.error.message)?' — اسکریپت SQL داشبورد هنوز اجرا نشده است.':'')+'</div>';return}
-  D=r.data;render();feed();if(!$('app').querySelector('[data-p=mp]').classList.contains('hide'))drawMap();
+  D=r.data;render();if(!$('app').querySelector('[data-p=mp]').classList.contains('hide'))drawMap();
 }
 async function boot(){
   theme();
@@ -324,7 +324,7 @@ async function boot(){
 $('tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
   [].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x===b)});
   [].forEach.call(document.querySelectorAll('[data-p]'),function(p){p.classList.toggle('hide',p.dataset.p!==b.dataset.t)});
-  if(b.dataset.t==='mp')drawMap();if(b.dataset.t==='ar')initAR();runLazy();
+  if(b.dataset.t==='mp')drawMap();if(b.dataset.t==='ar')initAR();if(b.dataset.t==='ac')feed();runLazy();
   setTimeout(function(){Object.keys(charts).forEach(function(k){try{charts[k].resize()}catch(_){}})},60)});
 $('days').onchange=load;$('refresh').onclick=load;$('bf').onchange=bizTable;
 $('tBiz').addEventListener('click',function(e){var t=e.target.closest('th.so');if(!t)return;var k=t.dataset.k;if(k===sortKey)sortDir=-sortDir;else{sortKey=k;sortDir=-1}bizTable()});
