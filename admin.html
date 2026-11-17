@@ -43,9 +43,9 @@ function safeName(s){return String(s||'').replace(/[\\/]/g,'-').replace(/[^\p{L}
 function selected(){return businesses.find(b=>b.id===$('business').value)}
 function setBusy(b){$('publish').disabled=b;$('loginBtn').disabled=b}
 async function verifyAdmin(user){
- const {data,error}=await db.from('profiles').select('role').eq('id',user.id).maybeSingle();
+ const {data,error}=await db.rpc('is_admin');
  if(error)throw error;
- if(!data||data.role!=='admin')throw new Error('این حساب در Nomax نقش مدیر کل ندارد.');
+ if(data!==true)throw new Error('این حساب در فهرست مدیران مرکزی نومکس مجاز نیست.');
 }
 async function loadBusinesses(){
  const {data,error}=await db.from('businesses').select('id,name,address,payload,status').order('created_at',{ascending:false});
