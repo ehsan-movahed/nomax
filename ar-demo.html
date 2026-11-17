@@ -26,8 +26,8 @@ button:disabled{opacity:.55;cursor:wait}#status{font-size:12px;color:#c4d8d5;mar
 <button id="close" type="button" onclick="history.back()">بازگشت</button>
 <section class="panel">
   <h1>واقعیت افزوده نومکس</h1>
-  <p class="hint">دوربین را به سمت تصویر اختصاصی این کسب‌وکار بگیرید. پس از شناسایی تصویر، محتوای سه‌بعدی یا ویدئویی روی آن نمایش داده می‌شود.</p>
-  <button id="start" type="button">فعال‌کردن دوربین و شروع AR</button>
+  <p class="hint">برای اجرای واقعیت افزوده، نومکس به دوربین نیاز دارد. با زدن دکمه، Chrome درخواست رسمی اجازهٔ دسترسی به دوربین را نشان می‌دهد. پس از انتخاب «اجازه»، دوربین فعال می‌شود؛ تصویر اختصاصی کسب‌وکار را مقابل آن بگیرید.</p>
+  <button id="start" type="button">موافقم؛ درخواست دسترسی و شروع AR</button>
   <div id="status" role="status">در حال آماده‌سازی…</div>
 </section>
 <video id="video-source" playsinline muted loop crossorigin="anonymous"></video>
@@ -54,7 +54,7 @@ async function init(){
   if(!data){fail('برای این کسب‌وکار هنوز محتوای AR فعالی ثبت نشده است.');return}
   if(!data.target_url||!data.video_url){fail('فایل تارگت یا محتوای ویدئویی هنوز تنظیم نشده است.');return}
   startButton.onclick=()=>begin(data);
-  say('محتوای AR آماده است. برای اجازهٔ دوربین دکمه را بزنید.');
+  say('محتوای AR آماده است. با زدن دکمه، درخواست مجوز دوربین در Chrome نمایش داده می‌شود.');
 }
 async function begin(data){
   if(started)return;
@@ -86,7 +86,7 @@ async function begin(data){
     const name=error&&error.name?error.name:'';
     const detail=error&&error.message?String(error.message):String(error||'خطای نامشخص');
     let message='خطای شروع AR';
-    if(name==='NotAllowedError'||name==='PermissionDeniedError'||name==='SecurityError') message='دسترسی دوربین رد شده است. مجوز Camera را برای این سایت فعال کنید.';
+    if(name==='NotAllowedError'||name==='PermissionDeniedError'||name==='SecurityError') message='اجازهٔ دوربین داده نشد یا قبلاً مسدود شده است. در Chrome روی آیکون کنار نشانی سایت بزنید ← Permissions / مجوزها ← Camera / دوربین ← Allow / مجاز؛ سپس صفحه را تازه‌سازی کنید. همچنین مجوز دوربین Chrome را در تنظیمات اندروید بررسی کنید.';
     else if(name==='NotFoundError'||name==='DevicesNotFoundError') message='دوربین در این دستگاه پیدا نشد.';
     else if(name==='NotReadableError'||name==='TrackStartError') message='دوربین در برنامهٔ دیگری مشغول است؛ برنامه‌های دوربین را ببندید و دوباره تلاش کنید.';
     else if(name==='OverconstrainedError') message='تنظیمات دوربین با این دستگاه سازگار نیست.';
