@@ -40,6 +40,8 @@ jobs:
           cp -R node_modules/three/examples/jsm assets/vendor/three-jsm
           mkdir -p assets/vendor/leaflet
           cp -R node_modules/leaflet/dist/. assets/vendor/leaflet/
+          mkdir -p assets/vendor/ruffle
+          cp -R node_modules/@ruffle-rs/ruffle/. assets/vendor/ruffle/
           mkdir -p assets/vendor/licenses
           cp node_modules/@supabase/supabase-js/LICENSE assets/vendor/licenses/supabase-js-LICENSE 2>/dev/null || true
           cp node_modules/mind-ar/LICENSE assets/vendor/licenses/mind-ar-LICENSE 2>/dev/null || true
