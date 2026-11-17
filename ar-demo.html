@@ -60,6 +60,7 @@ async function begin(data){
   if(started)return;
   startButton.disabled=true;say('در حال درخواست اجازهٔ دوربین…');
   try{
+    if(!window.MINDAR||!window.MINDAR.IMAGE||!window.MINDAR.IMAGE.MindARThree){throw new Error('کتابخانهٔ تشخیص تصویر بارگذاری نشده است؛ اتصال اینترنت یا مسدودکنندهٔ محتوا را بررسی کنید.');}
     ar=new MINDAR.IMAGE.MindARThree({container:document.getElementById('ar-root'),imageTargetSrc:data.target_url,uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.001});
     const {renderer,scene,camera}=ar;
     const anchor=ar.addAnchor(0);
@@ -79,9 +80,19 @@ async function begin(data){
     document.querySelector('.panel').style.opacity='.82';
     say('دوربین فعال است؛ تصویر تارگت را مقابل دوربین نگه دارید.');
   }catch(error){
-    console.error(error);
+    console.error('Nomax AR startup error:',error);
     if(ar){try{await ar.stop()}catch(_){}}
-    ar=null;fail('شروع AR انجام نشد. مجوز دوربین و سازگاری مرورگر را بررسی کنید.');
+    ar=null;
+    const name=error&&error.name?error.name:'';
+    const detail=error&&error.message?String(error.message):String(error||'خطای نامشخص');
+    let message='خطای شروع AR';
+    if(name==='NotAllowedError'||name==='PermissionDeniedError'||name==='SecurityError') message='دسترسی دوربین رد شده است. مجوز Camera را برای این سایت فعال کنید.';
+    else if(name==='NotFoundError'||name==='DevicesNotFoundError') message='دوربین در این دستگاه پیدا نشد.';
+    else if(name==='NotReadableError'||name==='TrackStartError') message='دوربین در برنامهٔ دیگری مشغول است؛ برنامه‌های دوربین را ببندید و دوباره تلاش کنید.';
+    else if(name==='OverconstrainedError') message='تنظیمات دوربین با این دستگاه سازگار نیست.';
+    else if(detail.includes('کتابخانهٔ تشخیص تصویر')) message=detail;
+    else message+=' ('+(name||'Error')+'): '+detail.slice(0,180);
+    fail(message);
   }
 }
 window.addEventListener('pagehide',()=>{if(ar&&started){try{ar.stop()}catch(_){}}});
