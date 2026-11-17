@@ -84,9 +84,8 @@ async function begin(data){
     ar=null;fail('شروع AR انجام نشد. مجوز دوربین و سازگاری مرورگر را بررسی کنید.');
   }
 }
-startButton.onclick=()=>{startButton.disabled=true;init().then(()=>{if(!startButton.onclick)startButton.disabled=false}).catch(()=>fail('خطای غیرمنتظره در آماده‌سازی AR رخ داد.'))};
 window.addEventListener('pagehide',()=>{if(ar&&started){try{ar.stop()}catch(_){}}});
-init();
+init().catch(()=>fail('خطای غیرمنتظره در آماده‌سازی AR رخ داد.'));
 })();
 </script>
 </body>
