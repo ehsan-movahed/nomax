@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>داشبورد مدیریت نومیک</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
 <style>
 :root{--bg:#f4f6f9;--sf:#fff;--sf2:#f8fafc;--bd:#e4e8ee;--tx:#0f172a;--tx2:#64748b;--pr:#0f766e;--pr2:#14b8a6;--pl:#ccfbf1;--wr:#d97706;--er:#dc2626;--ok:#16a34a;--sh:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.05)}
@@ -129,15 +129,14 @@ th{background:var(--sf2);color:var(--tx2);position:sticky;top:0;cursor:default}t
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<script type="module" src="./assets/vendor/mind-ar/mindar-image.prod.js"></script>
+
 <script>
 (function(){
 'use strict';
 var CATS={"car":{"n":"خودرو و حمل‌ونقل","e":"🚗","s":{"mechanic":"مکانیک","electric":"برق خودرو","suspension":"جلوبندی و تعلیق","parts":"قطعات یدکی","body":"صافکاری و نقاشی","tire":"لاستیک و باتری","taxi":"آژانس و تاکسی","transport":"حمل و نقل","fuel":"پمپ بنزین و خدمات","motorcycle":"موتورسیکلت","vehicle_rental":"اجاره خودرو","other":"سایر"}},"building":{"n":"ساختمان و تأسیسات","e":"🏠","s":{"plumbing":"لوله کشی","electrical":"برق کاری","painting":"نقاشی ساختمان","masonry":"بنایی و کاشی کاری","doors":"درب و پنجره","ac":"کولر و اسپلیت","carpentry":"نجاری و کابینت","contractor":"پیمانکاری ساختمان","locksmith":"کلیدسازی","glazing":"شیشه بری","tiling":"کاشی و سرامیک","waterproofing":"ایزوگام و عایق","elevator":"آسانسور","other":"سایر"}},"digital":{"n":"دیجیتال و فناوری","e":"📱","s":{"mobile_repair":"تعمیر موبایل","computer_repair":"تعمیر کامپیوتر و لپ‌تاپ","mobile_sale":"فروش موبایل و لوازم","computer_sale":"فروش کامپیوتر","print":"چاپ و پرینت","photo":"عکاسی و فیلم‌برداری","network":"شبکه و اینترنت","satellite":"ماهواره و آنتن","web":"طراحی سایت و دیجیتال","gaming":"گیم‌نت و کافی‌نت","other":"سایر"}},"food":{"n":"خوراک و رستوران","e":"🍔","s":{"restaurant":"رستوران سنتی","fastfood":"فست‌فود و پیتزا","sandwich":"ساندویچ و برگر","cafe":"کافه و کافی‌شاپ","confectionery":"قنادی و شیرینی","bakery":"نانوایی","juice":"آبمیوه و بستنی","kebab":"کبابی","home_food":"غذای خانگی","catering":"کیترینگ و مراسم","dairy":"لبنیات","other":"سایر"}},"agri":{"n":"کشاورزی و دام","e":"🌾","s":{"seeds":"بذر و کود","machinery":"ماشین‌آلات کشاورزی","palm":"نخل و خرما","citrus":"باغداری و مرکبات","livestock":"دامداری","poultry":"مرغداری و طیور","vet":"دامپزشکی","bee":"زنبورداری و عسل","irrigation":"آبیاری و تجهیزات","agri_services":"خدمات کشاورزی","greenhouse":"گلخانه","other":"سایر"}},"beauty":{"n":"زیبایی و آرایش","e":"💇","s":{"barber_men":"آرایشگاه مردانه","barber_women":"آرایشگاه زنانه","nails":"ناخن و مانیکور","makeup":"میکاپ و گریم","massage":"ماساژ و اسپا","epilation":"اپیلاسیون","skin_care":"پوست و مراقبت","hair":"کاشت و مراقبت مو","cosmetics":"فروش لوازم آرایشی","other":"سایر"}},"retail":{"n":"خرده‌فروشی و پوشاک","e":"🛍","s":{"women_clothing":"پوشاک زنانه","men_clothing":"پوشاک مردانه","kids_clothing":"پوشاک بچه‌گانه","shoes":"کفش و صندل","bags":"کیف و چرم","gold":"طلا و جواهر","gifts":"لوازم هدیه و کادو","supermarket":"سوپرمارکت","nuts":"خشکبار و آجیل","perfume":"عطر و ادکلن","fabric":"پارچه و خیاطی","carpet":"فرش و موکت","home_goods":"لوازم خانگی","other":"سایر"}},"services":{"n":"خدمات عمومی و تعمیرات","e":"🔧","s":{"home_appliance":"تعمیر لوازم خانگی","tv_audio":"تعمیر تلویزیون و صوتی","laundry":"خشکشویی و اتوشویی","carpet_wash":"قالیشویی","moving":"باربری و اسباب‌کشی","key":"کلیدسازی و قفل","pest":"سمپاشی و کنترل آفات","carwash":"کارواش","heater":"آبگرمکن و پکیج","watch":"ساعت‌سازی","shoemaker":"کفاشی و تعمیر کفش","other":"سایر"}},"education":{"n":"آموزش و پرورش","e":"🎓","s":{"elementary":"مدرسه ابتدایی","middle":"مدرسه متوسطه اول","high":"دبیرستان","art_school":"هنرستان","university":"دانشگاه و آموزش عالی","language":"آموزشگاه زبان","konkur":"آموزشگاه کنکور","music":"آموزشگاه موسیقی","art_class":"آموزشگاه هنر","sport_class":"آموزشگاه ورزشی","computer_class":"آموزشگاه کامپیوتر","science":"آموزشگاه علمی","kindergarten":"مهدکودک و پیش‌دبستانی","private_class":"کلاس خصوصی","vocational":"آموزشگاه فنی و حرفه‌ای","other":"سایر"}},"medical":{"n":"پزشکی و درمان","e":"🏥","s":{"dentist":"دندانپزشکی","gp":"پزشک عمومی","pharmacy":"داروخانه","lab":"آزمایشگاه","imaging":"تصویربرداری","heart":"متخصص قلب","neuro":"متخصص مغز و اعصاب","pediatric":"متخصص اطفال","ortho":"متخصص ارتوپدی","eye":"چشم‌پزشکی","ent":"گوش، حلق و بینی","derma":"پوست و مو","obgyn":"زنان و زایمان","physio":"فیزیوتراپی","hospital":"بیمارستان و درمانگاه","other":"سایر"}},"sport":{"n":"ورزش و تفریح","e":"🏋️","s":{"gym":"باشگاه ورزشی","pool":"استخر و شنا","football":"فوتبال و فوتسال","martial":"ورزش‌های رزمی","yoga":"یوگا و پیلاتس","cycling":"دوچرخه‌سواری","playground":"شهربازی و تفریح","billiard":"بیلیارد و بولینگ","camping":"کمپینگ و طبیعت‌گردی","other":"سایر"}},"art":{"n":"هنر و سرگرمی","e":"🎨","s":{"photography":"عکاسی حرفه‌ای","cinema":"سینما و تئاتر","music_art":"موسیقی","painting_art":"نقاشی و طراحی","handicraft":"صنایع دستی","entertainment":"سرگرمی و بازی","event":"برگزاری مراسم","other":"سایر"}},"pets":{"n":"حیوانات خانگی","e":"🐾","s":{"pet_shop":"پت شاپ","pet_vet":"دامپزشکی حیوانات خانگی","pet_grooming":"آرایش حیوانات","pet_boarding":"پانسیون حیوانات","pet_training":"آموزش حیوانات","other":"سایر"}},"books":{"n":"کتاب و نوشت‌افزار","e":"📚","s":{"bookshop":"فروشگاه کتاب","stationery":"نوشت‌افزار","office_supplies":"لوازم اداری","bags_school":"کیف و کوله","paper":"دفتر و کاغذ","art_supplies":"لوازم هنری","other":"سایر"}},"office":{"n":"خدمات اداری و مالی","e":"💼","s":{"gov_office":"دفتر پیشخوان دولت","notary":"دفتر اسناد رسمی","lawyer":"وکیل و مشاور حقوقی","insurance":"بیمه","accounting":"حسابداری","bank":"خدمات بانکی","taxi_office":"دفتر تاکسی","real_estate":"مشاور املاک","travel_agency":"آژانس مسافرتی","other":"سایر"}},"tourism":{"n":"اقامت و گردشگری","e":"🏨","s":{"hotel":"هتل و مسافرخانه","ecolodge":"اقامتگاه بوم‌گردی","tour":"تور و گردشگری","historic":"جاذبه تاریخی","natural":"جاذبه طبیعی","other":"سایر"}},"other":{"n":"سایر","e":"❓","s":{"other_all":"سایر"}}};
 var sb=supabase.createClient("https://pqydooffsqhvrmswzpfa.supabase.co","sb_publishable_F3MwASMBEweTQ62P-8KjGA_zTjeMZXF");
 var $=function(i){return document.getElementById(i)};
-var lazy={},D=null,charts={},map=null,mapDone=false,sortKey='received',sortDir=-1;
+var lazy={},D=null,charts={},map=null,mapDone=false,sortKey='received',sortDir=-1,arInitialized=false,mindarPromise=null,leafletPromise=null;
 function n(v){return Number(v||0).toLocaleString('fa-IR')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function cn(id,sub){var c=CATS[id];if(!c)return id?esc(id):'—';var t=c.e+' '+c.n;if(sub)t+=' › '+(c.s[sub]||sub);return esc(t)}
@@ -207,8 +206,18 @@ function bizTable(){
   rows.forEach(function(b){b.rate=pct(b.offers,b.received)});
   $('tBiz').innerHTML=rows.length?'<table><thead><tr>'+cols.map(function(c){return '<th class="'+(c[1]?'so':'')+'" data-k="'+c[1]+'">'+c[0]+(c[1]===sortKey?(sortDir>0?' ▲':' ▼'):'')+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td>'+c[2](r)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>':'<div class="state" style="padding:24px">موردی نیست</div>';
 }
+function loadLeaflet(){
+  if(window.L)return Promise.resolve();
+  if(leafletPromise)return leafletPromise;
+  leafletPromise=new Promise(function(resolve,reject){
+    if(!document.querySelector('link[data-leaflet-css]')){var css=document.createElement('link');css.rel='stylesheet';css.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';css.dataset.leafletCss='1';document.head.appendChild(css)}
+    var script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';script.onload=resolve;script.onerror=function(){leafletPromise=null;reject(new Error('بارگذاری نقشه ناموفق بود'))};document.head.appendChild(script);
+  });
+  return leafletPromise;
+}
 function drawMap(){
-  if(!window.L||!D)return;
+  if(!window.L){loadLeaflet().then(drawMap).catch(function(e){$('map').textContent=e.message});return}
+  if(!D)return;
   if(!map){map=L.map('map').setView([30.5959,50.2417],13);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);map._g=L.layerGroup().addTo(map)}
   map._g.clearLayers();
   D.geo.requests.forEach(function(p){L.circleMarker([p[0],p[1]],{radius:6,color:p[2]?'#dc2626':'#d97706',fillOpacity:.55,weight:1}).addTo(map._g)});
@@ -242,11 +251,21 @@ async function arBusinesses(){
  if(AR.businesses.length===1)$('arBusiness').value=AR.businesses[0].id;
  await arCurrent();
 }
+function loadMindarCompiler(){
+ if(window.MINDAR&&window.MINDAR.IMAGE&&window.MINDAR.IMAGE.Compiler)return Promise.resolve();
+ if(mindarPromise)return mindarPromise;
+ mindarPromise=new Promise(function(resolve,reject){
+  var script=document.createElement('script');script.type='module';script.src='./assets/vendor/mind-ar/mindar-image.prod.js';
+  script.onload=function(){if(window.MINDAR&&window.MINDAR.IMAGE&&window.MINDAR.IMAGE.Compiler)resolve();else{mindarPromise=null;reject(new Error('کتابخانهٔ کامپایلر در دسترس قرار نگرفت.'))}};
+  script.onerror=function(){mindarPromise=null;reject(new Error('دریافت کتابخانهٔ MindAR ناموفق بود.'))};document.head.appendChild(script);
+ });
+ return mindarPromise;
+}
 async function arCompile(){
- var btn=$('arCompile');if(!AR.targetImage)return;btn.disabled=true;$('arPublish').disabled=true;$('arCompileBar').style.width='0%';arMsg('arCompileStatus','در حال آماده‌سازی موتور تشخیص تصویر…');
+ var btn=$('arCompile');if(!AR.targetImage)return;btn.disabled=true;$('arPublish').disabled=true;$('arCompileBar').style.width='0%';arMsg('arCompileStatus','در حال بارگذاری موتور ساخت تارگت…');
  var src=null;
  try{
-  if(!window.MINDAR||!window.MINDAR.IMAGE||!window.MINDAR.IMAGE.Compiler)throw new Error('کتابخانهٔ کامپایلر MindAR بارگذاری نشده است. صفحه را تازه‌سازی کن.');
+  await loadMindarCompiler();
   var compiler=new window.MINDAR.IMAGE.Compiler();
   var img=await new Promise(function(resolve,reject){var el=new Image();src=URL.createObjectURL(AR.targetImage);el.onload=function(){resolve(el)};el.onerror=function(){reject(new Error('خواندن تصویر ممکن نشد.'))};el.src=src});
   await compiler.compileImageTargets([img],function(x){var p=Math.max(0,Math.min(100,Number(x)||0));$('arCompileBar').style.width=p+'%';arMsg('arCompileStatus','در حال ساخت تارگت: '+p.toFixed(0)+'٪')});
@@ -276,6 +295,7 @@ async function arPublish(){
  finally{$('arCompile').disabled=!AR.targetImage;arPreview()}
 }
 function initAR(){
+ if(arInitialized)return;arInitialized=true;
  $('arBusiness').addEventListener('change',arCurrent);
  $('arTargetImage').addEventListener('change',function(){AR.targetImage=$('arTargetImage').files[0]||null;AR.compiled=null;$('arCompile').disabled=!AR.targetImage;$('arCompileBar').style.width='0%';arMsg('arCompileStatus',AR.targetImage?'تصویر انتخاب شد؛ برای ساخت فایل .mind دکمه را بزن.':'ابتدا تصویر تارگت را انتخاب کن.');arPreview()});
  $('arPoster').addEventListener('change',arPreview);$('arVideo').addEventListener('change',arPreview);
@@ -299,12 +319,12 @@ async function boot(){
   if(!u){$('gate').innerHTML='<h2>ابتدا وارد حساب مدیر شوید</h2><p><a class="btn pr" href="/nomax/adminehsan/">ورود مدیر</a></p>';return}
   var ok=await sb.rpc('nx_is_admin');
   if(ok.error||ok.data!==true){$('gate').innerHTML='<h2>⛔ دسترسی مجاز نیست</h2><p class="sub">'+(ok.error?esc(ok.error.message):'این حساب نقش مدیر ندارد.')+'</p>';return}
-  $('gate').classList.add('hide');$('app').classList.remove('hide');load();initAR();
+  $('gate').classList.add('hide');$('app').classList.remove('hide');load();
 }
 $('tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
   [].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x===b)});
   [].forEach.call(document.querySelectorAll('[data-p]'),function(p){p.classList.toggle('hide',p.dataset.p!==b.dataset.t)});
-  if(b.dataset.t==='mp')drawMap();runLazy();
+  if(b.dataset.t==='mp')drawMap();if(b.dataset.t==='ar')initAR();runLazy();
   setTimeout(function(){Object.keys(charts).forEach(function(k){try{charts[k].resize()}catch(_){}})},60)});
 $('days').onchange=load;$('refresh').onclick=load;$('bf').onchange=bizTable;
 $('tBiz').addEventListener('click',function(e){var t=e.target.closest('th.so');if(!t)return;var k=t.dataset.k;if(k===sortKey)sortDir=-sortDir;else{sortKey=k;sortDir=-1}bizTable()});
