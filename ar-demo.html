@@ -68,7 +68,7 @@ async function begin(data){
   if(started)return;
   startButton.disabled=true;say('در حال درخواست اجازهٔ دوربین…');
   try{
-    if(typeof MindARThree!=='function'){throw new Error('ماژول تشخیص تصویر MindAR در دسترس نیست؛ اتصال CDN را بررسی کنید.');}
+    if(typeof MindARThree!=='function'){throw new Error('ماژول تشخیص تصویر MindAR در دسترس نیست؛ فایل‌های محلی assets/vendor را بررسی کنید.');}
     ar=new MindARThree({container:document.getElementById('ar-root'),imageTargetSrc:data.target_url,uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.001});
     const {renderer,scene,camera}=ar;
     const anchor=ar.addAnchor(0);
