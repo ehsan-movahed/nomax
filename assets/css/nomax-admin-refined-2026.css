@@ -1,0 +1,26 @@
+/* NOMAX admin — refined information architecture */
+:root{--bg:#f4f6f8;--sf:#fff;--sf2:#f7f9fa;--bd:#e5eaee;--tx:#1d303b;--tx2:#71808a;--pr:#087f72;--pr2:#13a58f;--pl:#e8f5f0;--sh:0 4px 18px rgba(25,45,58,.045)}
+:root[data-theme=dark]{--bg:#0e191d;--sf:#15252a;--sf2:#1a2d33;--bd:#2a4248;--tx:#e6f0f1;--tx2:#9aafb1;--pr:#39b6a0;--pr2:#63cbb8;--pl:#1d3e39;--sh:0 6px 22px rgba(0,0,0,.2)}
+body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--bg);color:var(--tx)}
+.wrap{max-width:1460px;padding:22px 24px 72px}
+header{position:relative;border:1px solid var(--bd);border-radius:18px;padding:16px 20px;background:var(--sf);box-shadow:var(--sh)}
+.brand{gap:13px}.logo{width:46px;height:46px;border-radius:13px;background:var(--pl);color:var(--pr);font-weight:950}
+h1{font-size:19px;font-weight:900;letter-spacing:-.4px}.sub{font-size:12px;color:var(--tx2)}
+.tools{gap:8px}
+select,button,.btn{font-family:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--tx);border-radius:11px;padding:9px 13px;min-height:40px}
+.btn.pr,button.pr{background:var(--pr);border-color:var(--pr);color:white}
+nav#tabs{position:sticky;top:8px;z-index:30;display:flex;gap:6px;overflow-x:auto;margin:15px 0 18px;padding:6px;background:var(--sf);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--sh)}
+nav#tabs button{border:0;background:transparent;border-radius:10px;padding:10px 15px;color:var(--tx2);font-weight:750;white-space:nowrap}
+nav#tabs button.on{background:var(--pl);color:var(--pr)}
+.grid{gap:15px}.card{border:1px solid var(--bd);border-radius:17px;padding:18px;background:var(--sf);box-shadow:var(--sh)}
+.card h3{font-size:14px;font-weight:900;color:var(--tx)}
+.kpi{gap:12px}.ic{width:43px;height:43px;border-radius:13px;background:var(--pl);color:var(--pr)}
+.kv{font-size:25px;font-weight:950}.kl{font-size:12px;color:var(--tx2)}
+.tw{border-radius:12px;border:1px solid var(--bd);overflow:auto}
+table{font-size:12.5px}th,td{padding:10px 12px;border-color:var(--bd)}th{background:var(--sf2);color:var(--tx2);font-weight:800}
+.badge{font-weight:800}.state{border-radius:17px;border:1px solid var(--bd);background:var(--sf)}
+#map{border-radius:14px;overflow:hidden}
+input,select,textarea{font-family:inherit}
+input[type=file]{max-width:100%}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid rgba(19,165,143,.25);outline-offset:2px}
+@media(max-width:720px){.wrap{padding:10px 10px 50px}header{padding:13px;border-radius:15px}.tools>*{flex:1}nav#tabs{top:4px;margin:10px 0 13px}nav#tabs button{padding:9px 11px;font-size:12px}.grid{gap:10px}.card{padding:14px;border-radius:14px}.kv{font-size:22px}}
