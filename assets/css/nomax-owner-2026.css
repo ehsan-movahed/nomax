@@ -1,0 +1,35 @@
+/* NOMAX business owner dashboard — 2026 design system */
+:root{--bg:#f3f7f5;--sf:#fff;--sf2:#f7fbf9;--bd:#e1ece7;--tx:#15332e;--tx2:#6b817a;--pr:#087f72;--pr2:#10a896;--pl:#e5f5ef;--sh:0 8px 26px rgba(17,55,46,.055)}
+:root[data-theme=dark]{--bg:#0c1916;--sf:#142521;--sf2:#192f29;--bd:#2a4840;--tx:#e7f3ee;--tx2:#9ab1a8;--pr:#31b49f;--pr2:#58cbb4;--pl:#1b4038;--sh:0 8px 28px rgba(0,0,0,.22)}
+body{font-family:'Vazirmatn Variable','Vazirmatn',Tahoma,sans-serif;background:radial-gradient(ellipse at 100% 0%,rgba(16,168,150,.08),transparent 32%),var(--bg);color:var(--tx)}
+.wrap{max-width:1200px;padding:20px 20px 70px}
+.hero{position:relative;overflow:hidden;border-radius:26px;padding:23px 25px;background:radial-gradient(circle at 8% 90%,rgba(243,184,79,.17),transparent 30%),linear-gradient(120deg,#064e46 0%,#087f72 58%,#10a896 100%);box-shadow:0 16px 38px rgba(7,89,79,.18)}
+.hero::after{content:"";position:absolute;width:240px;height:240px;border:1px solid rgba(255,255,255,.12);border-radius:50%;left:-80px;top:-130px;box-shadow:0 0 0 24px rgba(255,255,255,.035),0 0 0 48px rgba(255,255,255,.025);pointer-events:none}
+.hero h1{font-size:22px;font-weight:950;letter-spacing:-.5px}
+.hero .sub{font-size:12.5px;color:rgba(255,255,255,.78)}
+.tools{gap:9px;margin-top:15px}
+select,button.btn,.btn{font-family:inherit;border-radius:12px;min-height:42px;padding:9px 14px;transition:.18s ease}
+select{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
+select option{color:#142d2a;background:#fff}
+button.btn,.btn{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.24);color:#fff}
+.btn.w{background:#fff;color:#07594f;border-color:#fff;font-weight:850;box-shadow:0 5px 14px rgba(0,0,0,.1)}
+button:hover,.btn:hover{transform:translateY(-1px)}
+.grid{gap:16px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:21px;padding:19px;box-shadow:var(--sh)}
+.grid .card{margin-top:0}
+.card h3{font-size:15px;font-weight:900;letter-spacing:-.2px}
+.sub2{font-size:12px;color:var(--tx2);margin-bottom:12px}
+.kpi .v{font-size:28px;font-weight:950;letter-spacing:-.7px}
+.kpi .l{font-weight:750}
+.tips{gap:10px}
+.tip{border-radius:15px;padding:12px 14px;background:var(--sf2);border-color:var(--bd)}
+.tip b{font-weight:900}
+.tw{border-radius:15px;border-color:var(--bd)}
+table{font-size:12.5px}th,td{padding:11px 12px;border-color:var(--bd)}th{background:var(--sf2);font-weight:850}
+.badge{font-weight:800}
+.fn{gap:11px}.fr{gap:10px}.fb{border-radius:9px;background:var(--bd)}
+.state{border-radius:22px;background:var(--sf);border:1px solid var(--bd)}
+.alert{border-radius:14px}
+#biz{max-width:min(340px,100%)}
+@media(max-width:700px){.wrap{padding:10px 10px 50px}.hero{padding:17px 16px;border-radius:20px}.hero h1{font-size:19px}.tools>*{flex:1}.grid{gap:11px}.card{padding:14px;border-radius:17px}.kpi .v{font-size:24px}.ch{height:220px}.ch.s{height:190px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
