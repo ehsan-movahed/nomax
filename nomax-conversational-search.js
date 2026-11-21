@@ -55,12 +55,19 @@
   function addMessage(log,kind,message){var n=document.createElement('div');n.className='nx-conv-msg '+kind;n.textContent=message;log.appendChild(n);log.scrollTop=log.scrollHeight;return n;}
   function runSearch(query,label,log){
     var input=document.getElementById('searchInput');if(!input){addMessage(log,'bot','کادر جستجوی اصلی سایت در دسترس نیست. لطفاً صفحه را تازه‌سازی کن.');return;}
-    input.value=query;var changed=false;
-    try{var panel=document.getElementById('categoryMenuPanel'),all=panel&&panel.querySelector('.category-menu-all');if(all&&!all.classList.contains('active')){all.click();changed=true;}}catch(e){}
-    var tab=document.querySelector('#nxTabs .nx-tab.active');
-    if(tab&&tab.getAttribute('data-tab')!=='all'&&typeof window.nxSetTab==='function'){window.nxSetTab('all',{scroll:true});changed=true;}
-    else if(!changed&&typeof window.searchBusinesses==='function')window.searchBusinesses({scroll:true});
-    else if(!changed){var btn=document.getElementById('searchButton');if(btn)btn.click();}
+    input.value=query;
+    if(typeof window.nxResetConversationalFilters==='function'){
+      window.nxResetConversationalFilters();
+      if(typeof window.searchBusinesses==='function')window.searchBusinesses({scroll:true});
+      else{var resetBtn=document.getElementById('searchButton');if(resetBtn)resetBtn.click();}
+    }else{
+      var changed=false;
+      try{var panel=document.getElementById('categoryMenuPanel'),all=panel&&panel.querySelector('.category-menu-all');if(all&&!all.classList.contains('active')){all.click();changed=true;}}catch(e){}
+      var tab=document.querySelector('#nxTabs .nx-tab.active');
+      if(tab&&tab.getAttribute('data-tab')!=='all'&&typeof window.nxSetTab==='function'){window.nxSetTab('all',{scroll:true});changed=true;}
+      else if(!changed&&typeof window.searchBusinesses==='function')window.searchBusinesses({scroll:true});
+      else if(!changed){var btn=document.getElementById('searchButton');if(btn)btn.click();}
+    }
     var count=document.getElementById('resultCount'),ct=count?String(count.textContent||'').trim():'';
     if(ct&&/^۰\s|^0\s/.test(ct))addMessage(log,'bot','در اطلاعات فعلی نوماکس نتیجه‌ای برای این درخواست پیدا نشد. می‌توانی عبارت ساده‌تر یا خدمت نزدیک‌تری را امتحان کنی.');
     else addMessage(log,'bot','درخواستت به جستجوی «'+label+'» تبدیل شد. نتایج ثبت‌شده در نوماکس پایین صفحه نمایش داده می‌شوند.');
