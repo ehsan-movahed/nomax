@@ -96,4 +96,13 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
   if(typeof MutationObserver!=='undefined'&&document.body){var observer=new MutationObserver(function(){mount();});observer.observe(document.body,{childList:true,subtree:true});}
+}
+  function mountOllamaLauncher(){
+    if(document.getElementById('nxOllamaLauncher'))return;
+    var b=document.createElement('a');b.id='nxOllamaLauncher';b.href='./assistant.html';b.setAttribute('aria-label','باز کردن دستیار هوشمند نوماکس');b.title='دستیار هوشمند نوماکس';
+    b.innerHTML='<span aria-hidden="true">🤖</span><span class="nx-ollama-launcher-label">دستیار هوشمند</span>';
+    var st=document.createElement('style');st.id='nx-ollama-launcher-css';st.textContent='#nxOllamaLauncher{position:fixed;z-index:9998;left:18px;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:9px;padding:11px 15px;border-radius:999px;background:linear-gradient(135deg,#087c72,#16aa9b);color:#fff;text-decoration:none;font:800 13px/1.2 inherit;box-shadow:0 8px 26px rgba(8,124,114,.32);border:1px solid rgba(255,255,255,.22);transition:transform .18s,box-shadow .18s}#nxOllamaLauncher:hover{transform:translateY(-2px);box-shadow:0 11px 30px rgba(8,124,114,.4)}@media(max-width:520px){#nxOllamaLauncher{left:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:12px;border-radius:50%;width:52px;height:52px;justify-content:center}#nxOllamaLauncher .nx-ollama-launcher-label{display:none}}';
+    if(!document.getElementById('nx-ollama-launcher-css'))document.head.appendChild(st);document.body.appendChild(b);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountOllamaLauncher,{once:true});else mountOllamaLauncher();
 })();
