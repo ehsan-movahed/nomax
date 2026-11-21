@@ -6095,6 +6095,16 @@ function scoreBusiness(b, q){
     }
   }
   window.searchBusinesses = searchBusinesses;
+  /* Reset search filters atomically for conversational search (one result refresh only). */
+  window.nxResetConversationalFilters = function(){
+    activeCategory = "";
+    activeCategoryId = "";
+    activeSubcategoryId = "";
+    nxActiveTab = "all";
+    if(typeof updateCategoryMenuLabel === "function") updateCategoryMenuLabel();
+    if(typeof nxSyncTabs === "function") nxSyncTabs();
+    if(typeof closeCategoryMenu === "function") closeCategoryMenu();
+  };
 
   /* ============ CATEGORY MENU ============ */
   function buildCategories(){
