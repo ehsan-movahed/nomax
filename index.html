@@ -13679,7 +13679,7 @@ body:not(.nx-search-mode) #resultsCard{display:none!important}
 
 /* ===== حالت جستجو: صفحه‌ی تمام‌صفحه ===== */
 body.nx-search-mode header.header{display:none!important}
-body.nx-search-mode .container>:not(#nxSearchTop):not(#nxLocRow):not(#nxSearchCard):not(#resultsCard){display:none!important}
+body.nx-search-mode .container>:not(#nxSearchTop):not(#nxLocRow):not(#nxSearchCard):not(#nxConversationalSearch):not(#resultsCard){display:none!important}
 
 .nx-stop{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 4px 6px;background:var(--bg,#fafaf9)}
 .nx-stop b{flex:1;text-align:center;font-size:17px;font-weight:900;color:var(--text)}
@@ -13791,7 +13791,7 @@ body.nx-search-mode .nx-suggest{position:static;margin:8px 0 0;box-shadow:none;b
 
   window.nxOrderLayout = function(){
     var c = ensureChrome(); if(!c) return;
-    var ids = ['nxSearchTop','nxLocRow','nxHomeTop','nxAdRow','nxFeaturedHero','nxQuoteHeroTop','nxHomeDiscover','nxAdPair','nxSearchCard','resultsCard'];
+    var ids = ['nxSearchTop','nxLocRow','nxHomeTop','nxAdRow','nxFeaturedHero','nxQuoteHeroTop','nxHomeDiscover','nxConversationalSearch','nxAdPair','nxSearchCard','resultsCard'];
     var order = ids.map($).filter(Boolean);
     var ref = Array.prototype.slice.call(c.children).filter(function(el){ return order.indexOf(el) < 0; })[0] || null;
     var cur = Array.prototype.slice.call(c.children).filter(function(el){ return order.indexOf(el) >= 0; });
@@ -15805,7 +15805,7 @@ button{touch-action:manipulation}
   });
 })();
 </script>
-<script src="./nomax-conversational-search.js"></script>
+<script src="./nomax-conversational-search.js?v=2"></script>
 </body>
   
 <style id="numic-owner-ui-v4">
